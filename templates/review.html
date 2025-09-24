@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}错题复习 - 在线考试系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .review-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    .question-card {
+        border-left: 4px solid #007bff;
+    }
+    .answer-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .correct-answer {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    .explanation {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+    .mode-selector {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 复习头部 -->
+<div class="review-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2><i class="bi bi-book"></i> 错题复习</h2>
+                <p class="mb-0">通过复习错题，巩固知识点，提升学习效果</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="mode-selector">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('review', mode='sequential') }}" 
+                           class="btn {% if mode == 'sequential' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            <i class="bi bi-list-ol"></i> 顺序复习
+                        </a>
+                        <a href="{{ url_for('review', mode='random') }}" 
+                           class="btn {% if mode == 'random' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            <i class="bi bi-shuffle"></i> 随机复习
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if questions %}
+    <!-- 进度信息 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-check"></i> 复习进度
+                            </h5>
+                            <p class="text-muted mb-0">共 {{ questions|length }} 道错题需要复习</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-secondary" id="prevBtn" disabled>
+                                    <i class="bi bi-chevron-left"></i> 上一题
+                                </button>
+                                <button class="btn btn-outline-secondary" id="nextBtn">
+                                    下一题 <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 题目内容 -->
+    <div class="row">
+        <div class="col-12">
+            {% for question in questions %}
+            <div class="card question-card mb-4" id="question-{{ loop.index }}" style="display: none;">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="bi bi-question-circle"></i> 错题 {{ loop.index }}
+                            </h5>
+                            <small class="text-muted">
+                                {% if question.question.type == 'single' %}单选题
+                                {% elif question.question.type == 'multiple' %}多选题
+                                {% elif question.question.type == 'text' %}填空题
+                                {% elif question.question.type == 'audio' %}音频题
+                                {% elif question.question.type == 'video' %}视频题
+                                {% endif %}
+                                | {{ question.question.difficulty }}难度
+                            </small>
+                        </div>
+                        <div>
+                            <span class="badge bg-{{ 'success' if question.question.difficulty == 'easy' else 'warning' if question.question.difficulty == 'medium' else 'danger' }}">
+                                {{ '简单' if question.question.difficulty == 'easy' else '中等' if question.question.difficulty == 'medium' else '困难' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 题目内容 -->
+                    <div class="question-content mb-4">
+                        <p class="fs-5">{{ question.question.content }}</p>
+                    </div>
+                    
+                    <!-- 选项（如果是选择题） -->
+                    {% if question.question.type in ['single', 'multiple'] %}
+                    <div class="options mb-4">
+                        {% for option in question.question.options %}
+                        <div class="form-check p-3 border rounded mb-2 option-display">
+                            <input class="form-check-input" type="radio" disabled>
+                            <label class="form-check-label w-100">
+                                {{ option }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 多媒体内容 -->
+                    {% if question.question.type == 'audio' and question.question.options %}
+                        <div class="mb-3">
+                            <h6>音频内容：</h6>
+                            <audio controls class="w-100">
+                                <source src="{{ question.question.options.audio_url }}" type="audio/mpeg">
+                                您的浏览器不支持音频播放
+                            </audio>
+                        </div>
+                    {% elif question.question.type == 'video' and question.question.options %}
+                        <div class="mb-3">
+                            <h6>视频内容：</h6>
+                            <video controls class="w-100" style="max-height: 400px;">
+                                <source src="{{ question.question.options.video_url }}" type="video/mp4">
+                                您的浏览器不支持视频播放
+                            </video>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- 答案区域 -->
+                    <div class="answer-section">
+                        <h6><i class="bi bi-check-circle"></i> 正确答案：</h6>
+                        <div class="correct-answer p-3 rounded mb-3">
+                            {% if question.question.type in ['single', 'multiple'] %}
+                                {% if question.question.type == 'single' %}
+                                    <strong>{{ question.question.correct_answer }}</strong>
+                                {% else %}
+                                    {% set correct_answers = question.question.correct_answer|from_json %}
+                                    {% for answer in correct_answers %}
+                                        <span class="badge bg-success me-1">{{ answer }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            {% else %}
+                                <strong>{{ question.question.correct_answer }}</strong>
+                            {% endif %}
+                        </div>
+                        
+                        {% if question.question.explanation %}
+                        <h6><i class="bi bi-lightbulb"></i> 解析：</h6>
+                        <div class="explanation p-3 rounded">
+                            {{ question.question.explanation }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="mt-4">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary" onclick="toggleFavorite({{ question.question.id }})">
+                                <i class="bi bi-bookmark"></i> 收藏
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="removeFromWrong({{ question.id }})">
+                                <i class="bi bi-x-circle"></i> 移出错题
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 完成提示 -->
+    <div class="row" id="completionMessage" style="display: none;">
+        <div class="col-12">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    <i class="bi bi-check-circle-fill text-success display-1"></i>
+                    <h3 class="mt-3">复习完成！</h3>
+                    <p class="text-muted">您已经完成了所有错题的复习</p>
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> 返回个人中心
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- 无错题提示 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <h3 class="mt-3 text-muted">暂无错题</h3>
+                    <p class="text-muted">恭喜！您还没有错题需要复习</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="bi bi-play-circle"></i> 开始考试
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let currentQuestion = 1;
+    const totalQuestions = {{ questions|length }};
+    
+    if (totalQuestions > 0) {
+        showQuestion(1);
+        updateButtons();
+    }
+    
+    function showQuestion(questionNum) {
+        $('.question-card').hide();
+        $(`#question-${questionNum}`).show();
+        updateButtons();
+    }
+    
+    function updateButtons() {
+        $('#prevBtn').prop('disabled', currentQuestion === 1);
+        $('#nextBtn').prop('disabled', currentQuestion === totalQuestions);
+        
+        if (currentQuestion === totalQuestions) {
+            $('#nextBtn').html('完成 <i class="bi bi-check"></i>');
+        } else {
+            $('#nextBtn').html('下一题 <i class="bi bi-chevron-right"></i>');
+        }
+    }
+    
+    $('#prevBtn').click(function() {
+        if (currentQuestion > 1) {
+            currentQuestion--;
+            showQuestion(currentQuestion);
+        }
+    });
+    
+    $('#nextBtn').click(function() {
+        if (currentQuestion < totalQuestions) {
+            currentQuestion++;
+            showQuestion(currentQuestion);
+        } else {
+            // 完成复习
+            $('#completionMessage').show();
+            $('.question-card').hide();
+            $('.btn-group').hide();
+        }
+    });
+});
+
+function toggleFavorite(questionId) {
+    // 这里可以添加收藏/取消收藏的功能
+    alert('收藏功能开发中...');
+}
+
+function removeFromWrong(wrongQuestionId) {
+    if (confirm('确定要将此题移出错题集吗？')) {
+        // 这里可以添加移出错题的功能
+        alert('移出错题功能开发中...');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}添加题目 - 在线考试系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        min-height: calc(100vh - 56px);
+        background-color: #f8f9fa;
+    }
+    .admin-content {
+        min-height: calc(100vh - 56px);
+    }
+    .option-item {
+        margin-bottom: 0.5rem;
+    }
+    .option-input {
+        display: none;
+    }
+    .option-input.show {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="admin-sidebar p-3">
+            <h5><i class="bi bi-gear"></i> 管理菜单</h5>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin') }}">
+                        <i class="bi bi-house"></i> 概览
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_questions') }}">
+                        <i class="bi bi-question-circle"></i> 题目管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('add_question') }}">
+                        <i class="bi bi-plus-circle"></i> 添加题目
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_exams') }}">
+                        <i class="bi bi-file-text"></i> 考试管理
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="admin-content p-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-plus-circle"></i> 添加题目</h2>
+                    <p class="text-muted">创建新的考试题目</p>
+                </div>
+                <a href="{{ url_for('admin_questions') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
+            </div>
+            
+            <form method="POST" id="questionForm">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">题目信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- 题目类型 -->
+                        <div class="mb-3">
+                            <label for="type" class="form-label">题目类型 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required onchange="toggleOptions()">
+                                <option value="">请选择题目类型</option>
+                                <option value="single">单选题</option>
+                                <option value="multiple">多选题</option>
+                                <option value="text">填空题</option>
+                                <option value="audio">音频题</option>
+                                <option value="video">视频题</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 题目难度 -->
+                        <div class="mb-3">
+                            <label for="difficulty" class="form-label">题目难度</label>
+                            <select class="form-select" id="difficulty" name="difficulty">
+                                <option value="easy">简单</option>
+                                <option value="medium" selected>中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 题目内容 -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">题目内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="content" name="content" rows="4" required 
+                                      placeholder="请输入题目内容..."></textarea>
+                        </div>
+                        
+                        <!-- 选项（选择题） -->
+                        <div class="mb-3" id="optionsSection" style="display: none;">
+                            <label class="form-label">选项设置</label>
+                            <div id="optionsContainer">
+                                <!-- 选项将通过JavaScript动态添加 -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOption()">
+                                <i class="bi bi-plus"></i> 添加选项
+                            </button>
+                        </div>
+                        
+                        <!-- 正确答案 -->
+                        <div class="mb-3">
+                            <label for="correct_answer" class="form-label">正确答案 <span class="text-danger">*</span></label>
+                            <div id="correctAnswerContainer">
+                                <input type="text" class="form-control" id="correct_answer" name="correct_answer" required 
+                                       placeholder="请输入正确答案...">
+                            </div>
+                            <div class="form-text" id="correctAnswerHelp">
+                                请根据题目类型输入正确答案
+                            </div>
+                        </div>
+                        
+                        <!-- 题目解析 -->
+                        <div class="mb-3">
+                            <label for="explanation" class="form-label">题目解析</label>
+                            <textarea class="form-control" id="explanation" name="explanation" rows="3" 
+                                      placeholder="请输入题目解析（可选）..."></textarea>
+                            <div class="form-text">解析将显示在错题复习中，帮助学生理解题目</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 多媒体内容（音频/视频题） -->
+                <div class="card mt-3" id="mediaSection" style="display: none;">
+                    <div class="card-header">
+                        <h5 class="mb-0">多媒体内容</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="mediaFile" class="form-label">上传文件</label>
+                            <input type="file" class="form-control" id="mediaFile" accept="audio/*,video/*">
+                            <div class="form-text">支持音频（mp3, wav）和视频（mp4, avi）格式</div>
+                        </div>
+                        <div id="mediaPreview" style="display: none;">
+                            <!-- 媒体预览将在这里显示 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 提交按钮 -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> 保存题目
+                    </button>
+                    <a href="{{ url_for('admin_questions') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-x-circle"></i> 取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let optionCount = 0;
+
+function toggleOptions() {
+    const type = $('#type').val();
+    const optionsSection = $('#optionsSection');
+    const mediaSection = $('#mediaSection');
+    const correctAnswerContainer = $('#correctAnswerContainer');
+    const correctAnswerHelp = $('#correctAnswerHelp');
+    
+    // 隐藏所有相关部分
+    optionsSection.hide();
+    mediaSection.hide();
+    
+    if (type === 'single' || type === 'multiple') {
+        // 显示选项设置
+        optionsSection.show();
+        if (optionCount === 0) {
+            addOption();
+            addOption();
+        }
+        
+        // 更新正确答案输入
+        correctAnswerContainer.html(`
+            <div class="row">
+                <div class="col-md-6">
+                    <select class="form-select" id="correct_answer" name="correct_answer" required>
+                        <option value="">请选择正确答案</option>
+                    </select>
+                </div>
+            </div>
+        `);
+        correctAnswerHelp.text('请从上方选项中选择正确答案');
+        
+    } else if (type === 'text') {
+        // 填空题
+        correctAnswerContainer.html(`
+            <input type="text" class="form-control" id="correct_answer" name="correct_answer" required 
+                   placeholder="请输入正确答案...">
+        `);
+        correctAnswerHelp.text('请输入填空题的正确答案');
+        
+    } else if (type === 'audio' || type === 'video') {
+        // 多媒体题
+        mediaSection.show();
+        correctAnswerContainer.html(`
+            <textarea class="form-control" id="correct_answer" name="correct_answer" rows="3" required 
+                      placeholder="请根据音频/视频内容回答问题..."></textarea>
+        `);
+        correctAnswerHelp.text('请根据音频/视频内容回答问题');
+    }
+}
+
+function addOption() {
+    optionCount++;
+    const optionHtml = `
+        <div class="option-item input-group mb-2">
+            <span class="input-group-text">选项 ${optionCount}</span>
+            <input type="text" class="form-control" name="options" required 
+                   placeholder="请输入选项内容...">
+            <button type="button" class="btn btn-outline-danger" onclick="removeOption(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    $('#optionsContainer').append(optionHtml);
+    updateCorrectAnswerOptions();
+}
+
+function removeOption(button) {
+    $(button).closest('.option-item').remove();
+    updateCorrectAnswerOptions();
+}
+
+function updateCorrectAnswerOptions() {
+    const correctAnswerSelect = $('#correct_answer');
+    if (correctAnswerSelect.is('select')) {
+        correctAnswerSelect.empty();
+        correctAnswerSelect.append('<option value="">请选择正确答案</option>');
+        
+        $('input[name="options"]').each(function(index) {
+            const value = $(this).val() || `选项${index + 1}`;
+            correctAnswerSelect.append(`<option value="${value}">${value}</option>`);
+        });
+    }
+}
+
+// 监听选项输入变化
+$(document).on('input', 'input[name="options"]', function() {
+    updateCorrectAnswerOptions();
+});
+
+// 文件上传预览
+$('#mediaFile').change(function() {
+    const file = this.files[0];
+    if (file) {
+        const url = URL.createObjectURL(file);
+        const type = $('#type').val();
+        
+        let previewHtml = '';
+        if (type === 'audio') {
+            previewHtml = `
+                <div class="mt-3">
+                    <label class="form-label">音频预览：</label>
+                    <audio controls class="w-100">
+                        <source src="${url}" type="${file.type}">
+                        您的浏览器不支持音频播放
+                    </audio>
+                </div>
+            `;
+        } else if (type === 'video') {
+            previewHtml = `
+                <div class="mt-3">
+                    <label class="form-label">视频预览：</label>
+                    <video controls class="w-100" style="max-height: 300px;">
+                        <source src="${url}" type="${file.type}">
+                        您的浏览器不支持视频播放
+                    </video>
+                </div>
+            `;
+        }
+        
+        $('#mediaPreview').html(previewHtml).show();
+    }
+});
+
+// 表单提交验证
+$('#questionForm').submit(function(e) {
+    const type = $('#type').val();
+    
+    if (type === 'single' || type === 'multiple') {
+        const options = $('input[name="options"]').map(function() {
+            return $(this).val();
+        }).get().filter(val => val.trim() !== '');
+        
+        if (options.length < 2) {
+            e.preventDefault();
+            alert('请至少添加2个选项');
+            return false;
+        }
+    }
+    
+    return true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 在线考试系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        min-height: calc(100vh - 56px);
+        background-color: #f8f9fa;
+    }
+    .admin-content {
+        min-height: calc(100vh - 56px);
+    }
+    .stat-card {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="admin-sidebar p-3">
+            <h5><i class="bi bi-gear"></i> 管理菜单</h5>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin') }}">
+                        <i class="bi bi-house"></i> 概览
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_questions') }}">
+                        <i class="bi bi-question-circle"></i> 题目管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_exams') }}">
+                        <i class="bi bi-file-text"></i> 考试管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="bi bi-people"></i> 用户管理
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="admin-content p-3">
+            <h2><i class="bi bi-speedometer2"></i> 管理概览</h2>
+            <p class="text-muted">系统运行状态和统计数据</p>
+            
+            <!-- 统计卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-question-circle text-primary display-4"></i>
+                            <h4 class="mt-2">{{ questions|length }}</h4>
+                            <p class="text-muted mb-0">题目总数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-file-text text-success display-4"></i>
+                            <h4 class="mt-2">{{ exams|length }}</h4>
+                            <p class="text-muted mb-0">考试总数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-people text-warning display-4"></i>
+                            <h4 class="mt-2">{{ users|length }}</h4>
+                            <p class="text-muted mb-0">用户总数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-graph-up text-info display-4"></i>
+                            <h4 class="mt-2">
+                                {% set total_records = users|map(attribute='exam_records')|map('length')|sum %}
+                                {{ total_records }}
+                            </h4>
+                            <p class="text-muted mb-0">考试记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 快速操作 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-lightning"></i> 快速操作</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <a href="{{ url_for('add_question') }}" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle"></i> 添加题目
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <a href="{{ url_for('add_exam') }}" class="btn btn-success w-100">
+                                        <i class="bi bi-plus-circle"></i> 创建考试
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <a href="{{ url_for('admin_users') }}" class="btn btn-info w-100">
+                                        <i class="bi bi-people"></i> 管理用户
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近活动 -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock-history"></i> 最近考试</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if exams %}
+                                {% for exam in exams[:5] %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ exam.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ exam.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </div>
+                                    <span class="badge bg-primary">{{ exam.total_questions }}题</span>
+                                </div>
+                                {% if not loop.last %}<hr>{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">暂无考试</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-person-check"></i> 最近用户</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if users %}
+                                {% for user in users[:5] %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ user.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ user.email }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if user.role == 'admin' else 'primary' }}">
+                                        {{ '管理员' if user.role == 'admin' else '用户' }}
+                                    </span>
+                                </div>
+                                {% if not loop.last %}<hr>{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">暂无用户</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

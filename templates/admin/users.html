@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理 - 在线考试系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        min-height: calc(100vh - 56px);
+        background-color: #f8f9fa;
+    }
+    .admin-content {
+        min-height: calc(100vh - 56px);
+    }
+    .user-card {
+        transition: transform 0.2s;
+    }
+    .user-card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="admin-sidebar p-3">
+            <h5><i class="bi bi-gear"></i> 管理菜单</h5>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin') }}">
+                        <i class="bi bi-house"></i> 概览
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_questions') }}">
+                        <i class="bi bi-question-circle"></i> 题目管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_exams') }}">
+                        <i class="bi bi-file-text"></i> 考试管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_users') }}">
+                        <i class="bi bi-people"></i> 用户管理
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="admin-content p-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-people"></i> 用户管理</h2>
+                    <p class="text-muted">管理系统中的所有用户</p>
+                </div>
+            </div>
+            
+            <!-- 搜索和筛选 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" placeholder="搜索用户名或邮箱..." id="searchInput">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="roleFilter">
+                                <option value="">所有角色</option>
+                                <option value="admin">管理员</option>
+                                <option value="user">普通用户</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                <i class="bi bi-arrow-clockwise"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 用户列表 -->
+            {% if users %}
+            <div class="row" id="usersList">
+                {% for user in users %}
+                <div class="col-md-6 mb-4 user-item" 
+                     data-username="{{ user.username|lower }}"
+                     data-email="{{ user.email|lower }}"
+                     data-role="{{ user.role }}">
+                    <div class="card user-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ user.username }}</h6>
+                                    <small class="text-muted">{{ user.email }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="fw-bold text-primary">{{ user.exam_records|length }}</div>
+                                    <small class="text-muted">考试次数</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold text-danger">{{ user.wrong_questions|length }}</div>
+                                    <small class="text-muted">错题数量</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold text-warning">{{ user.favorite_questions|length }}</div>
+                                    <small class="text-muted">收藏题目</small>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-{{ 'success' if user.role == 'admin' else 'primary' }}">
+                                        {{ '管理员' if user.role == 'admin' else '用户' }}
+                                    </span>
+                                    {% if user.is_verified %}
+                                        <span class="badge bg-success">已验证</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">未验证</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    {{ user.created_at.strftime('%Y-%m-%d') }}
+                                </small>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="btn-group w-100" role="group">
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewUserDetail({{ user.id }})">
+                                        <i class="bi bi-eye"></i> 详情
+                                    </button>
+                                    {% if user.role != 'admin' %}
+                                    <button class="btn btn-sm btn-outline-warning" onclick="toggleUserRole({{ user.id }})">
+                                        <i class="bi bi-person-gear"></i> 权限
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser({{ user.id }})">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3 text-muted">暂无用户</h4>
+                <p class="text-muted">用户注册后将显示在这里</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 用户详情模态框 -->
+<div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">用户详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailContent">
+                <!-- 详情内容将通过JavaScript填充 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除这个用户吗？此操作不可撤销，用户的所有数据将被删除。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let deleteUserId = null;
+
+// 搜索和筛选功能
+$('#searchInput, #roleFilter').on('input change', function() {
+    filterUsers();
+});
+
+function filterUsers() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const roleFilter = $('#roleFilter').val();
+    
+    $('.user-item').each(function() {
+        const $item = $(this);
+        const username = $item.data('username');
+        const email = $item.data('email');
+        const role = $item.data('role');
+        
+        let show = true;
+        
+        if (searchTerm && !username.includes(searchTerm) && !email.includes(searchTerm)) {
+            show = false;
+        }
+        
+        if (roleFilter && role !== roleFilter) {
+            show = false;
+        }
+        
+        $item.toggle(show);
+    });
+}
+
+function resetFilters() {
+    $('#searchInput').val('');
+    $('#roleFilter').val('');
+    $('.user-item').show();
+}
+
+function viewUserDetail(userId) {
+    // 这里可以添加查看用户详情的功能
+    $('#userDetailContent').html('<p>用户详情功能开发中...</p>');
+    $('#userDetailModal').modal('show');
+}
+
+function toggleUserRole(userId) {
+    // 这里可以添加切换用户角色的功能
+    alert('权限管理功能开发中...');
+}
+
+function deleteUser(userId) {
+    deleteUserId = userId;
+    $('#deleteModal').modal('show');
+}
+
+$('#confirmDelete').click(function() {
+    if (deleteUserId) {
+        // 这里可以添加删除用户的功能
+        alert('删除功能开发中...');
+        $('#deleteModal').modal('hide');
+    }
+});
+</script>
+{% endblock %}

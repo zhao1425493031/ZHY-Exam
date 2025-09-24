@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}创建考试 - 在线考试系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        min-height: calc(100vh - 56px);
+        background-color: #f8f9fa;
+    }
+    .admin-content {
+        min-height: calc(100vh - 56px);
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .section-title {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="admin-sidebar p-3">
+            <h5><i class="bi bi-gear"></i> 管理菜单</h5>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin') }}">
+                        <i class="bi bi-house"></i> 概览
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_questions') }}">
+                        <i class="bi bi-question-circle"></i> 题目管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_exams') }}">
+                        <i class="bi bi-file-text"></i> 考试管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('add_exam') }}">
+                        <i class="bi bi-plus-circle"></i> 创建考试
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="admin-content p-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-plus-circle"></i> 创建考试</h2>
+                    <p class="text-muted">设置考试的基本信息和参数</p>
+                </div>
+                <a href="{{ url_for('admin_exams') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
+            </div>
+            
+            <form method="POST" id="examForm">
+                <!-- 基本信息 -->
+                <div class="card form-section">
+                    <div class="card-header">
+                        <h5 class="mb-0 section-title">
+                            <i class="bi bi-info-circle"></i> 基本信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">考试标题 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="title" name="title" required 
+                                           placeholder="请输入考试标题...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="time_limit" class="form-label">考试时长（分钟） <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                                           min="1" max="480" value="60" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">考试描述</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                      placeholder="请输入考试描述（可选）..."></textarea>
+                            <div class="form-text">描述将显示在考试列表中，帮助学生了解考试内容</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 题目设置 -->
+                <div class="card form-section">
+                    <div class="card-header">
+                        <h5 class="mb-0 section-title">
+                            <i class="bi bi-question-circle"></i> 题目设置
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="total_questions" class="form-label">题目数量 <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="total_questions" name="total_questions" 
+                                           min="1" max="200" value="50" required>
+                                    <div class="form-text">系统将从题库中随机选择指定数量的题目</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="question_types" class="form-label">题目类型</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="single" id="type_single" checked>
+                                        <label class="form-check-label" for="type_single">单选题</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="multiple" id="type_multiple" checked>
+                                        <label class="form-check-label" for="type_multiple">多选题</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="text" id="type_text" checked>
+                                        <label class="form-check-label" for="type_text">填空题</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="audio" id="type_audio">
+                                        <label class="form-check-label" for="type_audio">音频题</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="video" id="type_video">
+                                        <label class="form-check-label" for="type_video">视频题</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>提示：</strong>系统将根据选择的题目类型和数量，从题库中随机抽取题目组成考试。
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 考试规则 -->
+                <div class="card form-section">
+                    <div class="card-header">
+                        <h5 class="mb-0 section-title">
+                            <i class="bi bi-shield-check"></i> 考试规则
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="passing_score" class="form-label">及格分数</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="passing_score" name="passing_score" 
+                                               min="0" max="100" value="60">
+                                        <span class="input-group-text">分</span>
+                                    </div>
+                                    <div class="form-text">达到此分数视为通过考试</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="attempts_limit" class="form-label">考试次数限制</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="attempts_limit" name="attempts_limit" 
+                                               min="0" value="0">
+                                        <span class="input-group-text">次</span>
+                                    </div>
+                                    <div class="form-text">0表示无限制</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="allow_review" checked>
+                                    <label class="form-check-label" for="allow_review">
+                                        允许查看错题
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="show_explanation" checked>
+                                    <label class="form-check-label" for="show_explanation">
+                                        显示题目解析
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 预览信息 -->
+                <div class="card form-section">
+                    <div class="card-header">
+                        <h5 class="mb-0 section-title">
+                            <i class="bi bi-eye"></i> 预览信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="fw-bold text-primary" id="previewTitle">考试标题</div>
+                                    <small class="text-muted">标题</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="fw-bold text-success" id="previewTime">60分钟</div>
+                                    <small class="text-muted">时长</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="fw-bold text-info" id="previewQuestions">50题</div>
+                                    <small class="text-muted">题目数量</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="fw-bold text-warning" id="previewPassing">60分</div>
+                                    <small class="text-muted">及格分数</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 提交按钮 -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> 创建考试
+                    </button>
+                    <a href="{{ url_for('admin_exams') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-x-circle"></i> 取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 实时更新预览信息
+function updatePreview() {
+    const title = $('#title').val() || '考试标题';
+    const time = $('#time_limit').val() || '60';
+    const questions = $('#total_questions').val() || '50';
+    const passing = $('#passing_score').val() || '60';
+    
+    $('#previewTitle').text(title);
+    $('#previewTime').text(time + '分钟');
+    $('#previewQuestions').text(questions + '题');
+    $('#previewPassing').text(passing + '分');
+}
+
+// 监听输入变化
+$('#title, #time_limit, #total_questions, #passing_score').on('input', updatePreview);
+
+// 表单验证
+$('#examForm').submit(function(e) {
+    const totalQuestions = parseInt($('#total_questions').val());
+    const timeLimit = parseInt($('#time_limit').val());
+    
+    if (totalQuestions < 1) {
+        e.preventDefault();
+        alert('题目数量不能少于1题');
+        return false;
+    }
+    
+    if (timeLimit < 1) {
+        e.preventDefault();
+        alert('考试时长不能少于1分钟');
+        return false;
+    }
+    
+    if (timeLimit > 480) {
+        e.preventDefault();
+        alert('考试时长不能超过8小时');
+        return false;
+    }
+    
+    // 检查是否选择了题目类型
+    const selectedTypes = $('input[type="checkbox"]:checked').length;
+    if (selectedTypes === 0) {
+        e.preventDefault();
+        alert('请至少选择一种题目类型');
+        return false;
+    }
+    
+    return true;
+});
+
+// 初始化预览
+updatePreview();
+</script>
+{% endblock %}
