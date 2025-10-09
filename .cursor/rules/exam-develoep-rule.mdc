@@ -1,0 +1,1793 @@
+---
+description:ExamSphere 考试管理系统开发规范 - 包含技术架构、功能需求、数据库设计、API规范、开发规范等完整内容
+globs:["**/*.py", "**/*.js", "**/*.vue", "**/*.sql", "**/*.md"]
+alwaysApply: true
+---
+
+# ExamSphere 考试管理系统开发规范
+
+## 1. 项目概述
+
+### 1.1 项目简介
+ExamSphere 是一个基于 Web 的在线考试管理系统，支持用户管理、科目管理、试题管理、考试管理等功能。
+
+### 1.2 技术架构
+- **前端**: Vue 3 + JavaScript + Element Plus + Pinia
+- **后端**: Python Flask + SQLAlchemy + Flask-RESTful
+- **数据库**: MySQL 8.0+
+- **部署**: Apache HTTPD (Windows/Linux)
+
+## 2. 功能需求
+
+### 2.1 用户管理模块
+- 用户注册/登录/登出
+- 用户信息管理（个人资料、密码修改）
+- 用户角色管理（管理员、普通用户）
+- 用户权限控制
+
+### 2.2 科目管理模块
+- 科目创建、编辑、删除
+- 科目分类管理
+- 科目状态管理（启用/禁用）
+- 科目收费设置（免费/收费）
+- 科目价格管理
+
+### 2.3 试题管理模块
+- 试题创建（单选、多选、判断、填空、简答）
+- 试题分类和标签
+- 试题难度等级
+- 试题导入/导出
+- 试题审核流程
+
+### 2.4 考试管理模块
+- 考试创建和配置
+- 考试时间控制
+- 随机组卷
+- 考试监控
+- 考试结果统计
+
+### 2.5 考试履历模块
+- 考试记录查询
+- 成绩统计和分析
+- 错题记录和复习
+- 学习进度跟踪
+
+### 2.6 前台用户功能
+- 在线考试
+- 题目收藏
+- 考试结果查看
+- 重复考试
+- 错题自动记录
+- 学习报告
+
+### 2.7 管理员功能模块
+- 用户管理（创建、编辑、删除用户）
+- 科目管理（创建、编辑、删除科目）
+- 试题管理（创建、编辑、删除试题）
+- 考试管理（创建、编辑、删除考试）
+- 题库管理（试题分类、标签管理）
+- 考试创建（手动组卷、随机组卷）
+- 考试分析（成绩统计、数据分析）
+- 系统参数配置
+- 数据备份与恢复
+- 系统日志管理
+- 操作日志记录
+- 系统监控面板
+
+### 2.8 消息通知模块
+- 站内消息系统
+- 邮件通知功能
+- 考试提醒通知
+- 成绩发布通知
+- 系统公告管理
+
+### 2.9 文件管理模块
+- 文件上传下载
+- 图片资源管理
+- 试题附件管理
+- 用户头像上传
+- 文件存储管理
+
+### 2.10 统计分析模块
+- 考试数据统计
+- 用户行为分析
+- 试题难度分析
+- 成绩分布统计
+- 学习效果评估
+
+### 2.11 防作弊模块
+- 考试时间限制
+- 切屏检测
+- 答题时间监控
+- 异常行为记录
+- 考试环境检测
+
+### 2.12 移动端适配
+- 响应式设计
+- 移动端考试
+- 触屏操作优化
+- 离线缓存支持
+
+### 2.13 权限管理模块
+- 角色权限配置（管理员、普通用户）
+- 菜单权限控制
+- 按钮权限控制
+- 数据权限过滤
+- 权限继承机制
+
+### 2.14 数据导入导出模块
+- Excel 批量导入用户
+- 试题批量导入导出
+- 考试结果导出
+- 统计分析数据导出
+- 模板下载功能
+
+### 2.15 考试模板模块
+- 考试模板创建
+- 模板复用功能
+- 模板分类管理
+- 快速组卷功能
+- 模板分享机制
+
+### 2.16 学习路径模块
+- 学习计划制定
+- 知识点关联
+- 学习进度跟踪
+- 个性化推荐
+- 学习路径优化
+
+### 2.17 在线答疑模块
+- 实时聊天功能
+- 问题分类管理
+- 管理员在线答疑
+- 常见问题库
+- 答疑记录统计
+
+### 2.18 收费课程模块
+- 课程收费设置（免费/收费）
+- 课程价格管理
+- 用户购买记录
+- 支付方式管理（支付宝、微信、PayPal、联系管理员）
+- 订单管理
+- 退款处理
+
+### 2.19 支付管理模块
+- 支付接口集成（支付宝、微信、PayPal）
+- 支付状态跟踪
+- 支付回调处理
+- 订单状态管理
+- 支付记录查询
+- 退款申请处理
+
+## 3. 技术规范
+
+### 3.1 后端技术栈
+
+#### 3.1.1 核心框架
+```python
+# requirements.txt
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+Flask-RESTful==0.3.10
+Flask-JWT-Extended==4.5.3
+Flask-CORS==4.0.0
+Flask-Limiter==3.5.0
+```
+
+#### 3.1.2 数据库相关
+```python
+PyMySQL==1.1.0
+SQLAlchemy==2.0.21
+Alembic==1.12.0
+```
+
+#### 3.1.3 工具库
+```python
+python-dotenv==1.0.0
+marshmallow==3.20.1
+celery==5.3.2
+redis==5.0.1
+```
+
+### 3.2 前端技术栈
+
+#### 3.2.1 核心框架
+```json
+{
+  "vue": "^3.3.4",
+  "@vue/cli-service": "^5.0.8",
+  "pinia": "^2.1.6",
+  "vue-router": "^4.2.4"
+}
+```
+
+#### 3.2.2 UI 组件库
+```json
+{
+  "element-plus": "^2.3.8",
+  "@element-plus/icons-vue": "^2.1.0"
+}
+```
+
+#### 3.2.3 工具库
+```json
+{
+  "axios": "^1.4.0",
+  "dayjs": "^1.11.9",
+  "lodash": "^4.17.21"
+}
+```
+
+## 4. 项目结构规范
+
+### 4.1 后端项目结构
+```
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── models/                 # 数据模型
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── subject.py
+│   │   ├── question.py
+│   │   ├── exam.py
+│   │   └── exam_record.py
+│   ├── api/                    # API 接口
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── users.py
+│   │   ├── subjects.py
+│   │   ├── questions.py
+│   │   ├── exams.py
+│   │   └── exam_records.py
+│   ├── services/               # 业务逻辑
+│   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── exam_service.py
+│   │   └── question_service.py
+│   ├── utils/                  # 工具函数
+│   │   ├── __init__.py
+│   │   ├── decorators.py
+│   │   ├── validators.py
+│   │   └── helpers.py
+│   ├── config/                 # 配置文件
+│   │   ├── __init__.py
+│   │   ├── development.py
+│   │   ├── production.py
+│   │   └── testing.py
+│   └── migrations/             # 数据库迁移
+├── tests/                      # 测试文件
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── run.py
+```
+
+### 4.2 前端项目结构
+```
+frontend/
+├── public/
+├── src/
+│   ├── api/                    # API 接口
+│   │   ├── index.js
+│   │   ├── auth.js
+│   │   ├── users.js
+│   │   ├── subjects.js
+│   │   ├── questions.js
+│   │   ├── exams.js
+│   │   └── exam_records.js
+│   ├── components/             # 公共组件
+│   │   ├── common/
+│   │   │   ├── BaseTable.vue
+│   │   │   ├── BaseForm.vue
+│   │   │   ├── BaseDialog.vue
+│   │   │   └── BasePagination.vue
+│   │   ├── layout/
+│   │   │   ├── AppLayout.vue   # 主布局组件（包含导航栏）
+│   │   │   ├── Header.vue
+│   │   │   ├── Sidebar.vue
+│   │   │   └── Footer.vue
+│   │   └── exam/
+│   │       ├── QuestionCard.vue
+│   │       ├── Timer.vue
+│   │       └── AnswerSheet.vue
+│   ├── views/                  # 页面组件
+│   │   ├── auth/
+│   │   │   ├── Login.vue
+│   │   │   └── Register.vue
+│   │   ├── admin/
+│   │   │   ├── UserManagement.vue
+│   │   │   ├── SubjectManagement.vue
+│   │   │   ├── QuestionManagement.vue
+│   │   │   ├── ExamManagement.vue
+│   │   │   ├── QuestionBank.vue
+│   │   │   ├── ExamCreation.vue
+│   │   │   └── ExamAnalysis.vue
+│   │   └── user/
+│   │       ├── ExamList.vue
+│   │       ├── ExamTaking.vue
+│   │       ├── ExamResult.vue
+│   │       └── MyRecords.vue
+│   ├── stores/                 # Pinia 状态管理
+│   │   ├── index.js
+│   │   ├── auth.js
+│   │   ├── user.js
+│   │   ├── exam.js
+│   │   └── question.js
+│   ├── router/                 # 路由配置
+│   │   ├── index.js
+│   │   ├── admin.js
+│   │   ├── student.js
+│   │   └── teacher.js
+│   ├── utils/                  # 工具函数
+│   │   ├── request.js
+│   │   ├── auth.js
+│   │   ├── storage.js
+│   │   ├── format.js
+│   │   └── validation.js
+│   ├── styles/                 # 样式文件
+│   │   ├── index.scss
+│   │   ├── variables.scss
+│   │   └── mixins.scss
+│   ├── App.vue
+│   └── main.js
+├── package.json
+├── vue.config.js
+└── .env.example
+```
+
+## 5. 数据库设计
+
+### 5.1 用户表 (users)
+```sql
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    real_name VARCHAR(50),
+    role ENUM('admin', 'user') DEFAULT 'user',
+    status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
+    avatar_url VARCHAR(255),
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.2 科目表 (subjects)
+```sql
+CREATE TABLE subjects (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    code VARCHAR(20) UNIQUE NOT NULL,
+    description TEXT,
+    category VARCHAR(50),
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    is_free BOOLEAN DEFAULT TRUE COMMENT '是否免费',
+    price DECIMAL(10,2) DEFAULT 0.00 COMMENT '价格（元）',
+    original_price DECIMAL(10,2) DEFAULT 0.00 COMMENT '原价（元）',
+    discount_rate DECIMAL(5,2) DEFAULT 100.00 COMMENT '折扣率（%）',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.3 试题表 (questions)
+```sql
+CREATE TABLE questions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    subject_id INT NOT NULL,
+    type ENUM('single', 'multiple', 'judge', 'fill', 'essay') NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT,
+    options JSON,
+    answer TEXT NOT NULL,
+    explanation TEXT,
+    difficulty ENUM('easy', 'medium', 'hard') DEFAULT 'medium',
+    tags JSON,
+    points INT DEFAULT 1,
+    status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+```
+
+### 5.4 考试表 (exams)
+```sql
+CREATE TABLE exams (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    subject_id INT NOT NULL,
+    description TEXT,
+    duration INT NOT NULL COMMENT '考试时长(分钟)',
+    total_points INT NOT NULL,
+    question_count INT NOT NULL,
+    question_ids JSON NOT NULL COMMENT '试题ID列表',
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    status ENUM('draft', 'published', 'ongoing', 'finished', 'cancelled') DEFAULT 'draft',
+    settings JSON COMMENT '考试设置',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+```
+
+### 5.5 考试记录表 (exam_records)
+```sql
+CREATE TABLE exam_records (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    exam_id INT NOT NULL,
+    user_id INT NOT NULL,
+    start_time TIMESTAMP,
+    submit_time TIMESTAMP,
+    answers JSON COMMENT '用户答案',
+    score DECIMAL(5,2),
+    status ENUM('in_progress', 'submitted', 'timeout', 'cancelled') DEFAULT 'in_progress',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (exam_id) REFERENCES exams(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    UNIQUE KEY unique_exam_user (exam_id, user_id)
+);
+```
+
+### 5.6 用户收藏表 (user_favorites)
+```sql
+CREATE TABLE user_favorites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    question_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (question_id) REFERENCES questions(id),
+    UNIQUE KEY unique_user_question (user_id, question_id)
+);
+```
+
+### 5.7 错题记录表 (wrong_answers)
+```sql
+CREATE TABLE wrong_answers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    question_id INT NOT NULL,
+    exam_record_id INT,
+    user_answer TEXT,
+    correct_answer TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (question_id) REFERENCES questions(id),
+    FOREIGN KEY (exam_record_id) REFERENCES exam_records(id)
+);
+```
+
+### 5.8 系统配置表 (system_configs)
+```sql
+CREATE TABLE system_configs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    config_key VARCHAR(100) UNIQUE NOT NULL,
+    config_value TEXT,
+    config_type ENUM('string', 'number', 'boolean', 'json') DEFAULT 'string',
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.9 消息通知表 (notifications)
+```sql
+CREATE TABLE notifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content TEXT,
+    type ENUM('system', 'exam', 'score', 'announcement') DEFAULT 'system',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+### 5.10 文件管理表 (files)
+```sql
+CREATE TABLE files (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    filename VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INT NOT NULL,
+    file_type VARCHAR(100),
+    uploader_id INT NOT NULL,
+    related_type VARCHAR(50) COMMENT 'question, user, exam等',
+    related_id INT COMMENT '关联记录ID',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (uploader_id) REFERENCES users(id)
+);
+```
+
+### 5.11 操作日志表 (operation_logs)
+```sql
+CREATE TABLE operation_logs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    operation_type VARCHAR(50) NOT NULL,
+    operation_desc TEXT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    request_data JSON,
+    response_data JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+### 5.12 考试监控表 (exam_monitoring)
+```sql
+CREATE TABLE exam_monitoring (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    exam_record_id INT NOT NULL,
+    event_type ENUM('start', 'pause', 'resume', 'submit', 'timeout', 'cheat') NOT NULL,
+    event_data JSON,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (exam_record_id) REFERENCES exam_records(id)
+);
+```
+
+### 5.13 系统公告表 (announcements)
+```sql
+CREATE TABLE announcements (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    type ENUM('system', 'exam', 'maintenance') DEFAULT 'system',
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
+    publish_time TIMESTAMP,
+    expire_time TIMESTAMP,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+```
+
+### 5.14 权限表 (permissions)
+```sql
+CREATE TABLE permissions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    code VARCHAR(100) UNIQUE NOT NULL,
+    type ENUM('menu', 'button', 'api', 'data') DEFAULT 'menu',
+    parent_id INT DEFAULT 0,
+    path VARCHAR(200),
+    icon VARCHAR(100),
+    sort_order INT DEFAULT 0,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES permissions(id)
+);
+```
+
+### 5.15 角色权限关联表 (role_permissions)
+```sql
+CREATE TABLE role_permissions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    role VARCHAR(50) NOT NULL,
+    permission_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (permission_id) REFERENCES permissions(id),
+    UNIQUE KEY unique_role_permission (role, permission_id)
+);
+```
+
+### 5.16 考试模板表 (exam_templates)
+```sql
+CREATE TABLE exam_templates (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    subject_id INT NOT NULL,
+    template_config JSON NOT NULL COMMENT '模板配置',
+    question_rules JSON COMMENT '选题规则',
+    is_public BOOLEAN DEFAULT FALSE,
+    usage_count INT DEFAULT 0,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+```
+
+### 5.17 学习路径表 (learning_paths)
+```sql
+CREATE TABLE learning_paths (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    subject_id INT NOT NULL,
+    path_config JSON NOT NULL COMMENT '学习路径配置',
+    difficulty_level ENUM('beginner', 'intermediate', 'advanced') DEFAULT 'beginner',
+    estimated_hours INT DEFAULT 0,
+    status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+```
+
+### 5.18 用户学习路径表 (user_learning_paths)
+```sql
+CREATE TABLE user_learning_paths (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    learning_path_id INT NOT NULL,
+    progress JSON COMMENT '学习进度',
+    current_step INT DEFAULT 0,
+    completed_steps JSON COMMENT '已完成步骤',
+    start_time TIMESTAMP,
+    completion_time TIMESTAMP,
+    status ENUM('in_progress', 'completed', 'paused', 'abandoned') DEFAULT 'in_progress',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (learning_path_id) REFERENCES learning_paths(id),
+    UNIQUE KEY unique_user_path (user_id, learning_path_id)
+);
+```
+
+### 5.19 在线答疑表 (qa_sessions)
+```sql
+CREATE TABLE qa_sessions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    teacher_id INT,
+    subject_id INT NOT NULL,
+    question_title VARCHAR(200) NOT NULL,
+    question_content TEXT NOT NULL,
+    answer_content TEXT,
+    status ENUM('pending', 'answered', 'closed') DEFAULT 'pending',
+    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+    category VARCHAR(100),
+    tags JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    answered_at TIMESTAMP,
+    closed_at TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (teacher_id) REFERENCES users(id),
+    FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
+```
+
+### 5.21 用户购买记录表 (user_purchases)
+```sql
+CREATE TABLE user_purchases (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    order_id VARCHAR(50) UNIQUE NOT NULL COMMENT '订单号',
+    payment_method ENUM('alipay', 'wechat', 'paypal', 'admin') NOT NULL COMMENT '支付方式',
+    amount DECIMAL(10,2) NOT NULL COMMENT '支付金额',
+    original_amount DECIMAL(10,2) NOT NULL COMMENT '原价',
+    discount_amount DECIMAL(10,2) DEFAULT 0.00 COMMENT '优惠金额',
+    status ENUM('pending', 'paid', 'cancelled', 'refunded') DEFAULT 'pending' COMMENT '支付状态',
+    payment_time TIMESTAMP NULL COMMENT '支付时间',
+    expire_time TIMESTAMP NULL COMMENT '到期时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.22 支付订单表 (payment_orders)
+```sql
+CREATE TABLE payment_orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id VARCHAR(50) UNIQUE NOT NULL COMMENT '订单号',
+    user_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    payment_method ENUM('alipay', 'wechat', 'paypal', 'admin') NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'CNY' COMMENT '货币类型',
+    status ENUM('pending', 'paid', 'cancelled', 'refunded', 'failed') DEFAULT 'pending',
+    third_party_order_id VARCHAR(100) COMMENT '第三方支付订单号',
+    payment_url TEXT COMMENT '支付链接',
+    callback_data JSON COMMENT '支付回调数据',
+    paid_at TIMESTAMP NULL COMMENT '支付完成时间',
+    expired_at TIMESTAMP NULL COMMENT '订单过期时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.23 退款记录表 (refund_records)
+```sql
+CREATE TABLE refund_records (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id VARCHAR(50) NOT NULL,
+    user_id INT NOT NULL,
+    refund_amount DECIMAL(10,2) NOT NULL COMMENT '退款金额',
+    refund_reason TEXT COMMENT '退款原因',
+    refund_method ENUM('alipay', 'wechat', 'paypal', 'manual') NOT NULL COMMENT '退款方式',
+    status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+    admin_id INT COMMENT '处理管理员ID',
+    admin_note TEXT COMMENT '管理员备注',
+    processed_at TIMESTAMP NULL COMMENT '处理时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.24 优惠券表 (coupons)
+```sql
+CREATE TABLE coupons (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(50) UNIQUE NOT NULL COMMENT '优惠券代码',
+    name VARCHAR(100) NOT NULL COMMENT '优惠券名称',
+    type ENUM('percentage', 'fixed') NOT NULL COMMENT '优惠类型：百分比/固定金额',
+    value DECIMAL(10,2) NOT NULL COMMENT '优惠值',
+    min_amount DECIMAL(10,2) DEFAULT 0.00 COMMENT '最低消费金额',
+    max_discount DECIMAL(10,2) DEFAULT 0.00 COMMENT '最大优惠金额',
+    usage_limit INT DEFAULT 1 COMMENT '使用次数限制',
+    used_count INT DEFAULT 0 COMMENT '已使用次数',
+    valid_from TIMESTAMP NOT NULL COMMENT '有效期开始',
+    valid_to TIMESTAMP NOT NULL COMMENT '有效期结束',
+    status ENUM('active', 'inactive', 'expired') DEFAULT 'active',
+    created_by INT NOT NULL COMMENT '创建者ID',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### 5.25 用户优惠券表 (user_coupons)
+```sql
+CREATE TABLE user_coupons (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    coupon_id INT NOT NULL,
+    order_id VARCHAR(50) COMMENT '使用的订单号',
+    used_at TIMESTAMP NULL COMMENT '使用时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_coupon (user_id, coupon_id)
+);
+```
+
+## 6. API 接口规范
+
+### 6.1 统一响应格式
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {},
+    "timestamp": "2023-12-01T10:00:00Z"
+}
+```
+
+### 6.2 错误码规范
+```python
+# 成功
+SUCCESS = 200
+
+# 客户端错误
+BAD_REQUEST = 400
+UNAUTHORIZED = 401
+FORBIDDEN = 403
+NOT_FOUND = 404
+VALIDATION_ERROR = 422
+
+# 服务器错误
+INTERNAL_ERROR = 500
+DATABASE_ERROR = 501
+```
+
+### 6.3 认证接口
+```python
+# POST /api/auth/login
+{
+    "username": "string",
+    "password": "string"
+}
+
+# POST /api/auth/register
+{
+    "username": "string",
+    "email": "string",
+    "password": "string",
+    "real_name": "string",
+    "role": "user"
+}
+
+# POST /api/auth/logout
+# GET /api/auth/profile
+# PUT /api/auth/profile
+```
+
+### 6.4 用户管理接口
+```python
+# GET /api/users?page=1&size=10&role=user
+# POST /api/users
+# GET /api/users/{id}
+# PUT /api/users/{id}
+# DELETE /api/users/{id}
+```
+
+### 6.5 科目管理接口
+```python
+# GET /api/subjects
+# POST /api/subjects
+# GET /api/subjects/{id}
+# PUT /api/subjects/{id}
+# DELETE /api/subjects/{id}
+```
+
+### 6.6 试题管理接口
+```python
+# GET /api/questions?subject_id=1&type=single&page=1&size=10
+# POST /api/questions
+# GET /api/questions/{id}
+# PUT /api/questions/{id}
+# DELETE /api/questions/{id}
+# POST /api/questions/batch-import
+```
+
+### 6.7 考试管理接口
+```python
+# GET /api/exams?status=published&page=1&size=10
+# POST /api/exams
+# GET /api/exams/{id}
+# PUT /api/exams/{id}
+# DELETE /api/exams/{id}
+# POST /api/exams/{id}/start
+# POST /api/exams/{id}/submit
+```
+
+### 6.8 考试记录接口
+```python
+# GET /api/exam-records?user_id=1&page=1&size=10
+# GET /api/exam-records/{id}
+# GET /api/exam-records/{id}/answers
+```
+
+### 6.9 系统管理接口
+```python
+# GET /api/system/configs
+# PUT /api/system/configs/{key}
+# GET /api/system/logs?page=1&size=10
+# POST /api/system/backup
+# POST /api/system/restore
+```
+
+### 6.10 消息通知接口
+```python
+# GET /api/notifications?page=1&size=10
+# POST /api/notifications
+# PUT /api/notifications/{id}/read
+# DELETE /api/notifications/{id}
+```
+
+### 6.11 文件管理接口
+```python
+# POST /api/files/upload
+# GET /api/files/{id}
+# DELETE /api/files/{id}
+# GET /api/files?related_type=question&related_id=1
+```
+
+### 6.12 统计分析接口
+```python
+# GET /api/statistics/exam-data
+# GET /api/statistics/user-behavior
+# GET /api/statistics/question-analysis
+# GET /api/statistics/score-distribution
+```
+
+### 6.13 考试监控接口
+```python
+# POST /api/exam-monitoring/events
+# GET /api/exam-monitoring/{exam_record_id}/events
+# GET /api/exam-monitoring/suspicious-behavior
+```
+
+### 6.14 系统公告接口
+```python
+# GET /api/announcements?status=published
+# POST /api/announcements
+# GET /api/announcements/{id}
+# PUT /api/announcements/{id}
+# DELETE /api/announcements/{id}
+```
+
+### 6.15 权限管理接口
+```python
+# GET /api/permissions
+# POST /api/permissions
+# PUT /api/permissions/{id}
+# DELETE /api/permissions/{id}
+# GET /api/role-permissions/{role}
+# POST /api/role-permissions
+# DELETE /api/role-permissions/{role}/{permission_id}
+```
+
+### 6.16 考试模板接口
+```python
+# GET /api/exam-templates?subject_id=1&is_public=true
+# POST /api/exam-templates
+# GET /api/exam-templates/{id}
+# PUT /api/exam-templates/{id}
+# DELETE /api/exam-templates/{id}
+# POST /api/exam-templates/{id}/use
+```
+
+### 6.17 学习路径接口
+```python
+# GET /api/learning-paths?subject_id=1&difficulty=beginner
+# POST /api/learning-paths
+# GET /api/learning-paths/{id}
+# PUT /api/learning-paths/{id}
+# DELETE /api/learning-paths/{id}
+# GET /api/user-learning-paths?user_id=1
+# POST /api/user-learning-paths
+# PUT /api/user-learning-paths/{id}/progress
+```
+
+### 6.18 在线答疑接口
+```python
+# GET /api/qa-sessions?student_id=1&status=pending
+# POST /api/qa-sessions
+# GET /api/qa-sessions/{id}
+# PUT /api/qa-sessions/{id}/answer
+# PUT /api/qa-sessions/{id}/close
+# GET /api/qa-sessions/teacher/{teacher_id}
+```
+
+### 6.19 数据导入导出接口
+```python
+# POST /api/import/users
+# POST /api/import/questions
+# POST /api/import/subjects
+# GET /api/import/records?type=users&page=1&size=10
+# GET /api/export/users
+# GET /api/export/questions
+# GET /api/export/exam-results
+# GET /api/export/statistics
+```
+
+### 6.20 收费课程接口
+```python
+# GET /api/subjects?is_free=false&page=1&size=10
+# PUT /api/subjects/{id}/pricing
+# GET /api/subjects/{id}/pricing-info
+# POST /api/subjects/{id}/purchase
+# GET /api/user-purchases?page=1&size=10
+# GET /api/user-purchases/{id}
+# POST /api/user-purchases/{id}/refund
+```
+
+### 6.21 支付管理接口
+```python
+# POST /api/payments/create-order
+# POST /api/payments/alipay/callback
+# POST /api/payments/wechat/callback
+# POST /api/payments/paypal/callback
+# GET /api/payments/orders?page=1&size=10
+# GET /api/payments/orders/{order_id}
+# PUT /api/payments/orders/{order_id}/status
+# POST /api/payments/refund
+# GET /api/payments/refunds?page=1&size=10
+```
+
+### 6.22 优惠券接口
+```python
+# GET /api/coupons?page=1&size=10
+# POST /api/coupons
+# GET /api/coupons/{id}
+# PUT /api/coupons/{id}
+# DELETE /api/coupons/{id}
+# POST /api/coupons/validate
+# GET /api/user-coupons?page=1&size=10
+# POST /api/user-coupons/claim
+```
+
+## 7. 前端开发规范
+
+### 7.1 组件命名规范
+- 组件名使用 PascalCase
+- 文件名使用 PascalCase.vue
+- 组件目录使用 kebab-case
+
+### 7.2 导航栏统一管理规范
+**重要：导航栏只在 AppLayout.vue 中定义一次，其他页面不要重复定义导航栏**
+
+```vue
+<!-- components/layout/AppLayout.vue -->
+<template>
+  <div class="app-layout">
+    <el-container>
+      <!-- 顶部导航栏 - 只在这里定义 -->
+      <el-header class="header">
+        <Header />
+      </el-header>
+      
+      <el-container>
+        <!-- 侧边栏 - 只在这里定义 -->
+        <el-aside class="sidebar">
+          <Sidebar />
+        </el-aside>
+        
+        <!-- 主内容区域 -->
+        <el-main class="main-content">
+          <router-view />
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+</template>
+
+<script>
+import Header from './Header.vue'
+import Sidebar from './Sidebar.vue'
+
+export default {
+  name: 'AppLayout',
+  components: {
+    Header,
+    Sidebar
+  }
+}
+</script>
+```
+
+**页面组件规范：**
+```vue
+<!-- views/admin/UserManagement.vue -->
+<template>
+  <div class="user-management">
+    <!-- 页面内容，不要包含导航栏 -->
+    <h1>用户管理</h1>
+    <!-- 其他页面内容 -->
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'UserManagement'
+  // 页面逻辑
+}
+</script>
+```
+
+### 7.3 API 调用规范
+```javascript
+// api/base.js
+import axios from 'axios'
+
+const request = axios.create({
+  baseURL: process.env.VUE_APP_API_BASE_URL,
+  timeout: 10000
+})
+
+// 请求拦截器
+request.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  error => Promise.reject(error)
+)
+
+// 响应拦截器
+request.interceptors.response.use(
+  response => response.data,
+  error => {
+    if (error.response?.status === 401) {
+      // 处理未授权
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+export default request
+```
+
+### 7.4 状态管理规范
+```javascript
+// stores/auth.js
+import { defineStore } from 'pinia'
+
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null,
+    token: localStorage.getItem('token'),
+    isLoggedIn: false
+  }),
+  
+  getters: {
+    userRole: (state) => state.user?.role,
+    isAdmin: (state) => state.user?.role === 'admin'
+  },
+  
+  actions: {
+    async login(credentials) {
+      // 登录逻辑
+    },
+    
+    async logout() {
+      // 登出逻辑
+    }
+  }
+})
+```
+
+### 7.5 表单验证规范
+```javascript
+// utils/validation.js
+export const rules = {
+  required: (message = '此字段为必填项') => ({
+    required: true,
+    message,
+    trigger: 'blur'
+  }),
+  
+  email: () => ({
+    type: 'email',
+    message: '请输入正确的邮箱地址',
+    trigger: 'blur'
+  }),
+  
+  minLength: (min, message) => ({
+    min,
+    message: message || `长度不能少于${min}个字符`,
+    trigger: 'blur'
+  }),
+  
+  username: () => ({
+    pattern: /^[a-zA-Z0-9_]{3,20}$/,
+    message: '用户名只能包含字母、数字、下划线，长度3-20位',
+    trigger: 'blur'
+  })
+}
+```
+
+### 7.6 通用组件规范
+```vue
+<!-- components/common/BaseTable.vue -->
+<template>
+  <div class="base-table">
+    <el-table
+      :data="data"
+      :loading="loading"
+      v-bind="$attrs"
+      @selection-change="handleSelectionChange"
+    >
+      <slot></slot>
+    </el-table>
+    
+    <el-pagination
+      v-if="showPagination"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="total"
+      @current-change="handlePageChange"
+      @size-change="handleSizeChange"
+    />
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'BaseTable',
+  props: {
+    data: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    showPagination: {
+      type: Boolean,
+      default: true
+    },
+    currentPage: {
+      type: Number,
+      default: 1
+    },
+    pageSize: {
+      type: Number,
+      default: 10
+    },
+    total: {
+      type: Number,
+      default: 0
+    }
+  },
+  emits: ['selection-change', 'page-change', 'size-change'],
+  methods: {
+    handleSelectionChange(selection) {
+      this.$emit('selection-change', selection)
+    },
+    handlePageChange(page) {
+      this.$emit('page-change', page)
+    },
+    handleSizeChange(size) {
+      this.$emit('size-change', size)
+    }
+  }
+}
+</script>
+```
+
+## 8. 后端开发规范
+
+### 8.1 模型定义规范
+```python
+# models/base.py
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, DateTime
+
+db = SQLAlchemy()
+
+class BaseModel(db.Model):
+    __abstract__ = True
+    
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+```
+
+### 8.2 API 装饰器规范
+```python
+# utils/decorators.py
+from functools import wraps
+from flask import request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+def require_roles(*roles):
+    def decorator(f):
+        @wraps(f)
+        @jwt_required()
+        def decorated_function(*args, **kwargs):
+            current_user = get_current_user()
+            if current_user.role not in roles:
+                return jsonify({'message': '权限不足'}), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+def validate_json(schema):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                data = request.get_json()
+                validated_data = schema.load(data)
+                request.validated_data = validated_data
+                return f(*args, **kwargs)
+            except ValidationError as e:
+                return jsonify({'message': '数据验证失败', 'errors': e.messages}), 422
+        return decorated_function
+    return decorator
+```
+
+### 8.3 服务层规范
+```python
+# services/base_service.py
+from typing import List, Optional, Dict, Any
+from sqlalchemy.orm import Session
+
+class BaseService:
+    def __init__(self, model_class):
+        self.model_class = model_class
+    
+    def create(self, data: Dict[str, Any]) -> Any:
+        instance = self.model_class(**data)
+        db.session.add(instance)
+        db.session.commit()
+        return instance
+    
+    def get_by_id(self, id: int) -> Optional[Any]:
+        return self.model_class.query.get(id)
+    
+    def get_all(self, page: int = 1, per_page: int = 10, **filters) -> List[Any]:
+        query = self.model_class.query
+        for key, value in filters.items():
+            if hasattr(self.model_class, key) and value is not None:
+                query = query.filter(getattr(self.model_class, key) == value)
+        return query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    def update(self, id: int, data: Dict[str, Any]) -> Optional[Any]:
+        instance = self.get_by_id(id)
+        if instance:
+            for key, value in data.items():
+                if hasattr(instance, key):
+                    setattr(instance, key, value)
+            db.session.commit()
+        return instance
+    
+    def delete(self, id: int) -> bool:
+        instance = self.get_by_id(id)
+        if instance:
+            db.session.delete(instance)
+            db.session.commit()
+            return True
+        return False
+```
+
+### 8.4 数据验证规范
+```python
+# utils/validators.py
+from marshmallow import Schema, fields, validate, ValidationError
+
+class UserSchema(Schema):
+    username = fields.Str(required=True, validate=[
+        validate.Length(min=3, max=20),
+        validate.Regexp(r'^[a-zA-Z0-9_]+$', error='用户名只能包含字母、数字、下划线')
+    ])
+    email = fields.Email(required=True)
+    password = fields.Str(required=True, validate=validate.Length(min=6))
+    real_name = fields.Str(validate=validate.Length(max=50))
+    role = fields.Str(validate=validate.OneOf(['admin', 'user']))
+
+class QuestionSchema(Schema):
+    subject_id = fields.Int(required=True)
+    type = fields.Str(required=True, validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']))
+    title = fields.Str(required=True, validate=validate.Length(min=1, max=1000))
+    content = fields.Str()
+    options = fields.List(fields.Str())
+    answer = fields.Str(required=True)
+    explanation = fields.Str()
+    difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']))
+    points = fields.Int(validate=validate.Range(min=1, max=100))
+```
+
+## 9. 部署规范
+
+### 9.1 Windows 环境部署
+
+#### 9.1.1 后端部署
+```bash
+# 1. 安装 Python 3.11+
+# 2. 安装 MySQL 8.0+
+# 3. 安装 Redis
+
+# 4. 创建虚拟环境
+python -m venv venv
+venv\Scripts\activate
+
+# 5. 安装依赖
+pip install -r requirements.txt
+
+# 6. 配置环境变量
+copy .env.example .env
+# 编辑 .env 文件配置数据库连接
+
+# 7. 初始化数据库
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+
+# 8. 启动应用
+python run.py
+```
+
+#### 9.1.2 前端部署
+```bash
+# 1. 安装 Node.js 16+
+# 2. 安装依赖
+npm install
+
+# 3. 构建生产版本
+npm run build
+
+# 4. 将 dist 目录内容部署到 Apache
+```
+
+#### 9.1.3 Apache HTTPD 配置
+```apache
+# httpd.conf 或虚拟主机配置
+<VirtualHost *:80>
+    ServerName examsphere.local
+    DocumentRoot "C:/path/to/examsphere/frontend/dist"
+    
+    # 前端静态文件
+    <Directory "C:/path/to/examsphere/frontend/dist">
+        AllowOverride All
+        Require all granted
+        
+        # Vue Router 历史模式支持
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+    </Directory>
+    
+    # API 代理到后端
+    ProxyPreserveHost On
+    ProxyPass /api/ http://localhost:5000/api/
+    ProxyPassReverse /api/ http://localhost:5000/api/
+    
+    # 静态资源
+    ProxyPass /static/ http://localhost:5000/static/
+    ProxyPassReverse /static/ http://localhost:5000/static/
+</VirtualHost>
+```
+
+### 9.2 Linux 环境部署
+
+#### 9.2.1 后端部署
+```bash
+# 1. 安装 Python 3.11+
+sudo apt update
+sudo apt install python3.11 python3.11-venv python3.11-dev
+
+# 2. 安装 MySQL 8.0+
+sudo apt install mysql-server mysql-client
+
+# 3. 安装 Redis
+sudo apt install redis-server
+
+# 4. 创建项目目录
+sudo mkdir -p /var/www/examsphere
+sudo chown $USER:$USER /var/www/examsphere
+
+# 5. 创建虚拟环境
+cd /var/www/examsphere
+python3.11 -m venv venv
+source venv/bin/activate
+
+# 6. 安装依赖
+pip install -r requirements.txt
+
+# 7. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件
+
+# 8. 初始化数据库
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+
+# 9. 使用 Gunicorn 启动
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 run:app
+```
+
+#### 9.2.2 前端部署
+```bash
+# 1. 安装 Node.js 16+
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 2. 安装依赖
+npm install
+
+# 3. 构建生产版本
+npm run build
+
+# 4. 部署到 Apache 目录
+sudo cp -r dist/* /var/www/html/examsphere/
+```
+
+#### 9.2.3 Apache HTTPD 配置
+```apache
+# /etc/apache2/sites-available/examsphere.conf
+<VirtualHost *:80>
+    ServerName examsphere.local
+    DocumentRoot /var/www/html/examsphere
+    
+    # 前端静态文件
+    <Directory /var/www/html/examsphere>
+        AllowOverride All
+        Require all granted
+        
+        # Vue Router 历史模式支持
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+    </Directory>
+    
+    # API 代理到后端
+    ProxyPreserveHost On
+    ProxyPass /api/ http://localhost:5000/api/
+    ProxyPassReverse /api/ http://localhost:5000/api/
+    
+    # 静态资源
+    ProxyPass /static/ http://localhost:5000/static/
+    ProxyPassReverse /static/ http://localhost:5000/static/
+    
+    # 启用必要的模块
+    LoadModule rewrite_module modules/mod_rewrite.so
+    LoadModule proxy_module modules/mod_proxy.so
+    LoadModule proxy_http_module modules/mod_proxy_http.so
+</VirtualHost>
+
+# 启用站点
+sudo a2ensite examsphere.conf
+sudo systemctl reload apache2
+```
+
+### 9.3 生产环境优化
+
+#### 9.3.1 后端优化
+```python
+# 使用 Gunicorn 配置
+# gunicorn.conf.py
+bind = "0.0.0.0:5000"
+workers = 4
+worker_class = "sync"
+worker_connections = 1000
+timeout = 30
+keepalive = 2
+max_requests = 1000
+max_requests_jitter = 100
+```
+
+#### 9.3.2 前端优化
+```javascript
+// vue.config.js
+module.exports = {
+  publicPath: process.env.NODE_ENV === 'production' ? '/examsphere/' : '/',
+  outputDir: 'dist',
+  assetsDir: 'static',
+  productionSourceMap: false,
+  
+  configureWebpack: {
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            name: 'chunk-vendors',
+            test: /[\\/]node_modules[\\/]/,
+            priority: 10,
+            chunks: 'initial'
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### 9.3.3 系统服务配置
+```ini
+# /etc/systemd/system/examsphere.service
+[Unit]
+Description=ExamSphere Backend
+After=network.target mysql.service redis.service
+
+[Service]
+Type=exec
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/examsphere
+Environment=PATH=/var/www/examsphere/venv/bin
+ExecStart=/var/www/examsphere/venv/bin/gunicorn -c gunicorn.conf.py run:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# 启用服务
+sudo systemctl enable examsphere.service
+sudo systemctl start examsphere.service
+```
+
+### 9.4 环境变量配置
+```bash
+# .env.example
+# 数据库配置
+DATABASE_URL=mysql+pymysql://username:password@localhost:3306/examsphere
+
+# Redis 配置
+REDIS_URL=redis://localhost:6379/0
+
+# JWT 配置
+JWT_SECRET_KEY=your-secret-key-here
+JWT_ACCESS_TOKEN_EXPIRES=3600
+
+# Flask 配置
+FLASK_ENV=development
+SECRET_KEY=your-flask-secret-key
+
+# 文件上传配置
+UPLOAD_FOLDER=uploads
+MAX_CONTENT_LENGTH=16777216
+```
+
+## 10. 开发流程规范
+
+### 10.1 Git 工作流
+1. 主分支：`main` - 生产环境代码
+2. 开发分支：`develop` - 开发环境代码
+3. 功能分支：`feature/功能名称` - 新功能开发
+4. 修复分支：`hotfix/问题描述` - 紧急修复
+
+### 10.2 提交规范
+```
+feat: 新功能
+fix: 修复问题
+docs: 文档更新
+style: 代码格式调整
+refactor: 代码重构
+test: 测试相关
+chore: 构建过程或辅助工具的变动
+```
+
+### 10.3 代码审查规范
+1. 所有代码必须经过 Code Review
+2. 确保代码符合项目规范
+3. 确保测试覆盖率达标
+4. 确保文档更新完整
+
+## 11. 开发约束规范
+
+### 11.1 禁止生成的内容
+**重要：开发过程中禁止生成以下内容**
+
+1. **测试文件**
+   - 不要生成 `*.test.js`、`*.spec.js` 文件
+   - 不要生成 `tests/` 目录
+   - 不要生成测试相关的配置和依赖
+
+2. **文档文件**
+   - 不要生成 `README.md`、`CHANGELOG.md` 等文档
+   - 不要生成 `docs/` 目录
+   - 不要生成 API 文档文件
+
+3. **配置文件**
+   - 不要生成 `jest.config.js`、`cypress.config.js` 等测试配置
+   - 不要生成 `webpack.config.js`（使用 vue.config.js）
+   - 不要生成 `babel.config.js`（Vue CLI 已包含）
+
+4. **示例和演示文件**
+   - 不要生成 `examples/`、`demo/` 目录
+   - 不要生成示例数据文件
+   - 不要生成演示页面
+
+5. **开发工具配置**
+   - 不要生成 `.eslintrc.js`、`.prettierrc` 等代码规范配置
+   - 不要生成 `husky`、`lint-staged` 等 Git hooks 配置
+   - 不要生成 `nodemon.json` 等开发工具配置
+
+### 11.2 必须生成的内容
+**开发过程中必须生成的内容**
+
+1. **核心业务文件**
+   - 模型文件（models/）
+   - API 接口文件（api/）
+   - 页面组件（views/）
+   - 公共组件（components/）
+
+2. **配置文件**
+   - `package.json`（前端）
+   - `requirements.txt`（后端）
+   - `.env.example`
+   - `vue.config.js`
+
+3. **数据库文件**
+   - 数据库迁移文件
+   - 初始化脚本
+
+### 11.3 代码生成规范
+1. **只生成必要的业务代码**
+2. **使用统一的代码模板**
+3. **遵循项目结构规范**
+4. **包含必要的注释说明**
+
+## 12. 性能优化规范
+
+### 12.1 数据库优化
+- 合理使用索引
+- 避免 N+1 查询问题
+- 使用数据库连接池
+- 定期清理无用数据
+
+### 12.2 前端优化
+- 使用路由懒加载
+- 组件按需加载
+- 图片懒加载
+- 合理使用缓存
+
+### 12.3 API 优化
+- 使用分页查询
+- 实现接口缓存
+- 使用异步处理
+- 合理设置超时时间
+
+## 13. 安全规范
+
+### 13.1 认证安全
+- 使用 JWT 进行身份认证
+- 密码加密存储
+- 实现登录失败锁定
+- 定期更新密钥
+
+### 13.2 数据安全
+- 输入数据验证
+- SQL 注入防护
+- XSS 攻击防护
+- CSRF 攻击防护
+
+### 13.3 接口安全
+- 接口访问频率限制
+- 敏感操作权限验证
+- 数据脱敏处理
+- 日志记录和监控
+
+## 14. 监控和日志规范
+
+### 14.1 日志规范
+```python
+# utils/logger.py
+import logging
+from datetime import datetime
+
+def setup_logger(name, level='INFO'):
+    logger = logging.getLogger(name)
+    logger.setLevel(getattr(logging, level.upper()))
+    
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    
+    return logger
+```
+
+### 14.2 错误监控
+- 实现全局异常处理
+- 记录详细错误信息
+- 设置错误告警机制
+- 定期分析错误日志
+
+---
+
+## 总结
+
+本规范文档涵盖了 ExamSphere 考试管理系统的完整开发规范，包括：
+
+1. **技术架构**：前后端技术栈选择和项目结构
+2. **功能需求**：详细的业务功能模块定义
+3. **数据库设计**：完整的表结构和关系设计
+4. **API 规范**：统一的接口设计和响应格式
+5. **开发规范**：前后端代码规范和最佳实践
+6. **部署规范**：Docker 容器化部署方案
+7. **测试规范**：单元测试和集成测试要求
+8. **安全规范**：系统安全防护措施
+9. **性能优化**：系统性能优化策略
+10. **监控日志**：系统监控和日志管理
+
+遵循本规范进行开发，可以确保项目的一致性、可维护性和可扩展性。在开发过程中，请严格按照规范执行，如有疑问或需要调整，请及时沟通确认。

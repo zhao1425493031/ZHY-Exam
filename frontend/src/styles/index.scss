@@ -1,0 +1,166 @@
+// 全局样式文件
+@import './variables.scss';
+@import './mixins.scss';
+
+// 全局重置样式
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-size: 14px;
+  color: $text-color-primary;
+  background-color: $bg-color-page;
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-color-light;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-color-base;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: $border-color-dark;
+}
+
+// 通用工具类
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.p-10 {
+  padding: 10px;
+}
+
+.p-20 {
+  padding: 20px;
+}
+
+// 页面布局
+.page-container {
+  padding: 20px;
+  background-color: $bg-color-page;
+  min-height: calc(100vh - 60px);
+}
+
+.page-header {
+  margin-bottom: 20px;
+  
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-color-primary;
+    margin-bottom: 8px;
+  }
+  
+  .page-description {
+    color: $text-color-secondary;
+    font-size: 14px;
+  }
+}
+
+// 卡片样式
+.card-container {
+  background: $bg-color-white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+// 表格样式
+.table-container {
+  .el-table {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .el-table__header {
+    background-color: $bg-color-light;
+  }
+}
+
+// 表单样式
+.form-container {
+  .el-form {
+    max-width: 600px;
+  }
+  
+  .form-actions {
+    text-align: center;
+    margin-top: 30px;
+    
+    .el-button {
+      margin: 0 10px;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .page-container {
+    padding: 10px;
+  }
+  
+  .card-container {
+    padding: 15px;
+  }
+}
