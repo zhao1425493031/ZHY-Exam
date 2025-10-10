@@ -1,0 +1,201 @@
+/* 全局CSS变量定义 */
+:root {
+  /* 浅色主题（默认） */
+  --theme-primary: #667eea;
+  --theme-secondary: #764ba2;
+  --theme-background: #ffffff;
+  --theme-surface: #f8f9fa;
+  --theme-text: #333333;
+  --theme-textSecondary: #666666;
+  --theme-border: #e0e0e0;
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 深色主题 */
+[data-theme="dark"] {
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #a855f7;
+  --theme-background: #1a1a1a;
+  --theme-surface: #2d2d2d;
+  --theme-text: #ffffff;
+  --theme-textSecondary: #b3b3b3;
+  --theme-border: #404040;
+  --theme-shadow: rgba(0, 0, 0, 0.3);
+  --theme-gradient: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+}
+
+/* 海洋主题 */
+[data-theme="ocean"] {
+  --theme-primary: #06b6d4;
+  --theme-secondary: #0891b2;
+  --theme-background: #f0f9ff;
+  --theme-surface: #e0f2fe;
+  --theme-text: #0c4a6e;
+  --theme-textSecondary: #0369a1;
+  --theme-border: #bae6fd;
+  --theme-shadow: rgba(6, 182, 212, 0.1);
+  --theme-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+/* 森林主题 */
+[data-theme="forest"] {
+  --theme-primary: #10b981;
+  --theme-secondary: #059669;
+  --theme-background: #f0fdf4;
+  --theme-surface: #dcfce7;
+  --theme-text: #064e3b;
+  --theme-textSecondary: #047857;
+  --theme-border: #bbf7d0;
+  --theme-shadow: rgba(16, 185, 129, 0.1);
+  --theme-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* 全局样式优化 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#app {
+  min-height: 100vh;
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-secondary);
+}
+
+/* 选择文本样式 */
+::selection {
+  background: var(--theme-primary);
+  color: white;
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+/* 链接样式 */
+a {
+  color: var(--theme-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--theme-secondary);
+}
+
+/* 按钮基础样式 */
+.el-button {
+  transition: all 0.3s ease;
+}
+
+.el-button:hover {
+  transform: translateY(-1px);
+}
+
+/* 卡片样式 */
+.el-card {
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  box-shadow: 0 2px 12px var(--theme-shadow);
+}
+
+/* 输入框样式 */
+.el-input__wrapper {
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  transition: all 0.3s ease;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--theme-primary);
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* 下拉菜单样式 */
+.el-dropdown-menu {
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  box-shadow: 0 4px 20px var(--theme-shadow);
+}
+
+.el-dropdown-menu__item {
+  color: var(--theme-text);
+}
+
+.el-dropdown-menu__item:hover {
+  background: var(--theme-surface);
+}
+
+/* 对话框样式 */
+.el-dialog {
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+}
+
+.el-dialog__header {
+  background: var(--theme-surface);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+/* 消息提示样式 */
+.el-message {
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text);
+}
+
+/* 加载样式 */
+.el-loading-mask {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .el-loading-mask {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+}

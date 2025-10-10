@@ -97,3 +97,9 @@ class SearchSchema(Schema):
     subject_id = fields.Int()
     type = fields.Str(validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']))
     difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']))
+    category = fields.Str(validate=validate.Length(max=50))
+    # 添加分页字段
+    page = fields.Int(missing=1, validate=validate.Range(min=1))
+    size = fields.Int(missing=10, validate=validate.Range(min=1, max=100))
+    sort = fields.Str(missing='id')
+    order = fields.Str(missing='desc', validate=validate.OneOf(['asc', 'desc']))

@@ -31,3 +31,5 @@ class SystemConfig(db.Model):
     
     def __repr__(self):
         return f'<SystemConfig {self.config_key}>'
+
+

@@ -39,18 +39,19 @@ def create_app(config_name=None):
     jwt.init_app(app)
     cors.init_app(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:8080", "http://127.0.0.1:8080"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
+            "origins": ["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:3000", "http://127.0.0.1:3000"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+            "supports_credentials": True
         }
     })
     
-    # 初始化限流器
+    # 初始化限流器（开发环境禁用限制）
     limiter = Limiter(
         key_func=get_remote_address,
         app=app,
-        default_limits=["200 per day", "50 per hour"],
-        storage_uri="memory://"  # 使用内存存储，生产环境建议使用Redis
+        default_limits=[],  # 开发环境不设置限制
+        storage_uri="memory://"
     )
     
     # 注册蓝图

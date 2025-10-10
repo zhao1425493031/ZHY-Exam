@@ -23,7 +23,7 @@ def require_roles(*roles):
         return decorated_function
     return decorator
 
-def validate_json(schema):
+def validate_json(schema_class):
     """JSON数据验证装饰器"""
     def decorator(f):
         @wraps(f)
@@ -33,6 +33,8 @@ def validate_json(schema):
                 if not data:
                     return jsonify({'message': '请求数据不能为空'}), 400
                 
+                # 实例化schema并加载数据
+                schema = schema_class()
                 validated_data = schema.load(data)
                 request.validated_data = validated_data
                 return f(*args, **kwargs)

@@ -109,7 +109,7 @@ export default {
   setup(props, { emit }) {
     const questions = ref([])
     const subjects = ref([])
-    const selectedQuestions = ref([...props.selectedQuestions])
+    const selectedQuestionsList = ref([...props.selectedQuestions])
     
     const searchForm = reactive({
       subject_id: '',
@@ -194,7 +194,7 @@ export default {
     }
     
     const handleSelectionChange = (selection) => {
-      selectedQuestions.value = selection
+      selectedQuestionsList.value = selection
     }
     
     const handlePreview = (row) => {
@@ -202,8 +202,8 @@ export default {
     }
     
     const handleConfirm = () => {
-      emit('update:selected-questions', selectedQuestions.value)
-      ElMessage.success(`已选择 ${selectedQuestions.value.length} 道题目`)
+      emit('update:selected-questions', selectedQuestionsList.value)
+      ElMessage.success(`已选择 ${selectedQuestionsList.value.length} 道题目`)
     }
     
     const handleSearch = () => {
@@ -239,7 +239,7 @@ export default {
     return {
       questions,
       subjects,
-      selectedQuestions,
+      selectedQuestionsList,
       searchForm,
       pagination,
       getTypeName,

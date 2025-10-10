@@ -5,7 +5,7 @@ export const examApi = {
   // 获取考试列表
   getExams(params) {
     return request({
-      url: '/api/exams',
+      url: '/exams',
       method: 'get',
       params
     })
@@ -14,7 +14,7 @@ export const examApi = {
   // 创建考试
   createExam(data) {
     return request({
-      url: '/api/exams',
+      url: '/exams',
       method: 'post',
       data
     })
@@ -65,7 +65,7 @@ export const examApi = {
   // 批量更新考试状态
   batchUpdateStatus(data) {
     return request({
-      url: '/api/exams/batch-update-status',
+      url: '/exams/batch-update-status',
       method: 'put',
       data
     })
@@ -74,7 +74,7 @@ export const examApi = {
   // 批量删除考试
   batchDelete(data) {
     return request({
-      url: '/api/exams/batch-delete',
+      url: '/exams/batch-delete',
       method: 'delete',
       data
     })
@@ -83,7 +83,7 @@ export const examApi = {
   // 创建随机考试
   createRandomExam(data) {
     return request({
-      url: '/api/exams/random',
+      url: '/exams/random',
       method: 'post',
       data
     })
@@ -101,7 +101,7 @@ export const examApi = {
   // 验证考试配置
   validateExamConfig(data) {
     return request({
-      url: '/api/exams/validate-config',
+      url: '/exams/validate-config',
       method: 'post',
       data
     })
@@ -110,7 +110,7 @@ export const examApi = {
   // 计算考试时长
   calculateExamDuration(data) {
     return request({
-      url: '/api/exams/calculate-duration',
+      url: '/exams/calculate-duration',
       method: 'post',
       data
     })

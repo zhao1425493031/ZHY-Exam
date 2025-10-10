@@ -85,7 +85,7 @@ request.interceptors.response.use(
 
 // 导出所有API模块
 export { questionApi } from './questions'
-export { subjectApi } from './subjects'
+export { subjectsApi } from './subjects'
 export { authApi } from './auth'
 export { examApi } from './exams'
 export { examScoringApi } from './exam_scoring'

@@ -5,7 +5,7 @@ export const questionApi = {
   // 获取试题列表
   getQuestions(params) {
     return request({
-      url: '/api/questions',
+      url: '/questions',
       method: 'get',
       params
     })
@@ -14,7 +14,7 @@ export const questionApi = {
   // 创建试题
   createQuestion(data) {
     return request({
-      url: '/api/questions',
+      url: '/questions',
       method: 'post',
       data
     })
@@ -57,7 +57,7 @@ export const questionApi = {
   // 获取试题类型列表
   getQuestionTypes() {
     return request({
-      url: '/api/questions/types',
+      url: '/questions/types',
       method: 'get'
     })
   },
@@ -65,7 +65,7 @@ export const questionApi = {
   // 获取试题难度列表
   getQuestionDifficulties() {
     return request({
-      url: '/api/questions/difficulties',
+      url: '/questions/difficulties',
       method: 'get'
     })
   },
@@ -73,7 +73,7 @@ export const questionApi = {
   // 获取试题统计信息
   getQuestionStats() {
     return request({
-      url: '/api/questions/stats',
+      url: '/questions/stats',
       method: 'get'
     })
   },
@@ -81,7 +81,7 @@ export const questionApi = {
   // 批量导入试题
   importQuestions(data) {
     return request({
-      url: '/api/questions/import',
+      url: '/questions/import',
       method: 'post',
       data
     })
@@ -90,7 +90,7 @@ export const questionApi = {
   // 导出试题
   exportQuestions(params) {
     return request({
-      url: '/api/questions/export',
+      url: '/questions/export',
       method: 'get',
       params,
       responseType: 'blob'
@@ -100,7 +100,7 @@ export const questionApi = {
   // 获取导入模板
   getImportTemplate() {
     return request({
-      url: '/api/questions/import-template',
+      url: '/questions/import-template',
       method: 'get',
       responseType: 'blob'
     })
@@ -109,7 +109,7 @@ export const questionApi = {
   // 批量删除试题
   batchDelete(data) {
     return request({
-      url: '/api/questions/batch-delete',
+      url: '/questions/batch-delete',
       method: 'delete',
       data
     })
@@ -118,7 +118,7 @@ export const questionApi = {
   // 批量更新试题状态
   batchUpdateStatus(data) {
     return request({
-      url: '/api/questions/batch-update-status',
+      url: '/questions/batch-update-status',
       method: 'put',
       data
     })

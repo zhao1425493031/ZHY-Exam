@@ -7,6 +7,9 @@ module.exports = defineConfig({
   devServer: {
     port: 8080,
     open: true,
+    client: {
+      overlay: false
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
@@ -44,7 +47,15 @@ module.exports = defineConfig({
           }
         }
       }
-    }
+    },
+    // 抑制 ResizeObserver 错误
+    plugins: [
+      new (require('webpack')).DefinePlugin({
+        'process.env': {
+          NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development')
+        }
+      })
+    ]
   },
   
   // CSS 配置

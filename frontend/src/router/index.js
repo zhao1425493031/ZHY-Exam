@@ -5,7 +5,30 @@ import { useAuthStore } from '@/stores/auth'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+    meta: { 
+      title: '首页',
+      requiresAuth: false 
+    }
+  },
+  {
+    path: '/courses',
+    name: 'Courses',
+    component: () => import('@/views/Courses.vue'),
+    meta: { 
+      title: '课程列表',
+      requiresAuth: false 
+    }
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: () => import('@/views/About.vue'),
+    meta: { 
+      title: '关于我们',
+      requiresAuth: false 
+    }
   },
   {
     path: '/login',
@@ -124,6 +147,12 @@ const routes = [
       requiresRole: ['admin', 'user']
     },
     children: [
+      {
+        path: 'dashboard',
+        name: 'UserDashboard',
+        component: () => import('@/views/user/Dashboard.vue'),
+        meta: { title: '我的仪表盘' }
+      },
       {
         path: 'exam-list',
         name: 'ExamList',

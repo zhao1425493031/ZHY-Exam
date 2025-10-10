@@ -12,44 +12,34 @@ from app.utils.helpers import build_response, build_error_response, get_client_i
 subject_api = BaseAPI(Subject, SubjectSchema)
 
 @subjects_bp.route('', methods=['GET'])
-@jwt_required()
 def get_subjects():
     """获取科目列表"""
     try:
-        # 验证分页参数
-        pagination_schema = PaginationSchema()
-        pagination_data = pagination_schema.load({
-            'page': request.args.get('page', 1, type=int),
-            'size': request.args.get('size', 10, type=int),
-            'sort': request.args.get('sort', 'id'),
-            'order': request.args.get('order', 'desc')
-        })
-        
-        # 验证搜索参数
+        # 验证所有参数（包括分页和搜索参数）
         search_schema = SearchSchema()
-        search_data = search_schema.load(request.args)
+        all_data = search_schema.load(request.args)
         
         # 构建查询
         query = Subject.query
         
         # 应用搜索过滤
-        if search_data.get('keyword'):
-            keyword = f"%{search_data['keyword']}%"
+        if all_data.get('keyword'):
+            keyword = f"%{all_data['keyword']}%"
             query = query.filter(
                 Subject.name.like(keyword) |
                 Subject.code.like(keyword) |
                 Subject.description.like(keyword)
             )
         
-        if search_data.get('status'):
-            query = query.filter(Subject.status == search_data['status'])
+        if all_data.get('status'):
+            query = query.filter(Subject.status == all_data['status'])
         
-        if search_data.get('category'):
-            query = query.filter(Subject.category == search_data['category'])
+        if all_data.get('category'):
+            query = query.filter(Subject.category == all_data['category'])
         
         # 应用排序
-        sort_field = pagination_data.get('sort', 'id')
-        order = pagination_data.get('order', 'desc')
+        sort_field = all_data.get('sort', 'id')
+        order = all_data.get('order', 'desc')
         
         if hasattr(Subject, sort_field):
             if order == 'desc':
@@ -61,8 +51,8 @@ def get_subjects():
         from app.utils.helpers import paginate_query
         pagination = paginate_query(
             query,
-            page=pagination_data.get('page', 1),
-            per_page=pagination_data.get('size', 10)
+            page=all_data.get('page', 1),
+            per_page=all_data.get('size', 10)
         )
         
         result = {
@@ -284,4 +274,6 @@ def get_subject_stats():
         
     except Exception as e:
         return jsonify(build_error_response(500, f'获取科目统计失败: {str(e)}')), 500
+
+
 

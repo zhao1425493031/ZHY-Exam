@@ -1,11 +1,11 @@
 import request from '@/utils/request'
 
 // 科目管理API
-export const subjectApi = {
+export const subjectsApi = {
   // 获取科目列表
   getSubjects(params) {
     return request({
-      url: '/api/subjects',
+      url: '/subjects',
       method: 'get',
       params
     })
@@ -14,7 +14,7 @@ export const subjectApi = {
   // 创建科目
   createSubject(data) {
     return request({
-      url: '/api/subjects',
+      url: '/subjects',
       method: 'post',
       data
     })
@@ -23,7 +23,7 @@ export const subjectApi = {
   // 获取科目详情
   getSubject(id) {
     return request({
-      url: `/api/subjects/${id}`,
+      url: `/subjects/${id}`,
       method: 'get'
     })
   },
@@ -31,7 +31,7 @@ export const subjectApi = {
   // 更新科目
   updateSubject(id, data) {
     return request({
-      url: `/api/subjects/${id}`,
+      url: `/subjects/${id}`,
       method: 'put',
       data
     })
@@ -40,7 +40,7 @@ export const subjectApi = {
   // 删除科目
   deleteSubject(id) {
     return request({
-      url: `/api/subjects/${id}`,
+      url: `/subjects/${id}`,
       method: 'delete'
     })
   },
@@ -48,7 +48,7 @@ export const subjectApi = {
   // 更新科目状态
   updateSubjectStatus(id, data) {
     return request({
-      url: `/api/subjects/${id}/status`,
+      url: `/subjects/${id}/status`,
       method: 'put',
       data
     })
@@ -57,7 +57,7 @@ export const subjectApi = {
   // 获取科目统计信息
   getSubjectStats() {
     return request({
-      url: '/api/subjects/stats',
+      url: '/subjects/stats',
       method: 'get'
     })
   }

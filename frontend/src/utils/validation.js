@@ -80,6 +80,13 @@ export const rules = {
     type: 'url',
     message: '请输入正确的URL地址',
     trigger: 'blur'
+  }),
+  
+  // 正则表达式验证
+  pattern: (pattern, message) => ({
+    pattern,
+    message,
+    trigger: 'blur'
   })
 }
 

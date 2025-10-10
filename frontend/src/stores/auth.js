@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { login, register, logout, getProfile } from '@/api/auth'
+import { authApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   // 登录
   const loginAction = async (credentials) => {
     try {
-      const response = await login(credentials)
+      const response = await authApi.login(credentials)
       token.value = response.data.token
       user.value = response.data.user
       
@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
   // 注册
   const registerAction = async (userData) => {
     try {
-      const response = await register(userData)
+      const response = await authApi.register(userData)
       ElMessage.success('注册成功，请登录')
       return response
     } catch (error) {
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
   // 登出
   const logoutAction = async () => {
     try {
-      await logout()
+      await authApi.logout()
     } catch (error) {
       console.error('登出请求失败:', error)
     } finally {
@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
   // 获取用户信息
   const fetchProfile = async () => {
     try {
-      const response = await getProfile()
+      const response = await authApi.getProfile()
       user.value = response.data
       return response
     } catch (error) {
@@ -99,6 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
     // 计算属性
     userRole,
     isAdmin,
+    isUser,
     
     // 方法
     loginAction,
