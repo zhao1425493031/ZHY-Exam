@@ -377,7 +377,7 @@ export default {
         instructor_name: '李老师',
         instructor_avatar: '',
         duration: '3小时',
-        image: '/default-course.svg'
+        image: '/course-vue.svg'
       },
       {
         id: 2,
@@ -392,7 +392,7 @@ export default {
         instructor_name: '王老师',
         instructor_avatar: '',
         duration: '2.5小时',
-        image: '/default-course.svg'
+        image: '/course-design.svg'
       },
       {
         id: 3,
@@ -407,7 +407,7 @@ export default {
         instructor_name: '陈老师',
         instructor_avatar: '',
         duration: '4小时',
-        image: '/default-course.svg'
+        image: '/course-python.svg'
       }
     ])
 
