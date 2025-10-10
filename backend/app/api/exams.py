@@ -17,9 +17,8 @@ import random
 exam_api = BaseAPI(Exam, ExamSchema)
 
 @exams_bp.route('', methods=['GET'])
-@jwt_required()
 def get_exams():
-    """获取考试列表"""
+    """获取考试列表（公开接口）"""
     try:
         # 验证分页参数
         pagination_schema = PaginationSchema()

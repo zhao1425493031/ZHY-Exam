@@ -31,6 +31,15 @@ const routes = [
     }
   },
   {
+    path: '/exam/:id',
+    name: 'ExamTaking',
+    component: () => import('@/views/ExamTaking.vue'),
+    meta: { 
+      title: '在线考试',
+      requiresAuth: true 
+    }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/auth/Login.vue'),

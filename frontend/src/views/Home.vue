@@ -49,6 +49,76 @@
         </div>
       </section>
 
+      <!-- 快速考试区域 -->
+      <section class="quick-exam-section" id="exams">
+        <div class="container">
+          <div class="section-header">
+            <h3>快速考试</h3>
+            <p>立即开始您的考试，检验学习成果</p>
+          </div>
+          
+          <div class="exam-grid" v-loading="examsLoading">
+            <div 
+              v-for="exam in availableExams" 
+              :key="exam.id"
+              class="exam-card"
+              @click="startExam(exam)"
+            >
+              <div class="exam-header">
+                <div class="exam-icon">
+                  <el-icon size="32"><Document /></el-icon>
+                </div>
+                <div class="exam-info">
+                  <h4>{{ exam.title }}</h4>
+                  <p>{{ exam.subject_name }}</p>
+                </div>
+                <div class="exam-status">
+                  <el-tag :type="getExamStatusType(exam.status)">
+                    {{ getExamStatusText(exam.status) }}
+                  </el-tag>
+                </div>
+              </div>
+              <div class="exam-details">
+                <div class="exam-meta">
+                  <div class="meta-item">
+                    <el-icon><Clock /></el-icon>
+                    <span>{{ exam.duration }}分钟</span>
+                  </div>
+                  <div class="meta-item">
+                    <el-icon><Document /></el-icon>
+                    <span>{{ exam.question_count }}题</span>
+                  </div>
+                  <div class="meta-item">
+                    <el-icon><Star /></el-icon>
+                    <span>{{ exam.total_points }}分</span>
+                  </div>
+                </div>
+                <div class="exam-actions">
+                  <el-button type="primary" @click.stop="startExam(exam)" class="start-btn">
+                    <el-icon><Play /></el-icon>
+                    开始考试
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="section-footer" v-if="availableExams.length === 0 && !examsLoading">
+            <div class="empty-exams">
+              <div class="empty-icon">
+                <el-icon size="80"><Document /></el-icon>
+              </div>
+              <h3>暂无可用考试</h3>
+              <p>请先学习相关课程，或联系管理员创建考试</p>
+              <el-button type="primary" @click="goToCourses" class="empty-action">
+                <el-icon><Reading /></el-icon>
+                浏览课程
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 课程展示区域 -->
       <section class="courses-section" id="courses">
         <div class="container">
@@ -331,8 +401,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Document, Monitor, DataAnalysis, User, Upload, ChatDotRound, Star, Folder, Clock, InfoFilled } from '@element-plus/icons-vue'
+import { Document, Monitor, DataAnalysis, User, Upload, ChatDotRound, Star, Folder, Clock, InfoFilled, Play, Reading } from '@element-plus/icons-vue'
 import { subjectsApi } from '@/api/subjects'
+import { examApi as examsApi } from '@/api/exams'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
 export default {
@@ -348,12 +419,16 @@ export default {
     Star,
     Folder,
     Clock,
-    InfoFilled
+    InfoFilled,
+    Play,
+    Reading
   },
   setup() {
     const router = useRouter()
     const coursesLoading = ref(false)
+    const examsLoading = ref(false)
     const courses = ref([])
+    const availableExams = ref([])
     const stats = ref({
       totalUsers: 0,
       totalCourses: 0,
@@ -408,6 +483,70 @@ export default {
         instructor_avatar: '',
         duration: '4小时',
         image: '/course-python.svg'
+      }
+    ])
+
+    // 模拟考试数据
+    const mockExams = ref([
+      {
+        id: 1,
+        title: 'Vue.js 3.0 基础测试',
+        subject_name: '前端开发',
+        duration: 60,
+        question_count: 20,
+        total_points: 100,
+        status: 'published',
+        description: '测试Vue.js 3.0基础知识掌握情况'
+      },
+      {
+        id: 2,
+        title: 'JavaScript 高级特性',
+        subject_name: '前端开发',
+        duration: 90,
+        question_count: 25,
+        total_points: 100,
+        status: 'published',
+        description: '考察JavaScript高级特性和ES6+语法'
+      },
+      {
+        id: 3,
+        title: 'Python 数据分析',
+        subject_name: '数据分析',
+        duration: 120,
+        question_count: 30,
+        total_points: 100,
+        status: 'published',
+        description: '测试Python数据分析相关技能'
+      },
+      {
+        id: 4,
+        title: 'React 组件开发',
+        subject_name: '前端开发',
+        duration: 75,
+        question_count: 22,
+        total_points: 100,
+        status: 'published',
+        description: 'React组件开发与状态管理'
+      },
+      {
+        id: 5,
+        title: 'Node.js 后端开发',
+        subject_name: '后端开发',
+        duration: 100,
+        question_count: 28,
+        total_points: 100,
+        status: 'published',
+        description: 'Node.js服务器端开发技术'
+      },
+      {
+        id: 6,
+        title: '数据库设计原理',
+        subject_name: '数据库',
+        duration: 80,
+        question_count: 24,
+        total_points: 100,
+        status: 'published',
+        description: '关系型数据库设计与优化'
       }
     ])
 
@@ -518,6 +657,35 @@ export default {
       }
     }
 
+    // 获取可用考试列表
+    const fetchExams = async () => {
+      try {
+        examsLoading.value = true
+        console.log('开始获取考试数据...')
+        
+        const response = await examsApi.getExams({
+          status: 'published',
+          page: 1,
+          size: 6
+        })
+        console.log('考试数据响应:', response)
+        
+        if (response.code === 200) {
+          availableExams.value = response.data.items || []
+          console.log('考试数据设置成功:', availableExams.value)
+        } else {
+          console.log('使用模拟考试数据')
+          availableExams.value = mockExams.value
+        }
+      } catch (error) {
+        console.error('获取考试列表失败:', error)
+        // 如果API调用失败，使用模拟数据
+        availableExams.value = mockExams.value
+      } finally {
+        examsLoading.value = false
+      }
+    }
+
     // 跳转到登录页面
     const goToLogin = () => {
       // 由于现在使用弹窗模式，这里可以跳转到课程页面或者显示提示
@@ -534,6 +702,46 @@ export default {
       router.push(`/course/${course.id}`)
     }
 
+    // 开始考试
+    const startExam = (exam) => {
+      // 检查用户是否已登录
+      const authStore = useAuthStore()
+      if (!authStore.isLoggedIn) {
+        ElMessage.warning('请先登录后再参加考试')
+        return
+      }
+      
+      // 跳转到考试页面
+      router.push(`/exam/${exam.id}`)
+    }
+
+    // 获取考试状态类型
+    const getExamStatusType = (status) => {
+      switch (status) {
+        case 'published': return 'success'
+        case 'draft': return 'info'
+        case 'finished': return 'warning'
+        case 'cancelled': return 'danger'
+        default: return 'info'
+      }
+    }
+
+    // 获取考试状态文本
+    const getExamStatusText = (status) => {
+      switch (status) {
+        case 'published': return '可参加'
+        case 'draft': return '草稿'
+        case 'finished': return '已结束'
+        case 'cancelled': return '已取消'
+        default: return '未知'
+      }
+    }
+
+    // 跳转到课程页面
+    const goToCourses = () => {
+      router.push('/courses')
+    }
+
     // 滚动到功能特色区域
     const scrollToFeatures = () => {
       if (featuresSection.value) {
@@ -542,22 +750,31 @@ export default {
     }
 
     onMounted(() => {
-      console.log('Home.vue mounted, fetching courses...')
+      console.log('Home.vue mounted, fetching courses and exams...')
       fetchCourses()
+      fetchExams()
       fetchStats()
     })
 
     return {
       coursesLoading,
+      examsLoading,
       courses,
+      availableExams,
       mockCourses,
+      mockExams,
       filteredCourses,
       stats,
       featuresSection,
       fetchCourses,
+      fetchExams,
       goToLogin,
       goToRegister,
       viewCourse,
+      startExam,
+      getExamStatusType,
+      getExamStatusText,
+      goToCourses,
       scrollToFeatures
     }
   }
@@ -1107,6 +1324,180 @@ export default {
   }
 }
 
+// 快速考试区域样式
+.quick-exam-section {
+  padding: 4rem 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    
+    h3 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: #333;
+      background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    p {
+      font-size: 1.2rem;
+      color: #666;
+      font-weight: 500;
+    }
+  }
+  
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .exam-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    .exam-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      
+      .exam-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+      
+      .exam-info {
+        flex: 1;
+        
+        h4 {
+          font-size: 1.3rem;
+          font-weight: 700;
+          margin: 0 0 0.5rem 0;
+          color: #333;
+          line-height: 1.3;
+        }
+        
+        p {
+          color: #666;
+          margin: 0;
+          font-size: 1rem;
+        }
+      }
+      
+      .exam-status {
+        border-radius: 8px;
+        font-weight: 600;
+      }
+    }
+    
+    .exam-details {
+      .exam-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        
+        .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #666;
+          font-size: 0.9rem;
+          font-weight: 500;
+          
+          .el-icon {
+            color: var(--theme-primary, #667eea);
+          }
+        }
+      }
+      
+      .exam-actions {
+        .start-btn {
+          width: 100%;
+          height: 48px;
+          font-size: 16px;
+          font-weight: 600;
+          border-radius: 12px;
+          background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+          border: none;
+          
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+          }
+        }
+      }
+    }
+  }
+  
+  .empty-exams {
+    text-align: center;
+    padding: 4rem 2rem;
+    
+    .empty-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      color: #ccc;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    
+    p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      color: #666;
+    }
+    
+    .empty-action {
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-weight: 600;
+      background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+    }
+  }
+}
+
 // 响应式设计
 @media (max-width: 768px) {
   .hero-section .hero-content h2 {
@@ -1120,6 +1511,40 @@ export default {
 
   .courses-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .quick-exam-section {
+    padding: 3rem 0;
+    
+    .exam-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .exam-card {
+      padding: 1.5rem;
+      
+      .exam-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        
+        .exam-icon {
+          width: 50px;
+          height: 50px;
+        }
+        
+        .exam-info h4 {
+          font-size: 1.1rem;
+        }
+      }
+      
+      .exam-details .exam-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+      }
+    }
   }
 
   .features-grid {

@@ -92,7 +92,7 @@ class PaginationSchema(Schema):
 class SearchSchema(Schema):
     """搜索参数验证器"""
     keyword = fields.Str(validate=validate.Length(max=100))
-    status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned']))
+    status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned', 'draft', 'published', 'ongoing', 'finished', 'cancelled']))
     role = fields.Str(validate=validate.OneOf(['admin', 'user']))
     subject_id = fields.Int()
     type = fields.Str(validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']))

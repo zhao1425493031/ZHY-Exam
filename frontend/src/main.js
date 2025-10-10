@@ -10,6 +10,7 @@ import router from './router'
 import './styles/index.scss'
 import './styles/theme.css'
 import { initTheme } from './composables/useTheme'
+import { useAuthStore } from './stores/auth'
 
 // 完全抑制 ResizeObserver 错误
 window.addEventListener('error', (e) => {
@@ -38,13 +39,14 @@ console.error = (...args) => {
 }
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // 注册 Element Plus 图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(ElementPlus, {
   locale: zhCn,
@@ -52,5 +54,10 @@ app.use(ElementPlus, {
 
 // 初始化主题
 initTheme()
+
+// 检查并清理过期的认证状态
+const authStore = useAuthStore()
+// 清除所有可能的过期状态，避免401循环
+authStore.clearAuth()
 
 app.mount('#app')

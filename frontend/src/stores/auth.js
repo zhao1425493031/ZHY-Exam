@@ -44,6 +44,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // 清除认证状态（不调用API）
+  const clearAuth = () => {
+    user.value = null
+    token.value = ''
+    localStorage.removeItem('token')
+  }
+
   // 登出
   const logoutAction = async () => {
     try {
@@ -52,10 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('登出请求失败:', error)
     } finally {
       // 清除状态
-      user.value = null
-      token.value = ''
-      localStorage.removeItem('token')
-      
+      clearAuth()
       ElMessage.success('已退出登录')
     }
   }
@@ -68,8 +72,8 @@ export const useAuthStore = defineStore('auth', () => {
       return response
     } catch (error) {
       console.error('获取用户信息失败:', error)
-      // 如果获取用户信息失败，清除登录状态
-      logoutAction()
+      // 如果获取用户信息失败，直接清除登录状态（避免循环调用）
+      clearAuth()
       throw error
     }
   }
@@ -105,6 +109,7 @@ export const useAuthStore = defineStore('auth', () => {
     loginAction,
     registerAction,
     logoutAction,
+    clearAuth,
     fetchProfile,
     initUser,
     updateUser

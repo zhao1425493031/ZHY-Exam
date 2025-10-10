@@ -25,7 +25,7 @@
           <el-sub-menu index="courses">
             <template #title>
               <el-icon><Reading /></el-icon>
-              <span>课程</span>
+              <span>课程学习</span>
             </template>
             <el-menu-item index="courses-all">全部课程</el-menu-item>
             <el-menu-item index="courses-free">免费课程</el-menu-item>
@@ -33,6 +33,16 @@
             <el-menu-item index="courses-programming">编程开发</el-menu-item>
             <el-menu-item index="courses-design">设计创意</el-menu-item>
             <el-menu-item index="courses-business">商业管理</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="exams">
+            <template #title>
+              <el-icon><Document /></el-icon>
+              <span>在线考试</span>
+            </template>
+            <el-menu-item index="exams-available">可参加考试</el-menu-item>
+            <el-menu-item index="exams-history">考试历史</el-menu-item>
+            <el-menu-item index="exams-results">成绩查询</el-menu-item>
           </el-sub-menu>
 
           <el-menu-item index="features">
@@ -144,7 +154,7 @@ import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   House, Reading, Star, InfoFilled, Bell, ArrowDown, User, 
-  Monitor, SwitchButton 
+  Monitor, SwitchButton, Document 
 } from '@element-plus/icons-vue'
 import LoginDialog from '@/components/auth/LoginDialog.vue'
 import RegisterDialog from '@/components/auth/RegisterDialog.vue'
@@ -162,6 +172,7 @@ export default {
     User,
     Monitor,
     SwitchButton,
+    Document,
     LoginDialog,
     RegisterDialog,
     ThemeSwitcher
@@ -290,6 +301,15 @@ export default {
           break
         case 'courses-business':
           router.push('/courses?category=business')
+          break
+        case 'exams-available':
+          router.push('/#exams')
+          break
+        case 'exams-history':
+          router.push('/user/dashboard')
+          break
+        case 'exams-results':
+          router.push('/user/dashboard')
           break
         case 'features':
           router.push('/#features')

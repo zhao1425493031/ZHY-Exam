@@ -66,7 +66,8 @@ request.interceptors.response.use(
         case 401:
           // 未授权，清除token并跳转到登录页
           const authStore = useAuthStore()
-          authStore.logoutAction()
+          // 避免循环调用，直接清除本地状态
+          authStore.clearAuth()
           ElMessage.error('登录已过期，请重新登录')
           break
         case 403:

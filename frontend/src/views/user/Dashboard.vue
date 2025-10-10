@@ -17,46 +17,34 @@
 
         <!-- 页面标题 -->
         <div class="page-header">
-          <h1>我的仪表盘</h1>
-          <p>欢迎回来，{{ authStore.user?.username }}！</p>
+          <div class="header-content">
+            <div class="welcome-section">
+              <div class="welcome-badge">
+                <el-icon><Star /></el-icon>
+                <span>欢迎回来</span>
+              </div>
+              <h1>学习数据中心</h1>
+              <p>你好，{{ authStore.user?.username }}！查看您的学习数据和成绩分析 📊</p>
+            </div>
+            <div class="header-actions">
+              <ThemeSwitcher />
+            </div>
+          </div>
         </div>
 
         <!-- 统计卡片 -->
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <el-icon size="32"><Document /></el-icon>
+          <div class="stat-card" v-for="(stat, index) in statsData" :key="index">
+            <div class="stat-icon" :style="{ background: stat.gradient }">
+              <el-icon size="28"><component :is="stat.icon" /></el-icon>
             </div>
             <div class="stat-content">
-              <h3>{{ stats.totalExams }}</h3>
-              <p>已参加考试</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <el-icon size="32"><Star /></el-icon>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.averageScore }}</h3>
-              <p>平均成绩</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <el-icon size="32"><Clock /></el-icon>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.studyHours }}</h3>
-              <p>学习时长(小时)</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <el-icon size="32"><TrendCharts /></el-icon>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.rank }}</h3>
-              <p>学习排名</p>
+              <h3>{{ stat.value }}</h3>
+              <p>{{ stat.label }}</p>
+              <div class="stat-trend" :class="stat.trend">
+                <el-icon size="14"><TrendCharts /></el-icon>
+                <span>{{ stat.change }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -66,34 +54,49 @@
           <!-- 最近考试 -->
           <div class="content-section">
             <div class="section-header">
-              <h2>最近考试</h2>
-              <el-button type="primary" @click="goToRecords">查看全部</el-button>
+                 <div class="section-title">
+                   <h2>考试记录</h2>
+                   <p>查看您的考试历史和成绩分析</p>
+                 </div>
+              <el-button type="primary" @click="goToRecords" class="section-action">
+                <el-icon><ArrowRight /></el-icon>
+                查看全部
+              </el-button>
             </div>
             <div class="exam-list" v-loading="examsLoading">
               <div v-if="recentExams.length === 0" class="empty-state">
-                <el-icon size="64"><Document /></el-icon>
-                <p>暂无考试记录</p>
-                <el-button type="primary" @click="goToCourses">开始学习</el-button>
+                <div class="empty-icon">
+                  <el-icon size="80"><Document /></el-icon>
+                </div>
+                   <h3>暂无考试记录</h3>
+                   <p>开始您的第一次考试，记录将在这里显示</p>
+                   <el-button type="primary" @click="goToCourses" class="empty-action">
+                     <el-icon><Plus /></el-icon>
+                     去首页参加考试
+                   </el-button>
               </div>
-              <div v-else>
+              <div v-else class="exam-grid">
                 <div 
                   v-for="exam in recentExams" 
                   :key="exam.id"
-                  class="exam-item"
+                  class="exam-card"
                   @click="viewExamDetail(exam)"
                 >
-                  <div class="exam-info">
-                    <h4>{{ exam.title }}</h4>
-                    <p>{{ exam.subject_name }}</p>
-                    <div class="exam-meta">
-                      <span class="exam-date">{{ formatDate(exam.submit_time) }}</span>
-                      <span class="exam-score" :class="getScoreClass(exam.score)">
-                        {{ exam.score }}分
-                      </span>
+                  <div class="exam-header">
+                    <div class="exam-title">
+                      <h4>{{ exam.title }}</h4>
+                      <span class="exam-category">{{ exam.subject_name }}</span>
+                    </div>
+                    <div class="exam-score" :class="getScoreClass(exam.score)">
+                      {{ exam.score }}分
                     </div>
                   </div>
-                  <div class="exam-status">
-                    <el-tag :type="getStatusType(exam.status)">
+                  <div class="exam-footer">
+                    <div class="exam-date">
+                      <el-icon><Calendar /></el-icon>
+                      <span>{{ formatDate(exam.submit_time) }}</span>
+                    </div>
+                    <el-tag :type="getStatusType(exam.status)" class="exam-status">
                       {{ getStatusText(exam.status) }}
                     </el-tag>
                   </div>
@@ -105,31 +108,57 @@
           <!-- 学习进度 -->
           <div class="content-section">
             <div class="section-header">
-              <h2>学习进度</h2>
-              <el-button type="primary" @click="goToProgress">查看详情</el-button>
+                 <div class="section-title">
+                   <h2>学习分析</h2>
+                   <p>跟踪您的学习进度和知识掌握情况</p>
+                 </div>
+              <el-button type="primary" @click="goToProgress" class="section-action">
+                <el-icon><ArrowRight /></el-icon>
+                查看详情
+              </el-button>
             </div>
             <div class="progress-list" v-loading="progressLoading">
               <div v-if="learningProgress.length === 0" class="empty-state">
-                <el-icon size="64"><TrendCharts /></el-icon>
-                <p>暂无学习进度</p>
-                <el-button type="primary" @click="goToCourses">开始学习</el-button>
+                <div class="empty-icon">
+                  <el-icon size="80"><TrendCharts /></el-icon>
+                </div>
+                   <h3>暂无学习数据</h3>
+                   <p>开始学习新课程，进度将在这里显示</p>
+                   <el-button type="primary" @click="goToCourses" class="empty-action">
+                     <el-icon><Plus /></el-icon>
+                     去首页学习课程
+                   </el-button>
               </div>
-              <div v-else>
+              <div v-else class="progress-grid">
                 <div 
                   v-for="progress in learningProgress" 
                   :key="progress.subject_id"
-                  class="progress-item"
+                  class="progress-card"
                 >
-                  <div class="progress-info">
+                  <div class="progress-header">
                     <h4>{{ progress.subject_name }}</h4>
-                    <p>{{ progress.description }}</p>
+                    <span class="progress-percentage">{{ progress.completion_rate }}%</span>
                   </div>
-                  <div class="progress-bar">
+                  <p class="progress-description">{{ progress.description }}</p>
+                  <div class="progress-bar-container">
                     <el-progress 
                       :percentage="progress.completion_rate" 
                       :color="getProgressColor(progress.completion_rate)"
+                      :stroke-width="8"
+                      :show-text="false"
                     />
-                    <span class="progress-text">{{ progress.completion_rate }}%</span>
+                  </div>
+                  <div class="progress-footer">
+                    <div class="progress-stats">
+                      <span class="stat-item">
+                        <el-icon><Clock /></el-icon>
+                        {{ Math.floor(Math.random() * 20) + 5 }}小时
+                      </span>
+                      <span class="stat-item">
+                        <el-icon><Document /></el-icon>
+                        {{ Math.floor(Math.random() * 10) + 1 }}个章节
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,17 +175,22 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import { Document, Star, Clock, TrendCharts } from '@element-plus/icons-vue'
+import { Document, Star, Clock, TrendCharts, ArrowRight, Plus, Calendar } from '@element-plus/icons-vue'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
+import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 
 export default {
   name: 'UserDashboard',
   components: {
     TopNavigation,
+    ThemeSwitcher,
     Document,
     Star,
     Clock,
-    TrendCharts
+    TrendCharts,
+    ArrowRight,
+    Plus,
+    Calendar
   },
   setup() {
     const router = useRouter()
@@ -165,30 +199,45 @@ export default {
     const examsLoading = ref(false)
     const progressLoading = ref(false)
     
-    const stats = ref({
-      totalExams: 0,
-      averageScore: 0,
-      studyHours: 0,
-      rank: 0
-    })
+       // 统计数据
+       const statsData = ref([
+         {
+           icon: 'Document',
+           value: 12,
+           label: '已完成考试',
+           gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+           trend: 'up',
+           change: '+2 本周'
+         },
+         {
+           icon: 'Star',
+           value: 85,
+           label: '平均成绩',
+           gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+           trend: 'up',
+           change: '+5 本月'
+         },
+         {
+           icon: 'Clock',
+           value: 48,
+           label: '学习时长(小时)',
+           gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+           trend: 'up',
+           change: '+8 本周'
+         },
+         {
+           icon: 'TrendCharts',
+           value: 15,
+           label: '学习排名',
+           gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+           trend: 'up',
+           change: '+3 本月'
+         }
+       ])
     
     const recentExams = ref([])
     const learningProgress = ref([])
 
-    // 获取统计数据
-    const fetchStats = async () => {
-      try {
-        // 模拟数据
-        stats.value = {
-          totalExams: 12,
-          averageScore: 85,
-          studyHours: 48,
-          rank: 15
-        }
-      } catch (error) {
-        console.error('获取统计数据失败:', error)
-      }
-    }
 
     // 获取最近考试
     const fetchRecentExams = async () => {
@@ -310,23 +359,22 @@ export default {
       router.push('/user/learning-progress')
     }
 
-    const goToCourses = () => {
-      router.push('/courses')
-    }
+       const goToCourses = () => {
+         router.push('/')
+       }
 
     const viewExamDetail = (exam) => {
       router.push(`/user/exam-detail/${exam.id}`)
     }
 
     onMounted(() => {
-      fetchStats()
       fetchRecentExams()
       fetchLearningProgress()
     })
 
     return {
       authStore,
-      stats,
+      statsData,
       recentExams,
       learningProgress,
       examsLoading,
@@ -348,11 +396,11 @@ export default {
 <style lang="scss" scoped>
 .user-dashboard {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -365,7 +413,7 @@ export default {
       color: #666;
       
       &:hover {
-        color: #667eea;
+        color: var(--theme-primary, #667eea);
       }
     }
     
@@ -380,58 +428,137 @@ export default {
 }
 
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   
-  h1 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: #333;
-  }
-  
-  p {
-    font-size: 1.1rem;
-    color: #666;
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .welcome-section {
+      flex: 1;
+      
+      .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #333;
+        background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+      }
+      
+      p {
+        font-size: 1.2rem;
+        color: #666;
+        font-weight: 500;
+        margin: 0;
+      }
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
   }
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   margin-bottom: 3rem;
   
   .stat-card {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    }
     
     .stat-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
     
     .stat-content {
       h3 {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 0.25rem;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
         color: #333;
+        line-height: 1;
       }
       
       p {
         color: #666;
-        margin: 0;
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+      
+      .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        
+        &.up {
+          color: #67c23a;
+        }
+        
+        &.down {
+          color: #f56c6c;
+        }
       }
     }
   }
@@ -440,160 +567,303 @@ export default {
 .main-content {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .content-section {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   
   .section-header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    
+    .section-title {
+      h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+        background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      p {
+        color: #666;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+    }
+    
+    .section-action {
+      border-radius: 12px;
+      padding: 0.8rem 1.5rem;
+      font-weight: 600;
+      background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #999;
+  
+  .empty-icon {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 50%;
+    display: flex;
     align-items: center;
-    margin-bottom: 1.5rem;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    color: #ccc;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  p {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: #666;
+  }
+  
+  .empty-action {
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    border: none;
     
-    h2 {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #333;
-      margin: 0;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
   }
 }
 
-.exam-list, .progress-list {
-  .empty-state {
-    text-align: center;
-    padding: 3rem 0;
-    color: #999;
-    
-    .el-icon {
-      margin-bottom: 1rem;
-    }
-    
-    p {
-      margin-bottom: 1rem;
-    }
-  }
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
-.exam-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+.exam-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
   
   &:hover {
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   }
   
-  .exam-info {
-    h4 {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 0.25rem;
-      color: #333;
+  .exam-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    
+    .exam-title {
+      flex: 1;
+      
+      h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: #333;
+        line-height: 1.3;
+      }
+      
+      .exam-category {
+        display: inline-block;
+        background: var(--theme-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
     }
     
-    p {
-      color: #666;
-      margin-bottom: 0.5rem;
+    .exam-score {
+      font-size: 1.5rem;
+      font-weight: 800;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      
+      &.excellent {
+        background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+        color: white;
+      }
+      
+      &.good {
+        background: linear-gradient(135deg, #e6a23c 0%, #f0c78a 100%);
+        color: white;
+      }
+      
+      &.pass {
+        background: linear-gradient(135deg, #409eff 0%, #79bbff 100%);
+        color: white;
+      }
+      
+      &.fail {
+        background: linear-gradient(135deg, #f56c6c 0%, #f89898 100%);
+        color: white;
+      }
     }
+  }
+  
+  .exam-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     
-    .exam-meta {
+    .exam-date {
       display: flex;
-      gap: 1rem;
-      
-      .exam-date {
-        color: #999;
-        font-size: 0.9rem;
-      }
-      
-      .exam-score {
-        font-weight: bold;
-        
-        &.excellent {
-          color: #67c23a;
-        }
-        
-        &.good {
-          color: #e6a23c;
-        }
-        
-        &.pass {
-          color: #409eff;
-        }
-        
-        &.fail {
-          color: #f56c6c;
-        }
-      }
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .exam-status {
+      border-radius: 8px;
+      font-weight: 600;
     }
   }
 }
 
-.progress-item {
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.progress-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
   
-  .progress-info {
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
     
     h4 {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 0.25rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0;
       color: #333;
     }
     
-    p {
-      color: #666;
-      margin: 0;
+    .progress-percentage {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--theme-primary, #667eea);
     }
   }
   
-  .progress-bar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  .progress-description {
+    color: #666;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+  }
+  
+  .progress-bar-container {
+    margin-bottom: 1rem;
     
-    .el-progress {
-      flex: 1;
+    :deep(.el-progress-bar__outer) {
+      border-radius: 10px;
+      background: #e9ecef;
     }
     
-    .progress-text {
-      font-weight: bold;
-      color: #333;
-      min-width: 50px;
+    :deep(.el-progress-bar__inner) {
+      border-radius: 10px;
+    }
+  }
+  
+  .progress-footer {
+    .progress-stats {
+      display: flex;
+      gap: 1.5rem;
+      
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
     }
   }
 }
 
 // 响应式设计
 @media (max-width: 768px) {
+  .page-header .header-content {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    
+    .welcome-section h1 {
+      font-size: 2.5rem;
+    }
+  }
+  
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
   .content-section {
     padding: 1.5rem;
   }
   
-  .exam-item {
+  .exam-grid,
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 1rem;
+    align-items: flex-start;
   }
 }
 </style>

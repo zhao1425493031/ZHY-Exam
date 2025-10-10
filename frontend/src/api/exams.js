@@ -23,7 +23,7 @@ export const examApi = {
   // 获取考试详情
   getExam(id) {
     return request({
-      url: `/api/exams/${id}`,
+      url: `/exams/${id}`,
       method: 'get'
     })
   },
@@ -31,7 +31,7 @@ export const examApi = {
   // 更新考试
   updateExam(id, data) {
     return request({
-      url: `/api/exams/${id}`,
+      url: `/exams/${id}`,
       method: 'put',
       data
     })
@@ -40,7 +40,7 @@ export const examApi = {
   // 删除考试
   deleteExam(id) {
     return request({
-      url: `/api/exams/${id}`,
+      url: `/exams/${id}`,
       method: 'delete'
     })
   },
@@ -48,7 +48,7 @@ export const examApi = {
   // 更新考试状态
   updateExamStatus(id, data) {
     return request({
-      url: `/api/exams/${id}/status`,
+      url: `/exams/${id}/status`,
       method: 'put',
       data
     })
@@ -57,7 +57,7 @@ export const examApi = {
   // 获取考试统计信息
   getExamStats(id) {
     return request({
-      url: `/api/exams/${id}/stats`,
+      url: `/exams/${id}/stats`,
       method: 'get'
     })
   },
@@ -92,7 +92,7 @@ export const examApi = {
   // 从模板创建考试
   createExamFromTemplate(templateId, data) {
     return request({
-      url: `/api/exams/template/${templateId}`,
+      url: `/exams/template/${templateId}`,
       method: 'post',
       data
     })
@@ -116,10 +116,19 @@ export const examApi = {
     })
   },
 
+  // 提交考试
+  submitExam(data) {
+    return request({
+      url: '/exams/submit',
+      method: 'post',
+      data
+    })
+  },
+
   // 检查考试可用性
   checkExamAvailability(id) {
     return request({
-      url: `/api/exams/${id}/availability`,
+      url: `/exams/${id}/availability`,
       method: 'get'
     })
   }
