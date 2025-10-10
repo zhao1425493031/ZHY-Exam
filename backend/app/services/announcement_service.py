@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from app.models.user import User
 from app.models.announcement import Announcement, AnnouncementType, AnnouncementPriority, AnnouncementStatus
-from app.models.notification import NotificationService
+from app.services.notification_service import NotificationService
 from app import db
 import logging
 

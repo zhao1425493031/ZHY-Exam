@@ -55,9 +55,11 @@ app.use(ElementPlus, {
 // 初始化主题
 initTheme()
 
-// 检查并清理过期的认证状态
+// 初始化认证状态
 const authStore = useAuthStore()
-// 清除所有可能的过期状态，避免401循环
-authStore.clearAuth()
+// 如果有token但没有用户信息，尝试恢复用户状态
+if (authStore.token && !authStore.user) {
+  authStore.initUser()
+}
 
 app.mount('#app')

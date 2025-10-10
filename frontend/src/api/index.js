@@ -97,5 +97,6 @@ export { announcementApi } from './announcements'
 export { permissionApi } from './permissions'
 export { importExportApi } from './import_export'
 export { statisticsApi } from './statistics'
+export { usersApi } from './users'
 
 export default request

@@ -37,6 +37,8 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    
+    # CORS配置
     cors.init_app(app, resources={
         r"/api/*": {
             "origins": ["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:3000", "http://127.0.0.1:3000"],
@@ -61,6 +63,15 @@ def create_app(config_name=None):
     from app.api.questions import questions_bp
     from app.api.exams import exams_bp
     from app.api.exam_records import exam_records_bp
+    from app.api.statistics import statistics_bp
+    from app.api.import_export import import_export_bp
+    from app.api.permissions import permission_bp
+    from app.api.announcements import announcement_bp
+    from app.api.files import file_bp
+    from app.api.notifications import notification_bp
+    from app.api.learning_progress import learning_progress_bp
+    from app.api.exam_scoring import exam_scoring_bp
+    from app.api.exam_monitoring import exam_monitoring_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -68,6 +79,15 @@ def create_app(config_name=None):
     app.register_blueprint(questions_bp, url_prefix='/api/questions')
     app.register_blueprint(exams_bp, url_prefix='/api/exams')
     app.register_blueprint(exam_records_bp, url_prefix='/api/exam-records')
+    app.register_blueprint(statistics_bp)
+    app.register_blueprint(import_export_bp)
+    app.register_blueprint(permission_bp)
+    app.register_blueprint(announcement_bp)
+    app.register_blueprint(file_bp)
+    app.register_blueprint(notification_bp)
+    app.register_blueprint(learning_progress_bp)
+    app.register_blueprint(exam_scoring_bp)
+    app.register_blueprint(exam_monitoring_bp)
     
     # JWT错误处理
     @jwt.expired_token_loader

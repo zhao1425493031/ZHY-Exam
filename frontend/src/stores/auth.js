@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
   // 状态
-  const user = ref(null)
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const token = ref(localStorage.getItem('token') || '')
   const isLoggedIn = computed(() => !!token.value && !!user.value)
 
@@ -23,8 +24,17 @@ export const useAuthStore = defineStore('auth', () => {
       
       // 保存到本地存储
       localStorage.setItem('token', token.value)
+      localStorage.setItem('user', JSON.stringify(user.value))
       
       ElMessage.success('登录成功')
+      
+      // 根据角色进行跳转
+      if (user.value.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/user/dashboard')
+      }
+      
       return response
     } catch (error) {
       ElMessage.error(error.message || '登录失败')
@@ -49,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = ''
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
   }
 
   // 登出
@@ -69,6 +80,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authApi.getProfile()
       user.value = response.data
+      // 更新本地存储的用户信息
+      localStorage.setItem('user', JSON.stringify(user.value))
       return response
     } catch (error) {
       console.error('获取用户信息失败:', error)
@@ -80,11 +93,22 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 初始化用户信息
   const initUser = async () => {
+    // 如果localStorage中已经有用户信息，直接使用
+    if (token.value && user.value) {
+      console.log('从localStorage恢复用户状态:', user.value)
+      return
+    }
+    
+    // 如果有token但没有用户信息，尝试从服务器获取
     if (token.value && !user.value) {
       try {
+        console.log('正在从服务器恢复用户状态...')
         await fetchProfile()
+        console.log('用户状态恢复成功:', user.value)
       } catch (error) {
         console.error('初始化用户信息失败:', error)
+        // 如果token无效，清除认证状态
+        clearAuth()
       }
     }
   }

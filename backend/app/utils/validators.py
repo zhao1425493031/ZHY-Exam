@@ -91,13 +91,13 @@ class PaginationSchema(Schema):
 # 搜索参数验证器
 class SearchSchema(Schema):
     """搜索参数验证器"""
-    keyword = fields.Str(validate=validate.Length(max=100))
-    status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned', 'draft', 'published', 'ongoing', 'finished', 'cancelled']))
-    role = fields.Str(validate=validate.OneOf(['admin', 'user']))
-    subject_id = fields.Int()
-    type = fields.Str(validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']))
-    difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']))
-    category = fields.Str(validate=validate.Length(max=50))
+    keyword = fields.Str(validate=validate.Length(max=100), allow_none=True)
+    status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned', 'draft', 'published', 'ongoing', 'finished', 'cancelled']), allow_none=True)
+    role = fields.Str(validate=validate.OneOf(['admin', 'user']), allow_none=True)
+    subject_id = fields.Int(allow_none=True)
+    type = fields.Str(validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']), allow_none=True)
+    difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']), allow_none=True)
+    category = fields.Str(validate=validate.Length(max=50), allow_none=True)
     # 添加分页字段
     page = fields.Int(missing=1, validate=validate.Range(min=1))
     size = fields.Int(missing=10, validate=validate.Range(min=1, max=100))

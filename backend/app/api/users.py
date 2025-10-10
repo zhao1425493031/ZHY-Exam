@@ -28,7 +28,9 @@ def get_users():
         
         # 验证搜索参数
         search_schema = SearchSchema()
-        search_data = search_schema.load(request.args)
+        # 过滤掉空字符串参数
+        search_params = {k: v for k, v in request.args.items() if v and v.strip()}
+        search_data = search_schema.load(search_params)
         
         # 构建查询
         query = User.query

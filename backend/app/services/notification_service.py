@@ -318,7 +318,7 @@ class NotificationService:
             logger.error(f'Create score notification error: {str(e)}')
     
     @staticmethod
- def create_system_notification(user_id: int, title: str, content: str) -> None:
+    def create_system_notification(user_id: int, title: str, content: str) -> None:
         """创建系统通知"""
         try:
             notification = Notification(

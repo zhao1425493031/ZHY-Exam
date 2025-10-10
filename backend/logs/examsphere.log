@@ -1494,3 +1494,123 @@
 2025-10-10 17:12:02,427 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:12:02] "GET /api/subjects?status=active&page=1&size=100 HTTP/1.1" 200 -
 2025-10-10 17:12:04,645 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:12:04] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
 2025-10-10 17:12:04,645 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:12:04] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:13:33,079 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:13:33] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:13:33,346 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:13:33] "[35m[1mPOST /api/auth/login HTTP/1.1[0m" 500 -
+2025-10-10 17:14:27,935 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:27] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:14:28,894 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:28] "POST /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:14:38,016 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:38] "OPTIONS /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:14:38,322 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:38] "OPTIONS /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:14:38,331 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:38] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:14:38,631 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:14:38] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:15:48,496 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:15:48] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:15:48,499 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:15:48] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:15:54,610 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:15:54] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:15:54,931 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:15:54] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:16:11,036 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:16:11] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:16:11,041 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:16:11] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:17:31,831 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:17:31] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:17:31,833 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:17:31] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:17:55,061 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:17:55] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:17:55,378 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:17:55] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:18:02,560 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:18:02] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:18:03,207 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:18:03] "POST /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:19:07,699 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:19:07] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:19:07,701 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:19:07] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:19:22,136 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:19:22] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:19:23,125 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:19:23] "POST /api/auth/login HTTP/1.1" 200 -
+2025-10-10 17:20:31,344 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:31] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:31,618 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:31] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:40,524 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:40] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:40,844 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:40] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:54,972 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:54] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:55,293 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:55] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:55,299 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:55] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:20:55,619 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:20:55] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:02,429 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:02] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:02,430 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:02] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:02,699 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:02] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:02,761 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:02] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:10,376 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:10] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:10,717 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:10] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:10,835 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:10] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:11,225 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:11] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:19,022 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:19] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:19,037 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:19] "OPTIONS /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:19,275 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:19] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:19,351 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:19] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:22,523 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:22] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:21:22,846 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:21:22] "GET /api/auth/profile HTTP/1.1" 200 -
+2025-10-10 17:30:48,685 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:30:48] "OPTIONS /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:30:48,687 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:30:48] "OPTIONS /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:30:48,954 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:30:48] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:30:49,016 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:30:49] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:24,105 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:24] "OPTIONS /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:24,112 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:24] "OPTIONS /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:33:24,381 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:24] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:24,449 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:24] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:33:28,320 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:28] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:28,620 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:28] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:33:32,271 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:32] "OPTIONS /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:32,277 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:32] "OPTIONS /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:33:32,524 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:32] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 17:33:32,603 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:33:32] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 17:34:07,446 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:34:07] "[33mOPTIONS /api/statistics/dashboard HTTP/1.1[0m" 404 -
+2025-10-10 17:58:12,650 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.129:5000
+2025-10-10 17:58:12,652 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-10 17:58:12,654 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 17:58:16,505 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 17:58:16,518 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 17:59:01,259 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:59:01] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 17:59:01,541 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:59:01] "[35m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 500 -
+2025-10-10 17:59:23,669 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:59:23] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 17:59:24,007 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 17:59:24] "[35m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 500 -
+2025-10-10 18:03:33,399 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:03:33] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 18:03:33,668 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:03:33] "[35m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 500 -
+2025-10-10 18:04:16,439 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\utils\\decorators.py', reloading
+2025-10-10 18:04:16,858 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:04:19,818 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:04:19,831 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 18:04:21,888 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\utils\\decorators.py', reloading
+2025-10-10 18:04:22,298 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:04:25,758 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:04:25,766 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 18:04:47,070 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\__init__.py', reloading
+2025-10-10 18:04:47,406 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:22:10,802 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.129:5000
+2025-10-10 18:22:10,803 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-10 18:22:10,806 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:22:13,827 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:22:13,875 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 18:22:16,530 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:22:16] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 18:22:16,797 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:22:16] "[31m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 401 -
+2025-10-10 18:27:16,822 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:27:16] "[31m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 401 -
+2025-10-10 18:28:15,396 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:15] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 18:28:16,500 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:16] "POST /api/auth/login HTTP/1.1" 200 -
+2025-10-10 18:28:22,646 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:22] "OPTIONS /api/auth/logout HTTP/1.1" 200 -
+2025-10-10 18:28:22,964 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:22] "POST /api/auth/logout HTTP/1.1" 200 -
+2025-10-10 18:28:26,390 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:26] "GET /api/subjects?status=active&page=1&size=12 HTTP/1.1" 200 -
+2025-10-10 18:28:26,697 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:26] "GET /api/exams?status=published&page=1&size=6 HTTP/1.1" 200 -
+2025-10-10 18:28:33,424 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:33] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-10-10 18:28:34,754 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:34] "POST /api/auth/login HTTP/1.1" 200 -
+2025-10-10 18:28:38,350 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:38] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 18:28:38,684 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:38] "[31m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 400 -
+2025-10-10 18:28:59,379 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:59] "OPTIONS /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1" 200 -
+2025-10-10 18:28:59,703 - werkzeug - INFO - 127.0.0.1 - - [10/Oct/2025 18:28:59] "[31m[1mGET /api/users?page=1&size=10&keyword=&role=&status= HTTP/1.1[0m" 400 -
+2025-10-10 18:29:50,703 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\utils\\validators.py', reloading
+2025-10-10 18:29:51,330 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:29:55,693 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:29:55,712 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 18:30:00,983 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\api\\users.py', reloading
+2025-10-10 18:30:01,419 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:30:04,860 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:30:04,872 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 18:30:12,275 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\api\\users.py', reloading
+2025-10-10 18:30:13,261 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 18:30:18,144 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 18:30:18,168 - werkzeug - INFO -  * Debugger PIN: 808-581-546

@@ -76,75 +76,114 @@ const routes = [
   },
   {
     path: '/admin',
-    name: 'Admin',
-    component: () => import('@/components/layout/AppLayout.vue'),
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/AdminDashboard.vue'),
     meta: { 
-      title: '管理后台',
+      title: '管理员控制台',
       requiresAuth: true,
       requiresRole: ['admin']
-    },
-    children: [
-      {
-        path: 'users',
-        name: 'UserManagement',
-        component: () => import('@/views/admin/UserManagement.vue'),
-        meta: { title: '用户管理' }
-      },
-      {
-        path: 'subjects',
-        name: 'SubjectManagement',
-        component: () => import('@/views/admin/SubjectManagement.vue'),
-        meta: { title: '科目管理' }
-      },
-      {
-        path: 'questions',
-        name: 'QuestionManagement',
-        component: () => import('@/views/admin/QuestionManagement.vue'),
-        meta: { title: '试题管理' }
-      },
-      {
-        path: 'exams',
-        name: 'ExamManagement',
-        component: () => import('@/views/admin/ExamManagement.vue'),
-        meta: { title: '考试管理' }
-      },
-      {
-        path: 'question-bank',
-        name: 'QuestionBank',
-        component: () => import('@/views/admin/QuestionBank.vue'),
-        meta: { title: '题库管理' }
-      },
-      {
-        path: 'exam-creation',
-        name: 'ExamCreation',
-        component: () => import('@/views/admin/ExamCreation.vue'),
-        meta: { title: '创建考试' }
-      },
-      {
-        path: 'exam-analysis',
-        name: 'ExamAnalysis',
-        component: () => import('@/views/admin/ExamAnalysis.vue'),
-        meta: { title: '考试分析' }
-      },
-      {
-        path: 'permissions',
-        name: 'PermissionManagement',
-        component: () => import('@/views/admin/PermissionManagement.vue'),
-        meta: { title: '权限管理' }
-      },
-      {
-        path: 'import-export',
-        name: 'ImportExportManagement',
-        component: () => import('@/views/admin/ImportExportManagement.vue'),
-        meta: { title: '数据导入导出' }
-      },
-      {
-        path: 'statistics',
-        name: 'StatisticsAnalysis',
-        component: () => import('@/views/admin/StatisticsAnalysis.vue'),
-        meta: { title: '统计分析' }
-      }
-    ]
+    }
+  },
+  // 独立的管理页面路由
+  {
+    path: '/admin/users',
+    name: 'UserManagement',
+    component: () => import('@/views/admin/UserManagement.vue'),
+    meta: { 
+      title: '用户管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/subjects',
+    name: 'SubjectManagement',
+    component: () => import('@/views/admin/SubjectManagement.vue'),
+    meta: { 
+      title: '科目管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/questions',
+    name: 'QuestionManagement',
+    component: () => import('@/views/admin/QuestionManagement.vue'),
+    meta: { 
+      title: '试题管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/exams',
+    name: 'ExamManagement',
+    component: () => import('@/views/admin/ExamManagement.vue'),
+    meta: { 
+      title: '考试管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/question-bank',
+    name: 'QuestionBank',
+    component: () => import('@/views/admin/QuestionBank.vue'),
+    meta: { 
+      title: '题库管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/exam-creation',
+    name: 'ExamCreation',
+    component: () => import('@/views/admin/ExamCreation.vue'),
+    meta: { 
+      title: '创建考试',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/exam-analysis',
+    name: 'ExamAnalysis',
+    component: () => import('@/views/admin/ExamAnalysis.vue'),
+    meta: { 
+      title: '考试分析',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/permissions',
+    name: 'PermissionManagement',
+    component: () => import('@/views/admin/PermissionManagement.vue'),
+    meta: { 
+      title: '权限管理',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/import-export',
+    name: 'ImportExportManagement',
+    component: () => import('@/views/admin/ImportExportManagement.vue'),
+    meta: { 
+      title: '数据导入导出',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
+    path: '/admin/statistics',
+    name: 'StatisticsAnalysis',
+    component: () => import('@/views/admin/StatisticsAnalysis.vue'),
+    meta: { 
+      title: '统计分析',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
   },
   {
     path: '/user',
@@ -232,12 +271,21 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   // 设置页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - ExamSphere`
+  }
+  
+  // 如果有token但没有用户信息，尝试恢复用户状态
+  if (authStore.token && !authStore.user) {
+    try {
+      await authStore.initUser()
+    } catch (error) {
+      console.error('恢复用户状态失败:', error)
+    }
   }
   
   // 检查是否需要认证
@@ -252,9 +300,13 @@ router.beforeEach((to, from, next) => {
     return
   }
   
-  // 已登录用户访问登录页面，重定向到仪表盘
+  // 已登录用户访问登录页面，根据角色重定向
   if ((to.path === '/login' || to.path === '/register') && authStore.isLoggedIn) {
-    next('/dashboard')
+    if (authStore.userRole === 'admin') {
+      next('/admin')
+    } else {
+      next('/user/dashboard')
+    }
     return
   }
   

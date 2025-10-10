@@ -7,7 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // 创建axios实例
 const request = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: process.env.VUE_APP_API_BASE_URL || '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
