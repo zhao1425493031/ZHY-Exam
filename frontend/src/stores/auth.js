@@ -99,7 +99,6 @@ export const useAuthStore = defineStore('auth', () => {
     // 计算属性
     userRole,
     isAdmin,
-    isUser,
     
     // 方法
     loginAction,

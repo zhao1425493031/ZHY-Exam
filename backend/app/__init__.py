@@ -47,9 +47,10 @@ def create_app(config_name=None):
     
     # 初始化限流器
     limiter = Limiter(
-        app,
         key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"]
+        app=app,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri="memory://"  # 使用内存存储，生产环境建议使用Redis
     )
     
     # 注册蓝图

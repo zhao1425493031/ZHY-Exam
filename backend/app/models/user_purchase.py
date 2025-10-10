@@ -39,3 +39,4 @@ class UserPurchase(BaseModel):
 
     def __repr__(self):
         return f'<UserPurchase User:{self.user_id} Subject:{self.subject_id}>'
+

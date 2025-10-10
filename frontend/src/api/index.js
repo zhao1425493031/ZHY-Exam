@@ -83,4 +83,19 @@ request.interceptors.response.use(
   }
 )
 
+// 导出所有API模块
+export { questionApi } from './questions'
+export { subjectApi } from './subjects'
+export { authApi } from './auth'
+export { examApi } from './exams'
+export { examScoringApi } from './exam_scoring'
+export { examMonitoringApi } from './exam_monitoring'
+export { learningProgressApi } from './learning_progress'
+export { notificationApi } from './notifications'
+export { fileApi } from './files'
+export { announcementApi } from './announcements'
+export { permissionApi } from './permissions'
+export { importExportApi } from './import_export'
+export { statisticsApi } from './statistics'
+
 export default request

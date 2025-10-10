@@ -93,6 +93,24 @@ const routes = [
         name: 'ExamAnalysis',
         component: () => import('@/views/admin/ExamAnalysis.vue'),
         meta: { title: '考试分析' }
+      },
+      {
+        path: 'permissions',
+        name: 'PermissionManagement',
+        component: () => import('@/views/admin/PermissionManagement.vue'),
+        meta: { title: '权限管理' }
+      },
+      {
+        path: 'import-export',
+        name: 'ImportExportManagement',
+        component: () => import('@/views/admin/ImportExportManagement.vue'),
+        meta: { title: '数据导入导出' }
+      },
+      {
+        path: 'statistics',
+        name: 'StatisticsAnalysis',
+        component: () => import('@/views/admin/StatisticsAnalysis.vue'),
+        meta: { title: '统计分析' }
       }
     ]
   },
@@ -129,6 +147,36 @@ const routes = [
         name: 'MyRecords',
         component: () => import('@/views/user/MyRecords.vue'),
         meta: { title: '我的记录' }
+      },
+      {
+        path: 'wrong-answers',
+        name: 'WrongAnswers',
+        component: () => import('@/views/user/WrongAnswers.vue'),
+        meta: { title: '错题管理' }
+      },
+      {
+        path: 'learning-progress',
+        name: 'LearningProgress',
+        component: () => import('@/views/user/LearningProgress.vue'),
+        meta: { title: '学习进度' }
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        component: () => import('@/views/user/Notifications.vue'),
+        meta: { title: '消息通知' }
+      },
+      {
+        path: 'file-management',
+        name: 'FileManagement',
+        component: () => import('@/views/user/FileManagement.vue'),
+        meta: { title: '文件管理' }
+      },
+      {
+        path: 'announcements',
+        name: 'AnnouncementManagement',
+        component: () => import('@/views/user/AnnouncementManagement.vue'),
+        meta: { title: '系统公告' }
       }
     ]
   },

@@ -320,6 +320,11 @@ def get_question_stats():
             'by_difficulty': difficulty_stats
         }
         
+        return jsonify(build_response(data=stats))
+        
+    except Exception as e:
+        return jsonify(build_error_response(500, f'获取试题统计失败: {str(e)}')), 500
+        
 @questions_bp.route('/import', methods=['POST'])
 @jwt_required()
 @require_roles('admin')

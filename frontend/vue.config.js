@@ -2,7 +2,7 @@ const { defineConfig } = require('@vue/cli-service')
 
 module.exports = defineConfig({
   transpileDependencies: true,
-  
+
   // 开发服务器配置
   devServer: {
     port: 8080,
@@ -17,13 +17,13 @@ module.exports = defineConfig({
       }
     }
   },
-  
+
   // 生产环境配置
   publicPath: process.env.NODE_ENV === 'production' ? '/examsphere/' : '/',
   outputDir: 'dist',
   assetsDir: 'static',
   productionSourceMap: false,
-  
+
   // Webpack 配置
   configureWebpack: {
     optimization: {

@@ -1,0 +1,30 @@
+2025-10-10 12:12:34,001 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.129:5000
+2025-10-10 12:12:34,002 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-10 12:12:34,005 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 12:12:36,050 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 12:12:36,062 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 12:20:25,579 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:20:25] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:20:51,615 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:20:51] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:20:52,222 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:20:52] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:21:08,665 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:21:08] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:21:19,860 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:21:19] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:22:11,709 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:11] "[33mGET /products HTTP/1.1[0m" 404 -
+2025-10-10 12:22:43,486 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:43] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:46,255 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:46] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:47,003 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:47,383 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:47,659 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:55,449 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:55] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:22:56,368 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:22:56] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:23:06,951 - werkzeug - INFO - 192.168.0.129 - - [10/Oct/2025 12:23:06] "[33mGET / HTTP/1.1[0m" 404 -
+2025-10-10 12:27:54,416 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\utils\\log_decorators.py', reloading
+2025-10-10 12:27:54,776 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 12:27:57,713 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 12:27:57,727 - werkzeug - INFO -  * Debugger PIN: 808-581-546
+2025-10-10 12:28:04,077 - werkzeug - INFO -  * Detected change in 'C:\\python\\workspace\\ExamSphere\\backend\\app\\services\\log_service.py', reloading
+2025-10-10 12:28:04,535 - werkzeug - INFO -  * Restarting with stat
+2025-10-10 12:28:08,117 - werkzeug - WARNING -  * Debugger is active!
+2025-10-10 12:28:08,146 - werkzeug - INFO -  * Debugger PIN: 808-581-546

@@ -1,3 +1,4 @@
+# Flask 核心框架
 Flask==2.3.3
 Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.5
@@ -5,11 +6,58 @@ Flask-RESTful==0.3.10
 Flask-JWT-Extended==4.5.3
 Flask-CORS==4.0.0
 Flask-Limiter==3.5.0
+
+# 数据库相关
 PyMySQL==1.1.0
 SQLAlchemy==2.0.21
 Alembic==1.12.0
+
+# 工具库
 python-dotenv==1.0.0
 marshmallow==3.20.1
-celery==5.3.2
+werkzeug==2.3.7
+
+# 异步任务和缓存
+celery==5.3.4
 redis==5.0.1
+
+# 文件处理和Excel操作
+pandas==2.0.3
+openpyxl==3.1.2
+xlrd==2.0.1
+
+# 密码加密
+bcrypt==4.0.1
+
+# HTTP请求库
+requests==2.31.0
+urllib3==2.0.7
+
+# 支付相关库（可选）
+# 注意：以下支付库可能需要根据实际情况调整版本或使用替代方案
+# 支付宝支付
+# alipay-sdk-python==3.7.0
+
+# 微信支付  
+# wechatpay-python==1.2.0
+
+# PayPal支付
+# paypalrestsdk==1.13.3
+
+# 如果需要支付功能，请根据官方文档安装正确的SDK
+
+# 加密和签名
+cryptography==41.0.7
+pycryptodome==3.19.0
+
+# 日志处理
+loguru==0.7.2
+
+# 生产环境部署
 gunicorn==21.2.0
+
+# 开发工具（可选）
+# pytest==7.4.2
+# pytest-flask==1.2.0
+# black==23.7.0
+# flake8==6.0.0
