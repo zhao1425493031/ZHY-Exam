@@ -94,14 +94,14 @@ class QuestionSchema(Schema):
     subject_id = fields.Int(required=True)
     type = fields.Str(required=True, validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']))
     title = fields.Str(required=True, validate=validate.Length(min=5, max=1000))
-    content = fields.Str(validate=validate.Length(max=2000))
-    options = fields.List(fields.Str())
+    content = fields.Str(validate=validate.Length(max=2000), allow_none=True)
+    options = fields.List(fields.Str(), allow_none=True)
     answer = fields.Str(required=True)
-    explanation = fields.Str(validate=validate.Length(max=1000))
-    difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']))
-    tags = fields.List(fields.Str())
-    points = fields.Int(validate=validate.Range(min=1, max=100))
-    status = fields.Str(validate=validate.OneOf(['draft', 'published', 'archived']))
+    explanation = fields.Str(validate=validate.Length(max=1000), allow_none=True)
+    difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']), allow_none=True)
+    tags = fields.List(fields.Str(), allow_none=True)
+    points = fields.Int(validate=validate.Range(min=1, max=100), allow_none=True)
+    status = fields.Str(validate=validate.OneOf(['draft', 'published', 'archived']), allow_none=True)
 
 class ExamSchema(Schema):
     """考试数据验证器"""

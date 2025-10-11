@@ -23,7 +23,7 @@ export const questionApi = {
   // 获取试题详情
   getQuestion(id) {
     return request({
-      url: `/api/questions/${id}`,
+      url: `/questions/${id}`,
       method: 'get'
     })
   },
@@ -31,7 +31,7 @@ export const questionApi = {
   // 更新试题
   updateQuestion(id, data) {
     return request({
-      url: `/api/questions/${id}`,
+      url: `/questions/${id}`,
       method: 'put',
       data
     })
@@ -40,7 +40,7 @@ export const questionApi = {
   // 删除试题
   deleteQuestion(id) {
     return request({
-      url: `/api/questions/${id}`,
+      url: `/questions/${id}`,
       method: 'delete'
     })
   },
@@ -48,7 +48,7 @@ export const questionApi = {
   // 更新试题状态
   updateQuestionStatus(id, data) {
     return request({
-      url: `/api/questions/${id}/status`,
+      url: `/questions/${id}/status`,
       method: 'put',
       data
     })

@@ -179,12 +179,12 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="subject_id" label="科目" width="120">
+            <el-table-column prop="subject_id" label="科目" width="300">
               <template #default="{ row }">
                 {{ getSubjectName(row.subject_id) }}
               </template>
             </el-table-column>
-            <el-table-column prop="points" label="分值" width="80" />
+            <el-table-column prop="points" label="分值" width="100" />
             <el-table-column prop="created_at" label="创建时间" width="160">
               <template #default="{ row }">
                 {{ formatDate(row.created_at) }}
@@ -427,11 +427,29 @@ export default {
     
     const handleSubmit = async (questionData) => {
       try {
+        // 过滤掉不应该发送的字段
+        const submitData = { ...questionData }
+        delete submitData.id
+        delete submitData.created_at
+        delete submitData.updated_at
+        delete submitData.created_by
+        
+        // 转换选项格式：从对象数组转换为字符串数组
+        if (submitData.options && Array.isArray(submitData.options)) {
+          if (submitData.options.length > 0 && typeof submitData.options[0] === 'object') {
+            // 如果是对象数组，转换为字符串数组
+            submitData.options = submitData.options.map(opt => opt.text || opt)
+          }
+        } else if (submitData.options === null || submitData.options === undefined) {
+          // 对于essay和judge类型，如果options为null，删除该字段
+          delete submitData.options
+        }
+        
         if (editingQuestion.value) {
-          await questionApi.updateQuestion(editingQuestion.value.id, questionData)
+          await questionApi.updateQuestion(editingQuestion.value.id, submitData)
           ElMessage.success('试题更新成功')
         } else {
-          await questionApi.createQuestion(questionData)
+          await questionApi.createQuestion(submitData)
           ElMessage.success('试题创建成功')
         }
         
