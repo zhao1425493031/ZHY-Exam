@@ -1,8 +1,9 @@
 -- ExamSphere 考试管理系统数据库DDL脚本
--- 创建时间: 2024年3月15日
+-- 创建时间: 2024年3月15日  
 -- 数据库版本: MySQL 8.0+
 -- 字符集: utf8mb4
 -- 排序规则: utf8mb4_unicode_ci
+-- 注意: 所有外键约束和CHECK约束已移除，在应用层进行逻辑验证
 
 -- 设置字符集和排序规则
 SET NAMES utf8mb4;
@@ -46,9 +47,9 @@ CREATE TABLE `subjects` (
     `category` VARCHAR(50) COMMENT '科目分类',
     `status` ENUM('active', 'inactive') DEFAULT 'active' COMMENT '状态',
     `is_free` BOOLEAN DEFAULT TRUE COMMENT '是否免费',
-    `price` DECIMAL(10,2) DEFAULT 0.00 COMMENT '价格（元）',
+    `price` DECIMAL(10,2) DEFAULT 0.00 COMMENT '现价（元）',
     `original_price` DECIMAL(10,2) DEFAULT 0.00 COMMENT '原价（元）',
-    `discount_rate` DECIMAL(5,2) DEFAULT 100.00 COMMENT '折扣率（%）',
+    `discount_rate` INT DEFAULT 100 COMMENT '折扣率（%，1-100的整数）',
     `created_by` INT COMMENT '创建者ID',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -56,8 +57,7 @@ CREATE TABLE `subjects` (
     INDEX `idx_code` (`code`),
     INDEX `idx_status` (`status`),
     INDEX `idx_category` (`category`),
-    INDEX `idx_created_by` (`created_by`),
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='科目表';
 
 -- =============================================
@@ -85,9 +85,7 @@ CREATE TABLE `questions` (
     INDEX `idx_difficulty` (`difficulty`),
     INDEX `idx_status` (`status`),
     INDEX `idx_created_by` (`created_by`),
-    INDEX `idx_points` (`points`),
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_points` (`points`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='试题表';
 
 -- =============================================
@@ -114,9 +112,7 @@ CREATE TABLE `exams` (
     INDEX `idx_status` (`status`),
     INDEX `idx_created_by` (`created_by`),
     INDEX `idx_start_time` (`start_time`),
-    INDEX `idx_end_time` (`end_time`),
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_end_time` (`end_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试表';
 
 -- =============================================
@@ -139,9 +135,7 @@ CREATE TABLE `exam_records` (
     INDEX `idx_status` (`status`),
     INDEX `idx_start_time` (`start_time`),
     INDEX `idx_submit_time` (`submit_time`),
-    UNIQUE KEY `unique_exam_user` (`exam_id`, `user_id`),
-    FOREIGN KEY (`exam_id`) REFERENCES `exams`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    UNIQUE KEY `unique_exam_user` (`exam_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试记录表';
 
 -- =============================================
@@ -155,9 +149,7 @@ CREATE TABLE `user_favorites` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_question_id` (`question_id`),
-    UNIQUE KEY `unique_user_question` (`user_id`, `question_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE
+    UNIQUE KEY `unique_user_question` (`user_id`, `question_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户收藏表';
 
 -- =============================================
@@ -177,10 +169,7 @@ CREATE TABLE `wrong_answers` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_question_id` (`question_id`),
-    INDEX `idx_exam_record_id` (`exam_record_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`exam_record_id`) REFERENCES `exam_records`(`id`) ON DELETE SET NULL
+    INDEX `idx_exam_record_id` (`exam_record_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='错题记录表';
 
 -- =============================================
@@ -217,8 +206,7 @@ CREATE TABLE `notifications` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_type` (`type`),
     INDEX `idx_is_read` (`is_read`),
-    INDEX `idx_created_at` (`created_at`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    INDEX `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息通知表';
 
 -- =============================================
@@ -243,8 +231,7 @@ CREATE TABLE `files` (
     INDEX `idx_uploader_id` (`uploader_id`),
     INDEX `idx_related_type` (`related_type`),
     INDEX `idx_related_id` (`related_id`),
-    INDEX `idx_file_type` (`file_type`),
-    FOREIGN KEY (`uploader_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    INDEX `idx_file_type` (`file_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件管理表';
 
 -- =============================================
@@ -263,8 +250,7 @@ CREATE TABLE `operation_logs` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_operation_type` (`operation_type`),
-    INDEX `idx_created_at` (`created_at`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作日志表';
 
 -- =============================================
@@ -281,8 +267,7 @@ CREATE TABLE `exam_monitoring` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX `idx_exam_record_id` (`exam_record_id`),
     INDEX `idx_event_type` (`event_type`),
-    INDEX `idx_created_at` (`created_at`),
-    FOREIGN KEY (`exam_record_id`) REFERENCES `exam_records`(`id`) ON DELETE CASCADE
+    INDEX `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试监控表';
 
 -- =============================================
@@ -307,8 +292,7 @@ CREATE TABLE `announcements` (
     INDEX `idx_priority` (`priority`),
     INDEX `idx_publish_time` (`publish_time`),
     INDEX `idx_expire_time` (`expire_time`),
-    INDEX `idx_created_by` (`created_by`),
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统公告表';
 
 -- =============================================
@@ -344,8 +328,7 @@ CREATE TABLE `role_permissions` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX `idx_role` (`role`),
     INDEX `idx_permission_id` (`permission_id`),
-    UNIQUE KEY `unique_role_permission` (`role`, `permission_id`),
-    FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON DELETE CASCADE
+    UNIQUE KEY `unique_role_permission` (`role`, `permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色权限关联表';
 
 -- =============================================
@@ -366,9 +349,7 @@ CREATE TABLE `exam_templates` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX `idx_subject_id` (`subject_id`),
     INDEX `idx_is_public` (`is_public`),
-    INDEX `idx_created_by` (`created_by`),
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试模板表';
 
 -- =============================================
@@ -390,9 +371,7 @@ CREATE TABLE `learning_paths` (
     INDEX `idx_subject_id` (`subject_id`),
     INDEX `idx_difficulty_level` (`difficulty_level`),
     INDEX `idx_status` (`status`),
-    INDEX `idx_created_by` (`created_by`),
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='学习路径表';
 
 -- =============================================
@@ -414,9 +393,7 @@ CREATE TABLE `user_learning_paths` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_learning_path_id` (`learning_path_id`),
     INDEX `idx_status` (`status`),
-    UNIQUE KEY `unique_user_path` (`user_id`, `learning_path_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`learning_path_id`) REFERENCES `learning_paths`(`id`) ON DELETE CASCADE
+    UNIQUE KEY `unique_user_path` (`user_id`, `learning_path_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户学习路径表';
 
 -- =============================================
@@ -442,10 +419,7 @@ CREATE TABLE `qa_sessions` (
     INDEX `idx_teacher_id` (`teacher_id`),
     INDEX `idx_subject_id` (`subject_id`),
     INDEX `idx_status` (`status`),
-    INDEX `idx_priority` (`priority`),
-    FOREIGN KEY (`student_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`teacher_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE
+    INDEX `idx_priority` (`priority`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='在线答疑表';
 
 -- =============================================
@@ -470,9 +444,7 @@ CREATE TABLE `user_purchases` (
     INDEX `idx_subject_id` (`subject_id`),
     INDEX `idx_order_id` (`order_id`),
     INDEX `idx_status` (`status`),
-    INDEX `idx_payment_method` (`payment_method`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE
+    INDEX `idx_payment_method` (`payment_method`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户购买记录表';
 
 -- =============================================
@@ -499,9 +471,7 @@ CREATE TABLE `payment_orders` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_subject_id` (`subject_id`),
     INDEX `idx_status` (`status`),
-    INDEX `idx_payment_method` (`payment_method`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`) ON DELETE CASCADE
+    INDEX `idx_payment_method` (`payment_method`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='支付订单表';
 
 -- =============================================
@@ -525,9 +495,7 @@ CREATE TABLE `refund_records` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_status` (`status`),
     INDEX `idx_refund_method` (`refund_method`),
-    INDEX `idx_admin_id` (`admin_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`admin_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_admin_id` (`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='退款记录表';
 
 -- =============================================
@@ -554,8 +522,7 @@ CREATE TABLE `coupons` (
     INDEX `idx_status` (`status`),
     INDEX `idx_valid_from` (`valid_from`),
     INDEX `idx_valid_to` (`valid_to`),
-    INDEX `idx_created_by` (`created_by`),
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    INDEX `idx_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='优惠券表';
 
 -- =============================================
@@ -572,9 +539,7 @@ CREATE TABLE `user_coupons` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_coupon_id` (`coupon_id`),
     INDEX `idx_order_id` (`order_id`),
-    UNIQUE KEY `unique_user_coupon` (`user_id`, `coupon_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`coupon_id`) REFERENCES `coupons`(`id`) ON DELETE CASCADE
+    UNIQUE KEY `unique_user_coupon` (`user_id`, `coupon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户优惠券表';
 
 -- =============================================
@@ -597,9 +562,44 @@ CREATE TABLE `import_records` (
     INDEX `idx_import_type` (`import_type`),
     INDEX `idx_status` (`status`),
     INDEX `idx_imported_by` (`imported_by`),
-    INDEX `idx_created_at` (`created_at`),
-    FOREIGN KEY (`imported_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+    INDEX `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='导入记录表';
+
+-- =============================================
+-- 26. 系统日志表 (system_logs)
+-- =============================================
+DROP TABLE IF EXISTS `system_logs`;
+CREATE TABLE `system_logs` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT,
+    `log_level` ENUM('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL COMMENT '日志级别',
+    `module` VARCHAR(100) NOT NULL COMMENT '模块名称',
+    `message` TEXT NOT NULL COMMENT '日志消息',
+    `user_id` INT COMMENT '操作用户ID',
+    `ip_address` VARCHAR(45) COMMENT 'IP地址',
+    `user_agent` TEXT COMMENT '用户代理',
+    `request_data` JSON COMMENT '请求数据（JSON格式）',
+    `response_data` JSON COMMENT '响应数据（JSON格式）',
+    `execution_time` DECIMAL(10,3) COMMENT '执行时间（秒）',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX `idx_log_level` (`log_level`),
+    INDEX `idx_module` (`module`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统日志表';
+
+-- =============================================
+-- 27. 日志配置表 (log_configs)
+-- =============================================
+DROP TABLE IF EXISTS `log_configs`;
+CREATE TABLE `log_configs` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT,
+    `config_key` VARCHAR(100) UNIQUE NOT NULL COMMENT '配置键',
+    `config_value` TEXT NOT NULL COMMENT '配置值',
+    `description` TEXT COMMENT '配置描述',
+    `is_active` BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='日志配置表';
 
 -- =============================================
 -- 初始化数据
@@ -637,37 +637,6 @@ SELECT 'admin', `id` FROM `permissions`;
 INSERT INTO `role_permissions` (`role`, `permission_id`) 
 SELECT 'user', `id` FROM `permissions` WHERE `code` IN ('subject_management', 'question_management', 'exam_management');
 
--- 5.26 系统日志表
-CREATE TABLE system_logs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    log_level ENUM('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL,
-    module VARCHAR(100) NOT NULL COMMENT '模块名称',
-    message TEXT NOT NULL COMMENT '日志消息',
-    user_id INT COMMENT '操作用户ID',
-    ip_address VARCHAR(45) COMMENT 'IP地址',
-    user_agent TEXT COMMENT '用户代理',
-    request_data JSON COMMENT '请求数据',
-    response_data JSON COMMENT '响应数据',
-    execution_time DECIMAL(10,3) COMMENT '执行时间(秒)',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_log_level (log_level),
-    INDEX idx_module (module),
-    INDEX idx_user_id (user_id),
-    INDEX idx_created_at (created_at),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
--- 5.27 日志配置表
-CREATE TABLE log_configs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    config_key VARCHAR(100) UNIQUE NOT NULL COMMENT '配置键',
-    config_value TEXT NOT NULL COMMENT '配置值',
-    description TEXT COMMENT '配置描述',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- 插入默认日志配置
 INSERT INTO `log_configs` (`config_key`, `config_value`, `description`) VALUES
 ('LOG_LEVEL', 'INFO', '日志级别 (DEBUG, INFO, WARNING, ERROR, CRITICAL)'),
@@ -685,6 +654,7 @@ INSERT INTO `log_configs` (`config_key`, `config_value`, `description`) VALUES
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 显示创建结果
-SELECT 'ExamSphere 数据库创建完成！' AS message;
+SELECT 'ExamSphere 数据库创建完成！（无外键约束版本）' AS message;
 SELECT COUNT(*) AS table_count FROM information_schema.tables WHERE table_schema = 'examsphere';
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'examsphere' ORDER BY table_name;
+

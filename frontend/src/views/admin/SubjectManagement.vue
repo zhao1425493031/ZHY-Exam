@@ -340,10 +340,24 @@ export default {
     const handleSubmit = async (subjectData) => {
       try {
         if (editingSubject.value) {
-          await subjectsApi.updateSubject(editingSubject.value.id, subjectData)
+          // 更新科目时，过滤掉不需要的字段
+          const updateData = { ...subjectData }
+          delete updateData.id
+          delete updateData.created_at
+          delete updateData.updated_at
+          delete updateData.created_by
+          
+          await subjectsApi.updateSubject(editingSubject.value.id, updateData)
           ElMessage.success('科目更新成功')
         } else {
-          await subjectsApi.createSubject(subjectData)
+          // 创建科目时，过滤掉不需要的字段
+          const createData = { ...subjectData }
+          delete createData.id
+          delete createData.created_at
+          delete createData.updated_at
+          delete createData.created_by
+          
+          await subjectsApi.createSubject(createData)
           ElMessage.success('科目创建成功')
         }
         

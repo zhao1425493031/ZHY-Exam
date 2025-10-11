@@ -4,7 +4,7 @@
       ref="formRef"
       :model="form"
       :rules="rules"
-      label-width="100px"
+      label-width="120px"
       @submit.prevent="handleSubmit"
     >
       <el-row :gutter="20">
@@ -22,7 +22,7 @@
           <el-form-item label="科目代码" prop="code">
             <el-input
               v-model="form.code"
-              placeholder="请输入科目代码"
+              placeholder="请输入科目代码（大写字母、数字、下划线）"
               maxlength="20"
               show-word-limit
             />
@@ -68,72 +68,113 @@
       <el-divider content-position="left">收费设置</el-divider>
 
       <el-row :gutter="20">
-        <el-col :span="8">
+        <el-col :span="24">
           <el-form-item label="收费类型" prop="is_free">
             <el-radio-group v-model="form.is_free" @change="handleFreeChange">
-              <el-radio :label="true">免费</el-radio>
-              <el-radio :label="false">收费</el-radio>
+              <el-radio :value="true">免费</el-radio>
+              <el-radio :value="false">收费</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
-        <el-col :span="8" v-if="!form.is_free">
-          <el-form-item label="价格" prop="price">
-            <el-input-number
-              v-model="form.price"
-              :min="0"
-              :max="9999.99"
-              :precision="2"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8" v-if="!form.is_free">
-          <el-form-item label="原价" prop="original_price">
-            <el-input-number
-              v-model="form.original_price"
-              :min="0"
-              :max="9999.99"
-              :precision="2"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
       </el-row>
 
-      <el-row :gutter="20" v-if="!form.is_free">
-        <el-col :span="8">
-          <el-form-item label="折扣率" prop="discount_rate">
-            <el-input-number
-              v-model="form.discount_rate"
-              :min="0"
-              :max="100"
-              :precision="2"
-              style="width: 100%"
-            />
-            <span class="form-tip">%</span>
-          </el-form-item>
-        </el-col>
-        <el-col :span="16">
-          <div class="price-preview">
-            <div class="price-item">
-              <span class="label">原价：</span>
-              <span class="value">¥{{ form.original_price || 0 }}</span>
-            </div>
-            <div class="price-item">
-              <span class="label">折扣率：</span>
-              <span class="value">{{ form.discount_rate || 100 }}%</span>
-            </div>
-            <div class="price-item">
-              <span class="label">现价：</span>
-              <span class="value price-current">¥{{ calculatedPrice }}</span>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
+      <template v-if="!form.is_free">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="原价" prop="original_price">
+              <el-input-number
+                v-model="form.original_price"
+                :min="0"
+                :max="99999.99"
+                :precision="2"
+                :step="10"
+                style="width: 100%"
+                placeholder="输入原价"
+                @change="handleOriginalPriceChange"
+              >
+                <template #prefix>¥</template>
+              </el-input-number>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="折扣率" prop="discount_rate">
+              <el-input-number
+                v-model="form.discount_rate"
+                :min="1"
+                :max="100"
+                :precision="0"
+                :step="5"
+                style="width: 100%"
+                placeholder="输入折扣率"
+                @change="handleDiscountRateChange"
+              >
+                <template #suffix>%</template>
+              </el-input-number>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="现价" prop="price">
+              <el-input-number
+                v-model="form.price"
+                :min="0"
+                :max="99999.99"
+                :precision="2"
+                :step="10"
+                style="width: 100%"
+                placeholder="自动计算"
+                :disabled="true"
+                readonly
+              >
+                <template #prefix>¥</template>
+              </el-input-number>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-alert
+              :title="priceCalculationTip"
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              <template #default>
+                <div class="price-calculation-info">
+                  <p><strong>计算规则：</strong></p>
+                  <ul>
+                    <li>修改 <strong>原价</strong> 或 <strong>折扣率</strong> → 自动计算 <strong>现价</strong></li>
+                    <li>现价为只读字段，根据原价和折扣率自动计算</li>
+                    <li>公式：现价 = 原价 × (折扣率 / 100)</li>
+                  </ul>
+                  <div class="price-preview-box">
+                    <div class="preview-item">
+                      <span class="label">原价：</span>
+                      <span class="value">¥{{ formatPrice(form.original_price) }}</span>
+                    </div>
+                    <div class="preview-item">
+                      <span class="label">×</span>
+                      <span class="value">{{ form.discount_rate }}%</span>
+                    </div>
+                    <div class="preview-item">
+                      <span class="label">=</span>
+                      <span class="value price-highlight">¥{{ formatPrice(form.price) }}</span>
+                    </div>
+                    <div class="preview-item savings" v-if="form.original_price > form.price">
+                      <span class="label">节省：</span>
+                      <span class="value">¥{{ formatPrice(form.original_price - form.price) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </el-alert>
+          </el-col>
+        </el-row>
+      </template>
+
+      <el-form-item style="margin-top: 24px;">
         <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          {{ subject ? '更新' : '创建' }}
+          {{ subject ? '更新科目' : '创建科目' }}
         </el-button>
         <el-button @click="handleCancel">取消</el-button>
         <el-button v-if="subject" @click="handlePreview">预览</el-button>
@@ -155,7 +196,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import SubjectPreview from '@/components/subject/SubjectPreview.vue'
 
@@ -175,6 +216,9 @@ export default {
     const formRef = ref()
     const submitting = ref(false)
     const showPreview = ref(false)
+    
+    // 用于防止循环计算的标志
+    const isCalculating = ref(false)
 
     // 表单数据
     const form = reactive({
@@ -186,7 +230,7 @@ export default {
       is_free: true,
       price: 0.00,
       original_price: 0.00,
-      discount_rate: 100.00
+      discount_rate: 100
     })
 
     // 表单验证规则
@@ -200,7 +244,7 @@ export default {
         { required: true, message: '请输入科目代码', trigger: 'blur' },
         { min: 2, message: '科目代码至少2个字符', trigger: 'blur' },
         { max: 20, message: '科目代码不能超过20个字符', trigger: 'blur' },
-        { pattern: /^[a-zA-Z0-9_-]+$/, message: '科目代码只能包含字母、数字、下划线和连字符', trigger: 'blur' }
+        { pattern: /^[A-Z0-9_]+$/, message: '科目代码只能包含大写字母、数字、下划线', trigger: 'blur' }
       ],
       category: [
         { max: 50, message: '分类不能超过50个字符', trigger: 'blur' }
@@ -213,44 +257,125 @@ export default {
       ],
       price: [
         { required: true, message: '请输入价格', trigger: 'blur' },
-        { type: 'number', min: 0, max: 9999.99, message: '价格必须在0-9999.99之间', trigger: 'blur' }
+        { type: 'number', min: 0, max: 99999.99, message: '价格必须在0-99999.99之间', trigger: 'blur' }
       ],
       original_price: [
-        { type: 'number', min: 0, max: 9999.99, message: '原价必须在0-9999.99之间', trigger: 'blur' }
+        { required: true, message: '请输入原价', trigger: 'blur' },
+        { type: 'number', min: 0, max: 99999.99, message: '原价必须在0-99999.99之间', trigger: 'blur' }
       ],
       discount_rate: [
-        { type: 'number', min: 0, max: 100, message: '折扣率必须在0-100之间', trigger: 'blur' }
+        { required: true, message: '请输入折扣率', trigger: 'blur' },
+        { type: 'number', min: 1, max: 100, message: '折扣率必须在1-100之间', trigger: 'blur' }
       ]
     }
 
-    // 计算属性
-    const calculatedPrice = computed(() => {
-      if (form.is_free) return 0
-      if (!form.original_price || !form.discount_rate) return 0
-      return (form.original_price * form.discount_rate / 100).toFixed(2)
+    // 计算提示信息
+    const priceCalculationTip = computed(() => {
+      if (form.is_free) return '免费科目无需设置价格'
+      
+      const originalPrice = parseFloat(form.original_price) || 0
+      const discountRate = parseFloat(form.discount_rate) || 100
+      const price = parseFloat(form.price) || 0
+      
+      if (originalPrice === 0) return '请先输入原价'
+      if (discountRate === 100) return '无折扣，现价等于原价'
+      
+      const calculatedPrice = (originalPrice * discountRate / 100).toFixed(2)
+      const savings = (originalPrice - price).toFixed(2)
+      
+      return `折扣后价格：¥${calculatedPrice}，节省：¥${savings}`
     })
 
-    // 方法
+    // 格式化价格显示
+    const formatPrice = (price) => {
+      return parseFloat(price || 0).toFixed(2)
+    }
+
+    // 方法：处理免费/收费切换
     const handleFreeChange = (isFree) => {
       if (isFree) {
         form.price = 0
         form.original_price = 0
         form.discount_rate = 100
       } else {
-        form.price = 0
-        form.original_price = 0
-        form.discount_rate = 100
+        // 切换到收费时，设置默认值
+        if (form.original_price === 0) {
+          form.original_price = 100
+        }
+        if (form.discount_rate === 0) {
+          form.discount_rate = 100
+        }
+        // 自动计算现价
+        calculatePrice()
       }
     }
 
+    // 方法：当原价或折扣率改变时，自动计算现价
+    const calculatePrice = () => {
+      if (isCalculating.value) return
+      
+      isCalculating.value = true
+      
+      const originalPrice = parseFloat(form.original_price) || 0
+      const discountRate = parseFloat(form.discount_rate) || 100
+      
+      if (originalPrice > 0 && discountRate > 0) {
+        form.price = parseFloat((originalPrice * discountRate / 100).toFixed(2))
+      } else {
+        form.price = 0
+      }
+      
+      setTimeout(() => {
+        isCalculating.value = false
+      }, 100)
+    }
+
+
+    // 事件处理器
+    const handleOriginalPriceChange = (value) => {
+      if (form.is_free || !value || value === 0) return
+      calculatePrice()
+    }
+
+    const handleDiscountRateChange = (value) => {
+      if (form.is_free || !value) return
+      if (value < 1) {
+        form.discount_rate = 1
+      } else if (value > 100) {
+        form.discount_rate = 100
+      }
+      calculatePrice()
+    }
+
+
+    // 提交表单
     const handleSubmit = async () => {
       try {
         await formRef.value.validate()
         
-        // 计算实际价格
+        // 验证价格逻辑
         if (!form.is_free) {
-          form.price = parseFloat(calculatedPrice.value)
+          if (parseFloat(form.original_price) <= 0) {
+            ElMessage.error('原价必须大于0')
+            return
+          }
+          
+          if (parseFloat(form.price) > parseFloat(form.original_price)) {
+            ElMessage.error('现价不能高于原价')
+            return
+          }
+          
+          if (parseFloat(form.discount_rate) < 1 || parseFloat(form.discount_rate) > 100) {
+            ElMessage.error('折扣率必须在1-100之间')
+            return
+          }
+          
+          // 确保价格精度
+          form.price = parseFloat(form.price).toFixed(2)
+          form.original_price = parseFloat(form.original_price).toFixed(2)
+          form.discount_rate = Math.round(parseFloat(form.discount_rate))
         } else {
+          // 免费科目，清空价格信息
           form.price = 0
           form.original_price = 0
           form.discount_rate = 100
@@ -260,6 +385,7 @@ export default {
         emit('submit', { ...form })
       } catch (error) {
         console.error('Form validation error:', error)
+        ElMessage.error('表单验证失败，请检查输入')
       } finally {
         submitting.value = false
       }
@@ -273,29 +399,22 @@ export default {
       showPreview.value = true
     }
 
-    // 监听价格变化，自动计算折扣率
-    watch([() => form.price, () => form.original_price], ([price, originalPrice]) => {
-      if (!form.is_free && originalPrice > 0 && price > 0) {
-        form.discount_rate = ((price / originalPrice) * 100).toFixed(2)
-      }
-    })
-
-    // 监听折扣率变化，自动计算价格
-    watch([() => form.discount_rate, () => form.original_price], ([discountRate, originalPrice]) => {
-      if (!form.is_free && originalPrice > 0 && discountRate > 0) {
-        form.price = (originalPrice * discountRate / 100).toFixed(2)
-      }
-    })
-
     // 初始化表单数据
     const initForm = () => {
       if (props.subject) {
         Object.assign(form, props.subject)
         
-        // 确保数值类型
+        // 确保数值类型和精度
         form.price = parseFloat(form.price) || 0
         form.original_price = parseFloat(form.original_price) || 0
-        form.discount_rate = parseFloat(form.discount_rate) || 100
+        form.discount_rate = parseInt(form.discount_rate) || 100
+        
+        // 如果是免费科目
+        if (form.is_free) {
+          form.price = 0
+          form.original_price = 0
+          form.discount_rate = 100
+        }
       }
     }
 
@@ -308,8 +427,11 @@ export default {
       showPreview,
       form,
       rules,
-      calculatedPrice,
+      priceCalculationTip,
+      formatPrice,
       handleFreeChange,
+      handleOriginalPriceChange,
+      handleDiscountRateChange,
       handleSubmit,
       handleCancel,
       handlePreview
@@ -329,40 +451,80 @@ export default {
   font-size: 14px;
 }
 
-.price-preview {
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border-left: 4px solid #409eff;
+.price-calculation-info {
+  p {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: #606266;
+  }
+  
+  ul {
+    margin: 0 0 16px 0;
+    padding-left: 24px;
+    
+    li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #606266;
+      line-height: 1.6;
+      
+      strong {
+        color: #409eff;
+        font-weight: 600;
+      }
+    }
+  }
 }
 
-.price-item {
+.price-preview-box {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.price-item:last-child {
-  margin-bottom: 0;
-}
-
-.price-item .label {
-  color: #606266;
-  font-weight: 500;
-}
-
-.price-item .value {
-  color: #303133;
-}
-
-.price-current {
-  color: #e6a23c;
-  font-weight: 600;
-  font-size: 16px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 2px solid #409eff;
+  
+  .preview-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .label {
+      font-size: 14px;
+      color: #606266;
+      font-weight: 500;
+    }
+    
+    .value {
+      font-size: 18px;
+      color: #303133;
+      font-weight: 700;
+    }
+    
+    &.savings {
+      margin-left: auto;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+      border-radius: 8px;
+      
+      .label, .value {
+        color: white;
+        font-size: 15px;
+      }
+    }
+  }
+  
+  .price-highlight {
+    color: #e6a23c;
+    font-size: 22px;
+    font-weight: 800;
+  }
 }
 
 :deep(.el-form-item__label) {
-  font-weight: 500;
+  font-weight: 600;
+  color: #303133;
 }
 
 :deep(.el-textarea__inner) {
@@ -370,7 +532,53 @@ export default {
 }
 
 :deep(.el-divider__text) {
-  font-weight: 500;
-  color: #303133;
+  font-weight: 600;
+  color: #409eff;
+  font-size: 16px;
+}
+
+:deep(.el-input-number) {
+  width: 100%;
+  
+  .el-input__wrapper {
+    border-radius: 8px;
+  }
+  
+  .el-input__inner {
+    text-align: left;
+    font-weight: 500;
+  }
+  
+  &.is-disabled {
+    .el-input__wrapper {
+      background-color: #f5f7fa;
+      border-color: #e4e7ed;
+      
+      .el-input__inner {
+        color: #606266;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+:deep(.el-alert) {
+  border-radius: 12px;
+  padding: 16px;
+  
+  .el-alert__content {
+    width: 100%;
+  }
+}
+
+:deep(.el-radio-group) {
+  .el-radio {
+    margin-right: 24px;
+    
+    .el-radio__label {
+      font-weight: 500;
+      font-size: 15px;
+    }
+  }
 }
 </style>

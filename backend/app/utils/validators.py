@@ -1,5 +1,5 @@
 # 数据验证器
-from marshmallow import Schema, fields, validate, ValidationError
+from marshmallow import Schema, fields, validate, ValidationError, validates_schema
 
 class UserSchema(Schema):
     """用户数据验证器"""
@@ -46,10 +46,48 @@ class SubjectSchema(Schema):
     description = fields.Str(validate=validate.Length(max=500))
     category = fields.Str(validate=validate.Length(max=50))
     status = fields.Str(validate=validate.OneOf(['active', 'inactive']))
-    is_free = fields.Bool(default=True)
-    price = fields.Decimal(places=2, validate=validate.Range(min=0, max=9999.99))
-    original_price = fields.Decimal(places=2, validate=validate.Range(min=0, max=9999.99))
-    discount_rate = fields.Decimal(places=2, validate=validate.Range(min=0, max=100))
+    is_free = fields.Bool(missing=True)
+    price = fields.Decimal(places=2, validate=validate.Range(min=0, max=99999.99), missing=0)
+    original_price = fields.Decimal(places=2, validate=validate.Range(min=0, max=99999.99), missing=0)
+    discount_rate = fields.Integer(validate=validate.Range(min=1, max=100), missing=100)
+    
+    @validates_schema
+    def validate_pricing(self, data, **kwargs):
+        """验证价格逻辑"""
+        # 如果是免费科目，跳过价格验证
+        if data.get('is_free', True):
+            data['price'] = 0
+            data['original_price'] = 0
+            data['discount_rate'] = 100
+            return
+        
+        # 如果是收费科目，必须有原价
+        original_price = float(data.get('original_price', 0))
+        price = float(data.get('price', 0))
+        discount_rate = int(data.get('discount_rate', 100))
+        
+        # 验证原价
+        if original_price <= 0:
+            raise ValidationError('收费科目的原价必须大于0', field_name='original_price')
+        
+        # 验证现价不能高于原价
+        if price > original_price:
+            raise ValidationError('现价不能高于原价', field_name='price')
+        
+        # 验证折扣率
+        if discount_rate < 1 or discount_rate > 100:
+            raise ValidationError('折扣率必须在1-100之间', field_name='discount_rate')
+        
+        # 验证价格计算是否合理（允许1%的误差）
+        calculated_price = original_price * discount_rate / 100
+        price_difference = abs(price - calculated_price)
+        max_allowed_difference = original_price * 0.01  # 1%的误差
+        
+        if price_difference > max_allowed_difference:
+            raise ValidationError(
+                f'价格计算不匹配: 原价 {original_price} × 折扣率 {discount_rate}% = {calculated_price:.2f}, 但现价为 {price}',
+                field_name='price'
+            )
 
 class QuestionSchema(Schema):
     """试题数据验证器"""
