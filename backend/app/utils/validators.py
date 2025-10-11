@@ -141,6 +141,8 @@ class SearchSchema(Schema):
     type = fields.Str(validate=validate.OneOf(['single', 'multiple', 'judge', 'fill', 'essay']), allow_none=True)
     difficulty = fields.Str(validate=validate.OneOf(['easy', 'medium', 'hard']), allow_none=True)
     category = fields.Str(validate=validate.Length(max=50), allow_none=True)
+    tag = fields.Str(validate=validate.Length(max=50), allow_none=True)
+    ids = fields.Str(validate=validate.Length(max=500), allow_none=True)
     # 添加分页字段
     page = fields.Int(missing=1, validate=validate.Range(min=1))
     size = fields.Int(missing=10, validate=validate.Range(min=1, max=100))

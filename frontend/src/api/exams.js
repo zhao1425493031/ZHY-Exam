@@ -131,5 +131,15 @@ export const examApi = {
       url: `/exams/${id}/availability`,
       method: 'get'
     })
+  },
+
+  // 导出考试
+  exportExams(params) {
+    return request({
+      url: '/exams/export',
+      method: 'get',
+      params,
+      responseType: 'blob'
+    })
   }
 }

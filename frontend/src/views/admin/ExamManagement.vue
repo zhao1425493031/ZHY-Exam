@@ -6,22 +6,22 @@
         <div class="header-left">
           <div class="page-title">
             <div class="title-icon">
-              <el-icon><Document /></el-icon>
+              <el-icon><DocumentChecked /></el-icon>
             </div>
             <div class="title-text">
               <h1>考试管理</h1>
-              <p>创建和管理考试</p>
+              <p>管理所有考试和考试配置</p>
             </div>
           </div>
         </div>
         <div class="header-right">
-          <el-button type="primary" @click="showCreateDialog = true" class="add-btn">
+          <el-button type="primary" @click="$router.push('/admin/exam-creation')" class="add-btn">
             <el-icon><Plus /></el-icon>
             <span>创建考试</span>
           </el-button>
-          <el-button @click="showTemplateDialog = true" class="back-btn">
-            <el-icon><Document /></el-icon>
-            <span>考试模板</span>
+          <el-button @click="exportExams" class="back-btn">
+            <el-icon><Download /></el-icon>
+            <span>导出考试</span>
           </el-button>
           <el-button @click="$router.push('/admin')" class="back-btn">
             <el-icon><ArrowLeft /></el-icon>
@@ -100,13 +100,13 @@
         <div class="table-header">
           <div class="table-title">
             <h3>考试列表</h3>
-            <p>共 {{ pagination.total }} 个考试</p>
+            <p>共 {{ pagination.total }} 场考试</p>
           </div>
           <div class="table-actions" v-if="selectedExams.length > 0">
-            <el-button size="small" @click="batchUpdateStatus('published')" class="action-btn">
+            <el-button size="small" type="success" @click="batchUpdateStatus('published')" class="action-btn">
               批量发布
             </el-button>
-            <el-button size="small" @click="batchUpdateStatus('cancelled')" class="action-btn">
+            <el-button size="small" type="warning" @click="batchUpdateStatus('cancelled')" class="action-btn">
               批量取消
             </el-button>
             <el-button size="small" type="danger" @click="batchDelete" class="action-btn">
@@ -114,7 +114,7 @@
             </el-button>
           </div>
         </div>
-
+        
         <div class="table-container">
           <el-table
             :data="exams"
@@ -124,67 +124,59 @@
             stripe
             class="modern-table"
           >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="title" label="考试标题" min-width="200" show-overflow-tooltip>
-            <template #default="{ row }">
-              <div class="exam-info">
-                <div class="exam-avatar">{{ row.title.charAt(0).toUpperCase() }}</div>
-                <div class="exam-details">
-                  <div class="exam-title-text">{{ row.title }}</div>
-                  <div class="exam-meta">
-                    <el-tag :type="getStatusTagType(row.status)" size="small" class="meta-tag">
-                      {{ getStatusLabel(row.status) }}
-                    </el-tag>
-                    <span class="exam-stats">
-                      {{ row.question_count }}题 | {{ row.total_points }}分 | {{ formatDuration(row.duration) }}
-                    </span>
+            <el-table-column type="selection" width="55" />
+            <el-table-column prop="id" label="ID" width="80" />
+            <el-table-column prop="title" label="考试标题" min-width="200" show-overflow-tooltip>
+              <template #default="{ row }">
+                <div class="exam-info">
+                  <div class="exam-avatar">{{ row.title.charAt(0) }}</div>
+                  <div class="exam-details">
+                    <div class="exam-title-text">{{ row.title }}</div>
+                    <div class="exam-meta">
+                      <el-tag :type="getStatusTagType(row.status)" size="small" class="meta-tag">
+                        {{ getStatusLabel(row.status) }}
+                      </el-tag>
+                      <span class="meta-text">{{ row.question_count }}题 / {{ row.duration }}分钟</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="subject_id" label="科目" width="120">
-            <template #default="{ row }">
-              {{ getSubjectName(row.subject_id) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
-          <el-table-column label="时间设置" width="200">
-            <template #default="{ row }">
-              <div class="time-info">
-                <div v-if="row.start_time" class="time-item">
-                  <span class="time-label">开始：</span>
-                  <span class="time-value">{{ formatDate(row.start_time, 'MM-DD HH:mm') }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="subject_id" label="科目" width="150">
+              <template #default="{ row }">
+                {{ getSubjectName(row.subject_id) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="total_points" label="总分" width="100" />
+            <el-table-column prop="start_time" label="开始时间" width="160">
+              <template #default="{ row }">
+                {{ formatDate(row.start_time) || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="end_time" label="结束时间" width="160">
+              <template #default="{ row }">
+                {{ formatDate(row.end_time) || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="220" fixed="right">
+              <template #default="{ row }">
+                <div class="action-buttons">
+                  <el-button size="small" type="primary" @click="viewExam(row)" class="action-btn view-btn">
+                    <el-icon><View /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="success" @click="editExam(row)" class="action-btn edit-btn">
+                    <el-icon><Edit /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="warning" @click="toggleExamStatus(row)" class="action-btn status-btn">
+                    <el-icon><Switch /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="danger" @click="deleteExam(row)" class="action-btn delete-btn">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
                 </div>
-                <div v-if="row.end_time" class="time-item">
-                  <span class="time-label">结束：</span>
-                  <span class="time-value">{{ formatDate(row.end_time, 'MM-DD HH:mm') }}</span>
-                </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="created_at" label="创建时间" width="160">
-            <template #default="{ row }">
-              {{ formatDate(row.created_at) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="180" fixed="right">
-            <template #default="{ row }">
-              <div class="action-buttons">
-                <el-button size="small" type="primary" @click="editExam(row)" class="action-btn edit-btn">
-                  <el-icon><Edit /></el-icon>
-                </el-button>
-                <el-button size="small" type="warning" @click="toggleExamStatus(row)" class="action-btn status-btn">
-                  <el-icon><Switch /></el-icon>
-                </el-button>
-                <el-button size="small" type="danger" @click="deleteExam(row)" class="action-btn delete-btn">
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
         
         <!-- 分页 -->
@@ -203,59 +195,107 @@
       </div>
     </div>
 
-    <!-- 创建/编辑考试对话框 -->
-    <el-dialog
-      v-model="showCreateDialog"
-      :title="editingExam ? '编辑考试' : '创建考试'"
-      width="80%"
-      :close-on-click-modal="false"
-    >
-      <ExamForm
-        v-if="showCreateDialog"
-        :exam="editingExam"
-        :subjects="subjects"
-        @submit="handleSubmit"
-        @cancel="showCreateDialog = false"
-      />
-    </el-dialog>
-
-    <!-- 查看考试对话框 -->
+    <!-- 查看考试详情对话框 -->
     <el-dialog
       v-model="showViewDialog"
       title="考试详情"
-      width="60%"
-    >
-      <ExamView
-        v-if="showViewDialog && viewingExam"
-        :exam="viewingExam"
-        :subjects="subjects"
-      />
-    </el-dialog>
-
-    <!-- 考试模板对话框 -->
-    <el-dialog
-      v-model="showTemplateDialog"
-      title="考试模板管理"
       width="70%"
+      class="modern-exam-dialog"
     >
-      <ExamTemplate
-        v-if="showTemplateDialog"
-        :subjects="subjects"
-        @success="handleTemplateSuccess"
-        @cancel="showTemplateDialog = false"
-      />
+      <div v-if="viewingExam" class="exam-detail">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="考试ID">{{ viewingExam.id }}</el-descriptions-item>
+          <el-descriptions-item label="考试标题">{{ viewingExam.title }}</el-descriptions-item>
+          <el-descriptions-item label="科目">{{ getSubjectName(viewingExam.subject_id) }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="getStatusTagType(viewingExam.status)">
+              {{ getStatusLabel(viewingExam.status) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="考试时长">{{ viewingExam.duration }} 分钟</el-descriptions-item>
+          <el-descriptions-item label="总分">{{ viewingExam.total_points }} 分</el-descriptions-item>
+          <el-descriptions-item label="题目数量">{{ viewingExam.question_count }} 题</el-descriptions-item>
+          <el-descriptions-item label="开始时间">{{ formatDate(viewingExam.start_time) || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="结束时间">{{ formatDate(viewingExam.end_time) || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ formatDate(viewingExam.created_at) }}</el-descriptions-item>
+          <el-descriptions-item label="考试描述" :span="2">
+            {{ viewingExam.description || '无描述' }}
+          </el-descriptions-item>
+        </el-descriptions>
+        
+        <div class="exam-questions" style="margin-top: 20px;">
+          <h4>试题列表（{{ viewingExam.question_count }}题）</h4>
+          <el-table :data="examQuestions" border style="margin-top: 10px;">
+            <el-table-column prop="id" label="题目ID" width="80" />
+            <el-table-column prop="title" label="题目" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="type" label="题型" width="100">
+              <template #default="{ row }">
+                {{ getTypeLabel(row.type) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="points" label="分值" width="80" />
+          </el-table>
+        </div>
+      </div>
     </el-dialog>
 
-    <!-- 考试统计对话框 -->
+    <!-- 编辑考试对话框 -->
     <el-dialog
-      v-model="showStatisticsDialog"
-      title="考试统计"
-      width="80%"
+      v-model="showEditDialog"
+      title="编辑考试"
+      width="70%"
+      class="modern-exam-dialog"
     >
-      <ExamStatistics
-        v-if="showStatisticsDialog && statisticsExam"
-        :exam="statisticsExam"
-      />
+      <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="120px">
+        <el-form-item label="考试标题" prop="title">
+          <el-input v-model="editForm.title" placeholder="请输入考试标题" />
+        </el-form-item>
+        <el-form-item label="考试描述" prop="description">
+          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入考试描述" />
+        </el-form-item>
+        <el-form-item label="科目" prop="subject_id">
+          <el-select v-model="editForm.subject_id" placeholder="请选择科目" style="width: 100%">
+            <el-option
+              v-for="subject in subjects"
+              :key="subject.id"
+              :label="subject.name"
+              :value="subject.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="考试时长" prop="duration">
+          <el-input-number v-model="editForm.duration" :min="1" :max="300" /> 分钟
+        </el-form-item>
+        <el-form-item label="开始时间" prop="start_time">
+          <el-date-picker
+            v-model="editForm.start_time"
+            type="datetime"
+            placeholder="选择开始时间"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="结束时间" prop="end_time">
+          <el-date-picker
+            v-model="editForm.end_time"
+            type="datetime"
+            placeholder="选择结束时间"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="考试状态" prop="status">
+          <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
+            <el-option label="草稿" value="draft" />
+            <el-option label="已发布" value="published" />
+            <el-option label="进行中" value="ongoing" />
+            <el-option label="已结束" value="finished" />
+            <el-option label="已取消" value="cancelled" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleEditSubmit">确定</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -263,71 +303,68 @@
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Document, Search, Refresh, ArrowLeft, Edit, Switch, Delete } from '@element-plus/icons-vue'
-import ExamForm from '@/components/exam/ExamForm.vue'
-import ExamView from '@/components/exam/ExamView.vue'
-import ExamTemplate from '@/components/exam/ExamTemplate.vue'
-import ExamStatistics from '@/components/exam/ExamStatistics.vue'
+import { 
+  Plus, Search, Refresh, Download, DocumentChecked, ArrowLeft,
+  Edit, Delete, View, Switch
+} from '@element-plus/icons-vue'
 import { examApi } from '@/api/exams'
-import { subjectApi } from '@/api/subjects'
-import { formatDate, formatDuration } from '@/utils/format'
+import { subjectsApi } from '@/api/subjects'
+import { questionApi } from '@/api/questions'
 
 export default {
   name: 'ExamManagement',
   components: {
-    ExamForm,
-    ExamView,
-    ExamTemplate,
-    ExamStatistics,
     Plus,
-    Document,
     Search,
     Refresh,
+    Download,
+    DocumentChecked,
     ArrowLeft,
     Edit,
-    Switch,
-    Delete
+    Delete,
+    View,
+    Switch
   },
   setup() {
-    // 响应式数据
     const loading = ref(false)
     const exams = ref([])
     const subjects = ref([])
     const selectedExams = ref([])
+    const showViewDialog = ref(false)
+    const showEditDialog = ref(false)
+    const viewingExam = ref(null)
+    const examQuestions = ref([])
+    const editFormRef = ref(null)
     
-    // 搜索表单
     const searchForm = reactive({
       keyword: '',
       subject_id: '',
-      status: '',
-      date_range: []
+      status: ''
     })
     
-    // 分页
     const pagination = reactive({
       page: 1,
       size: 10,
       total: 0
     })
     
-    // 对话框状态
-    const showCreateDialog = ref(false)
-    const showViewDialog = ref(false)
-    const showTemplateDialog = ref(false)
-    const showStatisticsDialog = ref(false)
-    const editingExam = ref(null)
-    const viewingExam = ref(null)
-    const statisticsExam = ref(null)
-    
-    // 计算属性
-    const getSubjectName = computed(() => {
-      return (subjectId) => {
-        const subject = subjects.value.find(s => s.id === subjectId)
-        return subject ? subject.name : '未知科目'
-      }
+    const editForm = reactive({
+      id: null,
+      title: '',
+      description: '',
+      subject_id: '',
+      duration: 60,
+      start_time: null,
+      end_time: null,
+      status: 'draft'
     })
     
-    // 方法
+    const editRules = {
+      title: [{ required: true, message: '请输入考试标题', trigger: 'blur' }],
+      subject_id: [{ required: true, message: '请选择科目', trigger: 'change' }],
+      duration: [{ required: true, message: '请输入考试时长', trigger: 'blur' }]
+    }
+    
     const loadExams = async () => {
       try {
         loading.value = true
@@ -336,24 +373,14 @@ export default {
           size: pagination.size,
           ...searchForm
         }
-        
-        // 处理日期范围
-        if (searchForm.date_range && searchForm.date_range.length === 2) {
-          params.start_date = searchForm.date_range[0]
-          params.end_date = searchForm.date_range[1]
-          delete params.date_range
-        }
-        
-        // 过滤空值
         Object.keys(params).forEach(key => {
           if (params[key] === '' || params[key] === null || params[key] === undefined) {
             delete params[key]
           }
         })
-        
         const response = await examApi.getExams(params)
-        exams.value = response.data.items
-        pagination.total = response.data.total
+        exams.value = response.data.items || response.data
+        pagination.total = response.data.total || exams.value.length
       } catch (error) {
         ElMessage.error('加载考试列表失败')
         console.error('Load exams error:', error)
@@ -364,7 +391,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)
@@ -377,11 +404,15 @@ export default {
     }
     
     const handleReset = () => {
-      Object.keys(searchForm).forEach(key => {
-        searchForm[key] = ''
-      })
+      searchForm.keyword = ''
+      searchForm.subject_id = ''
+      searchForm.status = ''
       pagination.page = 1
       loadExams()
+    }
+    
+    const handleSelectionChange = (selection) => {
+      selectedExams.value = selection
     }
     
     const handlePageChange = (page) => {
@@ -395,97 +426,75 @@ export default {
       loadExams()
     }
     
-    const handleSelectionChange = (selection) => {
-      selectedExams.value = selection
-    }
-    
-    const viewExam = (exam) => {
-      viewingExam.value = exam
-      showViewDialog.value = true
-    }
-    
-    const editExam = (exam) => {
-      editingExam.value = exam
-      showCreateDialog.value = true
-    }
-    
-    const handleSubmit = async (examData) => {
+    const viewExam = async (exam) => {
       try {
-        if (editingExam.value) {
-          await examApi.updateExam(editingExam.value.id, examData)
-          ElMessage.success('考试更新成功')
+        const response = await examApi.getExam(exam.id)
+        viewingExam.value = response.data
+        
+        // 加载考试题目
+        if (viewingExam.value.question_ids && viewingExam.value.question_ids.length > 0) {
+          const questionIds = viewingExam.value.question_ids.join(',')
+          const questionsResponse = await questionApi.getQuestions({ ids: questionIds })
+          examQuestions.value = questionsResponse.data.items || questionsResponse.data
         } else {
-          await examApi.createExam(examData)
-          ElMessage.success('考试创建成功')
+          examQuestions.value = []
         }
         
-        showCreateDialog.value = false
-        editingExam.value = null
-        loadExams()
+        showViewDialog.value = true
       } catch (error) {
-        ElMessage.error('保存考试失败')
-        console.error('Submit exam error:', error)
+        ElMessage.error('获取考试详情失败')
+        console.error('View exam error:', error)
       }
     }
     
-    const handleAction = async (command, exam) => {
-      switch (command) {
-        case 'toggle-status':
-          await toggleExamStatus(exam)
-          break
-        case 'duplicate':
-          await duplicateExam(exam)
-          break
-        case 'preview':
-          await previewExam(exam)
-          break
-        case 'statistics':
-          await showExamStatistics(exam)
-          break
-        case 'delete':
-          await deleteExam(exam)
-          break
+    const editExam = (exam) => {
+      Object.assign(editForm, {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description || '',
+        subject_id: exam.subject_id,
+        duration: exam.duration,
+        start_time: exam.start_time ? new Date(exam.start_time) : null,
+        end_time: exam.end_time ? new Date(exam.end_time) : null,
+        status: exam.status
+      })
+      showEditDialog.value = true
+    }
+    
+    const handleEditSubmit = async () => {
+      try {
+        await editFormRef.value.validate()
+        
+        const submitData = {
+          title: editForm.title,
+          description: editForm.description,
+          subject_id: editForm.subject_id,
+          duration: editForm.duration,
+          start_time: editForm.start_time,
+          end_time: editForm.end_time,
+          status: editForm.status
+        }
+        
+        await examApi.updateExam(editForm.id, submitData)
+        ElMessage.success('考试更新成功')
+        showEditDialog.value = false
+        loadExams()
+      } catch (error) {
+        ElMessage.error('更新考试失败')
+        console.error('Update exam error:', error)
       }
     }
     
     const toggleExamStatus = async (exam) => {
       try {
-        const newStatus = exam.status === 'published' ? 'draft' : 'published'
+        const newStatus = exam.status === 'published' ? 'cancelled' : 'published'
         await examApi.updateExamStatus(exam.id, { status: newStatus })
-        ElMessage.success(`考试已${newStatus === 'published' ? '发布' : '取消发布'}`)
+        ElMessage.success(`考试已${newStatus === 'published' ? '发布' : '取消'}`)
         loadExams()
       } catch (error) {
         ElMessage.error('更新考试状态失败')
         console.error('Toggle status error:', error)
       }
-    }
-    
-    const duplicateExam = async (exam) => {
-      try {
-        const duplicateData = { ...exam }
-        delete duplicateData.id
-        delete duplicateData.created_at
-        delete duplicateData.updated_at
-        duplicateData.title = duplicateData.title + ' (副本)'
-        duplicateData.status = 'draft'
-        
-        await examApi.createExam(duplicateData)
-        ElMessage.success('考试复制成功')
-        loadExams()
-      } catch (error) {
-        ElMessage.error('复制考试失败')
-        console.error('Duplicate exam error:', error)
-      }
-    }
-    
-    const previewExam = async (exam) => {
-      // TODO: 实现考试预览功能
-      ElMessage.info('考试预览功能开发中')
-    }
-    
-    const showExamStatistics = (exam) => {
-      statisticsExam.value = exam
-      showStatisticsDialog.value = true
     }
     
     const deleteExam = async (exam) => {
@@ -499,7 +508,6 @@ export default {
             type: 'warning'
           }
         )
-        
         await examApi.deleteExam(exam.id)
         ElMessage.success('考试删除成功')
         loadExams()
@@ -515,7 +523,13 @@ export default {
       try {
         const ids = selectedExams.value.map(e => e.id)
         await examApi.batchUpdateStatus({ ids, status })
-        ElMessage.success(`批量${status === 'published' ? '发布' : '取消'}成功`)
+        
+        const statusText = {
+          'published': '发布',
+          'cancelled': '取消'
+        }
+        ElMessage.success(`批量${statusText[status] || '更新'}成功`)
+        
         selectedExams.value = []
         loadExams()
       } catch (error) {
@@ -527,7 +541,7 @@ export default {
     const batchDelete = async () => {
       try {
         await ElMessageBox.confirm(
-          `确定要删除选中的 ${selectedExams.value.length} 个考试吗？`,
+          `确定要删除选中的 ${selectedExams.value.length} 场考试吗？`,
           '确认批量删除',
           {
             confirmButtonText: '确定',
@@ -549,38 +563,90 @@ export default {
       }
     }
     
-    const handleTemplateSuccess = () => {
-      showTemplateDialog.value = false
-      loadExams()
+    const exportExams = async () => {
+      try {
+        const params = {}
+        if (selectedExams.value.length > 0) {
+          params.exam_ids = selectedExams.value.map(e => e.id).join(',')
+        } else {
+          Object.assign(params, searchForm)
+        }
+        
+        const response = await examApi.exportExams(params)
+        
+        const blob = new Blob([response], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `考试导出_${new Date().toISOString().slice(0, 10)}.xlsx`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        ElMessage.success('导出成功')
+      } catch (error) {
+        ElMessage.error('导出失败')
+        console.error('Export exams error:', error)
+      }
     }
     
-    // 工具方法
+    const getSubjectName = (subjectId) => {
+      const subject = subjects.value.find(s => s.id === subjectId)
+      return subject ? subject.name : '未知科目'
+    }
+    
     const getStatusLabel = (status) => {
       const labels = {
-        draft: '草稿',
-        published: '已发布',
-        ongoing: '进行中',
-        finished: '已结束',
-        cancelled: '已取消'
+        'draft': '草稿',
+        'published': '已发布',
+        'ongoing': '进行中',
+        'finished': '已结束',
+        'cancelled': '已取消'
       }
       return labels[status] || status
     }
     
     const getStatusTagType = (status) => {
       const types = {
-        draft: 'info',
-        published: 'success',
-        ongoing: 'primary',
-        finished: 'warning',
-        cancelled: 'danger'
+        'draft': 'info',
+        'published': 'success',
+        'ongoing': 'warning',
+        'finished': '',
+        'cancelled': 'danger'
       }
-      return types[status] || 'default'
+      return types[status] || ''
     }
     
-    // 生命周期
+    const getTypeLabel = (type) => {
+      const labels = {
+        'single': '单选题',
+        'multiple': '多选题',
+        'judge': '判断题',
+        'fill': '填空题',
+        'essay': '简答题'
+      }
+      return labels[type] || type
+    }
+    
+    const formatDate = (date) => {
+      if (!date) return ''
+      const d = new Date(date)
+      if (isNaN(d.getTime())) return ''
+      return d.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+    
     onMounted(() => {
-      loadSubjects()
       loadExams()
+      loadSubjects()
     })
     
     return {
@@ -590,32 +656,32 @@ export default {
       selectedExams,
       searchForm,
       pagination,
-      showCreateDialog,
       showViewDialog,
-      showTemplateDialog,
-      showStatisticsDialog,
-      editingExam,
+      showEditDialog,
       viewingExam,
-      statisticsExam,
-      getSubjectName,
+      examQuestions,
+      editForm,
+      editRules,
+      editFormRef,
+      loadExams,
       handleSearch,
       handleReset,
+      handleSelectionChange,
       handlePageChange,
       handleSizeChange,
-      handleSelectionChange,
       viewExam,
       editExam,
+      handleEditSubmit,
       toggleExamStatus,
       deleteExam,
-      handleSubmit,
-      handleAction,
       batchUpdateStatus,
       batchDelete,
-      handleTemplateSuccess,
+      exportExams,
+      getSubjectName,
       getStatusLabel,
       getStatusTagType,
-      formatDate,
-      formatDuration
+      getTypeLabel,
+      formatDate
     }
   }
 }
@@ -855,23 +921,9 @@ export default {
         gap: 8px;
         
         .action-btn {
-          padding: 8px 16px;
           border-radius: 8px;
+          padding: 8px 16px;
           font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          
-          &:not(.el-button--danger) {
-            background: #f8f9fa;
-            border-color: #e9ecef;
-            color: #6c757d;
-            
-            &:hover {
-              background: #e9ecef;
-              transform: translateY(-1px);
-            }
-          }
         }
       }
     }
@@ -903,13 +955,13 @@ export default {
           .exam-avatar {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
+            border-radius: 10px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 600;
             font-size: 16px;
           }
           
@@ -919,26 +971,23 @@ export default {
             .exam-title-text {
               font-weight: 600;
               color: #1a1a1a;
-              margin-bottom: 8px;
-              line-height: 1.4;
+              margin-bottom: 4px;
             }
             
             .exam-meta {
               display: flex;
               gap: 8px;
               align-items: center;
-              flex-wrap: wrap;
               
               .meta-tag {
                 border-radius: 6px;
-                font-size: 12px;
                 padding: 2px 8px;
+                font-size: 12px;
               }
               
-              .exam-stats {
+              .meta-text {
                 font-size: 12px;
-                color: #666;
-                font-weight: 500;
+                color: #909399;
               }
             }
           }
@@ -952,7 +1001,7 @@ export default {
             border-radius: 8px;
             padding: 6px 12px;
             
-            &.edit-btn {
+            &.view-btn {
               background: #e3f2fd;
               border-color: #bbdefb;
               color: #1976d2;
@@ -963,27 +1012,25 @@ export default {
               }
             }
             
-            &.status-btn {
-              &.el-button--warning {
-                background: #fff3e0;
-                border-color: #ffcc02;
-                color: #f57c00;
-                
-                &:hover {
-                  background: #ffcc02;
-                  transform: translateY(-1px);
-                }
-              }
+            &.edit-btn {
+              background: #e8f5e9;
+              border-color: #c8e6c9;
+              color: #388e3c;
               
-              &.el-button--success {
-                background: #e8f5e8;
-                border-color: #4caf50;
-                color: #2e7d32;
-                
-                &:hover {
-                  background: #4caf50;
-                  transform: translateY(-1px);
-                }
+              &:hover {
+                background: #c8e6c9;
+                transform: translateY(-1px);
+              }
+            }
+            
+            &.status-btn {
+              background: #fff3e0;
+              border-color: #ffe0b2;
+              color: #f57c00;
+              
+              &:hover {
+                background: #ffe0b2;
+                transform: translateY(-1px);
               }
             }
             
@@ -1025,6 +1072,35 @@ export default {
           }
         }
       }
+    }
+  }
+}
+
+.exam-detail {
+  .exam-questions {
+    h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0 0 10px 0;
+    }
+  }
+}
+
+.modern-exam-dialog {
+  :deep(.el-dialog__header) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    
+    .el-dialog__title {
+      color: white;
+      font-weight: 700;
+      font-size: 20px;
+    }
+    
+    .el-dialog__headerbtn .el-dialog__close {
+      color: white;
+      font-size: 20px;
     }
   }
 }
