@@ -259,7 +259,7 @@
     <el-dialog
       v-model="showImportDialog"
       title="批量导入试题"
-      width="50%"
+      width="85%"
       class="modern-question-dialog"
     >
       <QuestionImport
@@ -280,7 +280,7 @@ import QuestionForm from '@/components/question/QuestionForm.vue'
 import QuestionView from '@/components/question/QuestionView.vue'
 import QuestionImport from '@/components/question/QuestionImport.vue'
 import { questionApi } from '@/api/questions'
-import { subjectApi } from '@/api/subjects'
+import { subjectsApi } from '@/api/subjects'
 import { formatDate } from '@/utils/format'
 
 export default {
@@ -368,7 +368,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)
@@ -538,7 +538,18 @@ export default {
     
     const downloadTemplate = async () => {
       try {
-        await questionApi.getImportTemplate()
+        const response = await questionApi.getImportTemplate()
+        const blob = new Blob([response], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `试题导入模板_${new Date().toISOString().slice(0, 10)}.xlsx`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
         ElMessage.success('模板下载成功')
       } catch (error) {
         ElMessage.error('下载模板失败')

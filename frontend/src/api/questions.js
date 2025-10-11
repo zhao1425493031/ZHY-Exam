@@ -79,11 +79,14 @@ export const questionApi = {
   },
 
   // 批量导入试题
-  importQuestions(data) {
+  importQuestions(formData) {
     return request({
-      url: '/questions/import',
+      url: '/import-export/questions/import',
       method: 'post',
-      data
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
   },
 

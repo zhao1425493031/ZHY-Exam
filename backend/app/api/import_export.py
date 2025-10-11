@@ -8,9 +8,11 @@ from app.models.exam_record import ExamRecord
 from app.utils.decorators import require_roles
 from app.utils.helpers import build_response, build_error_response
 from app.services.import_export_service import ImportExportService
+from app.services.log_service import LogService
 import logging
 import io
 import pandas as pd
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -23,23 +25,37 @@ import_export_bp = Blueprint('import_export', __name__, url_prefix='/api/import-
 def import_users():
     """导入用户数据（管理员）"""
     try:
+        current_user_id = get_jwt_identity()
+        LogService.log_info(f"[IMPORT_USERS] 开始导入用户数据，操作用户ID: {current_user_id}", 'IMPORT_EXPORT')
+        LogService.log_info(f"[IMPORT_USERS] 请求文件信息: {request.files}", 'IMPORT_EXPORT')
+        
         if 'file' not in request.files:
+            LogService.log_warning("[IMPORT_USERS] 请求中没有找到文件", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '没有选择文件')), 400
         
         file = request.files['file']
         if file.filename == '':
+            LogService.log_warning("[IMPORT_USERS] 文件名为空", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '没有选择文件')), 400
+        
+        LogService.log_info(f"[IMPORT_USERS] 接收到文件: {file.filename}, 文件大小: {file.content_length}", 'IMPORT_EXPORT')
         
         # 验证文件类型
         if not file.filename.endswith(('.xlsx', '.xls')):
+            LogService.log_warning(f"[IMPORT_USERS] 不支持的文件类型: {file.filename}", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '只支持Excel文件')), 400
         
         # 导入用户数据
+        LogService.log_info("[IMPORT_USERS] 开始调用ImportExportService.import_users", 'IMPORT_EXPORT')
         result = ImportExportService.import_users(file)
+        LogService.log_info(f"[IMPORT_USERS] 导入完成，结果: {result}", 'IMPORT_EXPORT')
         
         return jsonify(build_response(data=result))
         
     except Exception as e:
+        LogService.log_error(f"[IMPORT_USERS] 导入用户数据失败: {str(e)}", 'IMPORT_EXPORT')
+        LogService.log_error(f"[IMPORT_USERS] 错误类型: {type(e).__name__}", 'IMPORT_EXPORT')
+        LogService.log_error(f"[IMPORT_USERS] 错误堆栈: {traceback.format_exc()}", 'IMPORT_EXPORT')
         logger.error(f'Import users error: {str(e)}')
         return jsonify(build_error_response(500, f'导入用户数据失败: {str(e)}')), 500
 
@@ -75,28 +91,53 @@ def import_subjects():
 def import_questions():
     """导入试题数据（管理员）"""
     try:
+        current_user_id = get_jwt_identity()
+        LogService.log_info(f"[IMPORT_QUESTIONS] 开始导入试题数据，操作用户ID: {current_user_id}", 'IMPORT_EXPORT')
+        LogService.log_info(f"[IMPORT_QUESTIONS] 请求文件信息: {request.files}", 'IMPORT_EXPORT')
+        LogService.log_info(f"[IMPORT_QUESTIONS] 请求表单数据: {request.form}", 'IMPORT_EXPORT')
+        
         if 'file' not in request.files:
+            LogService.log_warning("[IMPORT_QUESTIONS] 请求中没有找到文件", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '没有选择文件')), 400
         
         file = request.files['file']
         if file.filename == '':
+            LogService.log_warning("[IMPORT_QUESTIONS] 文件名为空", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '没有选择文件')), 400
+        
+        LogService.log_info(f"[IMPORT_QUESTIONS] 接收到文件: {file.filename}, 文件大小: {file.content_length}", 'IMPORT_EXPORT')
         
         # 验证文件类型
         if not file.filename.endswith(('.xlsx', '.xls')):
+            LogService.log_warning(f"[IMPORT_QUESTIONS] 不支持的文件类型: {file.filename}", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '只支持Excel文件')), 400
         
         # 获取参数
         subject_id = request.form.get('subject_id')
+        LogService.log_info(f"[IMPORT_QUESTIONS] 获取到的subject_id: {subject_id}, 类型: {type(subject_id)}", 'IMPORT_EXPORT')
+        
         if not subject_id:
+            LogService.log_warning("[IMPORT_QUESTIONS] 没有提供subject_id", 'IMPORT_EXPORT')
             return jsonify(build_error_response(400, '请选择科目')), 400
         
+        try:
+            subject_id_int = int(subject_id)
+            LogService.log_info(f"[IMPORT_QUESTIONS] 转换后的subject_id: {subject_id_int}", 'IMPORT_EXPORT')
+        except ValueError as ve:
+            LogService.log_error(f"[IMPORT_QUESTIONS] subject_id转换失败: {str(ve)}, 原始值: {subject_id}", 'IMPORT_EXPORT')
+            return jsonify(build_error_response(400, '科目ID格式错误')), 400
+        
         # 导入试题数据
-        result = ImportExportService.import_questions(file, int(subject_id))
+        LogService.log_info(f"[IMPORT_QUESTIONS] 开始调用ImportExportService.import_questions，参数: file={file.filename}, subject_id={subject_id_int}", 'IMPORT_EXPORT')
+        result = ImportExportService.import_questions(file, subject_id_int)
+        LogService.log_info(f"[IMPORT_QUESTIONS] 导入完成，结果: {result}", 'IMPORT_EXPORT')
         
         return jsonify(build_response(data=result))
         
     except Exception as e:
+        LogService.log_error(f"[IMPORT_QUESTIONS] 导入试题数据失败: {str(e)}", 'IMPORT_EXPORT')
+        LogService.log_error(f"[IMPORT_QUESTIONS] 错误类型: {type(e).__name__}", 'IMPORT_EXPORT')
+        LogService.log_error(f"[IMPORT_QUESTIONS] 错误堆栈: {traceback.format_exc()}", 'IMPORT_EXPORT')
         logger.error(f'Import questions error: {str(e)}')
         return jsonify(build_error_response(500, f'导入试题数据失败: {str(e)}')), 500
 

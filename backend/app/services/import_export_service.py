@@ -89,10 +89,13 @@ class ImportExportService:
             # 记录导入记录
             import_record = ImportRecord(
                 import_type='users',
+                filename=file.filename,
+                file_path='',  # 文件路径
                 total_count=len(df),
                 success_count=success_count,
-                error_count=len(errors),
-                error_details='; '.join(errors) if errors else None
+                failed_count=len(errors),
+                error_details='; '.join(errors) if errors else None,
+                status='completed' if len(errors) == 0 else 'failed'
             )
             db.session.add(import_record)
             db.session.commit()
@@ -100,7 +103,7 @@ class ImportExportService:
             return {
                 'total_count': len(df),
                 'success_count': success_count,
-                'error_count': len(errors),
+                'failed_count': len(errors),
                 'errors': errors
             }
             
@@ -169,10 +172,13 @@ class ImportExportService:
             # 记录导入记录
             import_record = ImportRecord(
                 import_type='subjects',
+                filename=file.filename,
+                file_path='',  # 文件路径
                 total_count=len(df),
                 success_count=success_count,
-                error_count=len(errors),
-                error_details='; '.join(errors) if errors else None
+                failed_count=len(errors),
+                error_details='; '.join(errors) if errors else None,
+                status='completed' if len(errors) == 0 else 'failed'
             )
             db.session.add(import_record)
             db.session.commit()
@@ -180,7 +186,7 @@ class ImportExportService:
             return {
                 'total_count': len(df),
                 'success_count': success_count,
-                'error_count': len(errors),
+                'failed_count': len(errors),
                 'errors': errors
             }
             
@@ -201,11 +207,40 @@ class ImportExportService:
             # 读取Excel文件
             df = pd.read_excel(file)
             
+            # 记录原始列名
+            from app.services.log_service import LogService
+            LogService.log_info(f"[IMPORT_QUESTIONS_SERVICE] Excel原始列名: {list(df.columns)}", 'IMPORT_EXPORT')
+            
+            # 列名映射（中文到英文）
+            column_mapping = {
+                '题型': 'type',
+                '题目': 'title', 
+                '内容': 'content',
+                '选项': 'options',
+                '答案': 'answer',
+                '解析': 'explanation',
+                '难度': 'difficulty',
+                '标签': 'tags',
+                '分值': 'points',
+                '状态': 'status',
+                '科目ID': 'subject_id',
+                '科目名称': 'subject_name'
+            }
+            
+            # 重命名列
+            df = df.rename(columns=column_mapping)
+            
+            # 记录映射后的列名
+            LogService.log_info(f"[IMPORT_QUESTIONS_SERVICE] 映射后列名: {list(df.columns)}", 'IMPORT_EXPORT')
+            
             # 验证列名
             required_columns = ['type', 'title', 'answer']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
+                LogService.log_error(f"[IMPORT_QUESTIONS_SERVICE] 缺少必要列: {missing_columns}", 'IMPORT_EXPORT')
                 raise Exception(f'缺少必要列: {", ".join(missing_columns)}')
+            
+            LogService.log_info(f"[IMPORT_QUESTIONS_SERVICE] 开始处理 {len(df)} 行数据", 'IMPORT_EXPORT')
             
             # 验证数据
             errors = []
@@ -234,13 +269,32 @@ class ImportExportService:
                     # 处理选项（如果是选择题）
                     options = None
                     if question_type in ['single', 'multiple']:
-                        options_list = []
-                        for i in range(1, 7):  # 最多6个选项
-                            option_key = f'option_{i}'
-                            if option_key in df.columns and pd.notna(row[option_key]):
-                                options_list.append(str(row[option_key]).strip())
-                        if options_list:
-                            options = options_list
+                        if 'options' in df.columns and pd.notna(row['options']):
+                            options_str = str(row['options']).strip()
+                            if options_str:
+                                # 支持用|分隔的格式
+                                if '|' in options_str:
+                                    options = [opt.strip() for opt in options_str.split('|') if opt.strip()]
+                                else:
+                                    # 尝试解析JSON格式
+                                    try:
+                                        import json
+                                        options = json.loads(options_str)
+                                        if not isinstance(options, list):
+                                            options = [options_str]
+                                    except:
+                                        options = [options_str]
+                    
+                    # 处理标签
+                    tags = []
+                    if 'tags' in df.columns and pd.notna(row['tags']):
+                        tags_str = str(row['tags']).strip()
+                        if tags_str:
+                            # 支持用|分隔的格式
+                            if '|' in tags_str:
+                                tags = [tag.strip() for tag in tags_str.split('|') if tag.strip()]
+                            else:
+                                tags = [tags_str]
                     
                     # 创建试题
                     question = Question(
@@ -252,7 +306,8 @@ class ImportExportService:
                         answer=answer,
                         explanation=str(row.get('explanation', '')).strip() if pd.notna(row.get('explanation')) else '',
                         difficulty=str(row.get('difficulty', 'medium')).strip().lower(),
-                        points=int(row.get('points', 1)) if pd.notna(row.get('points')) else 1
+                        points=int(row.get('points', 1)) if pd.notna(row.get('points')) else 1,
+                        tags=tags
                     )
                     
                     db.session.add(question)
@@ -268,10 +323,13 @@ class ImportExportService:
             # 记录导入记录
             import_record = ImportRecord(
                 import_type='questions',
+                filename=file.filename,
+                file_path='',  # 文件路径
                 total_count=len(df),
                 success_count=success_count,
-                error_count=len(errors),
-                error_details='; '.join(errors) if errors else None
+                failed_count=len(errors),
+                error_details='; '.join(errors) if errors else None,
+                status='completed' if len(errors) == 0 else 'failed'
             )
             db.session.add(import_record)
             db.session.commit()
@@ -279,7 +337,7 @@ class ImportExportService:
             return {
                 'total_count': len(df),
                 'success_count': success_count,
-                'error_count': len(errors),
+                'failed_count': len(errors),
                 'errors': errors
             }
             
