@@ -359,7 +359,7 @@ export default {
   z-index: 100;
   
   .header-content {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 0 32px;
     display: flex;
@@ -502,7 +502,7 @@ export default {
   padding: 60px 32px;
   
   .stats-grid {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -605,7 +605,7 @@ export default {
   background: rgba(255, 255, 255, 0.05);
   
   .modules-grid {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -730,7 +730,7 @@ export default {
   padding: 60px 32px;
   
   .quick-actions-grid {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

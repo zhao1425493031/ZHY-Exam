@@ -1,128 +1,145 @@
 <template>
-  <div class="exam-management">
-    <div class="page-header">
-      <h1>考试管理</h1>
-      <div class="header-actions">
-        <el-button type="primary" @click="showCreateDialog = true">
-          <el-icon><Plus /></el-icon>
-          创建考试
-        </el-button>
-        <el-button @click="showTemplateDialog = true">
-          <el-icon><Document /></el-icon>
-          考试模板
-        </el-button>
+  <div class="modern-exam-management">
+    <!-- 现代化头部 -->
+    <div class="modern-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="page-title">
+            <div class="title-icon">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="title-text">
+              <h1>考试管理</h1>
+              <p>创建和管理考试</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <el-button type="primary" @click="showCreateDialog = true" class="add-btn">
+            <el-icon><Plus /></el-icon>
+            <span>创建考试</span>
+          </el-button>
+          <el-button @click="showTemplateDialog = true" class="back-btn">
+            <el-icon><Document /></el-icon>
+            <span>考试模板</span>
+          </el-button>
+          <el-button @click="$router.push('/admin')" class="back-btn">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回控制台</span>
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <!-- 搜索和筛选 -->
+    <!-- 搜索和筛选区域 -->
     <div class="search-section">
-      <el-card>
-        <el-form :model="searchForm" inline>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="searchForm.keyword"
-              placeholder="搜索考试标题"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
-          <el-form-item label="科目">
-            <el-select
-              v-model="searchForm.subject_id"
-              placeholder="选择科目"
-              clearable
-              style="width: 200px"
-            >
-              <el-option
-                v-for="subject in subjects"
-                :key="subject.id"
-                :label="subject.name"
-                :value="subject.id"
+      <div class="search-card">
+        <div class="search-header">
+          <h3>搜索和筛选</h3>
+          <p>快速查找考试信息</p>
+        </div>
+        <div class="search-form">
+          <el-form :model="searchForm" inline>
+            <el-form-item>
+              <el-input
+                v-model="searchForm.keyword"
+                placeholder="请输入考试标题"
+                prefix-icon="Search"
+                class="search-input"
+                clearable
+                @keyup.enter="handleSearch"
               />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select
-              v-model="searchForm.status"
-              placeholder="选择状态"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="草稿" value="draft" />
-              <el-option label="已发布" value="published" />
-              <el-option label="进行中" value="ongoing" />
-              <el-option label="已结束" value="finished" />
-              <el-option label="已取消" value="cancelled" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="创建时间">
-            <el-date-picker
-              v-model="searchForm.date_range"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.subject_id"
+                placeholder="选择科目"
+                clearable
+                class="filter-select"
+              >
+                <el-option
+                  v-for="subject in subjects"
+                  :key="subject.id"
+                  :label="subject.name"
+                  :value="subject.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.status"
+                placeholder="选择状态"
+                clearable
+                class="filter-select"
+              >
+                <el-option label="草稿" value="draft" />
+                <el-option label="已发布" value="published" />
+                <el-option label="进行中" value="ongoing" />
+                <el-option label="已结束" value="finished" />
+                <el-option label="已取消" value="cancelled" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch" class="search-btn">
+                <el-icon><Search /></el-icon>
+                <span>搜索</span>
+              </el-button>
+              <el-button @click="handleReset" class="reset-btn">
+                <el-icon><Refresh /></el-icon>
+                <span>重置</span>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
     </div>
 
     <!-- 考试列表 -->
     <div class="table-section">
-      <el-card>
+      <div class="table-card">
         <div class="table-header">
           <div class="table-title">
-            <span>考试列表</span>
-            <el-tag v-if="selectedExams.length > 0" type="info">
-              已选择 {{ selectedExams.length }} 个考试
-            </el-tag>
+            <h3>考试列表</h3>
+            <p>共 {{ pagination.total }} 个考试</p>
           </div>
           <div class="table-actions" v-if="selectedExams.length > 0">
-            <el-button size="small" @click="batchUpdateStatus('published')">
+            <el-button size="small" @click="batchUpdateStatus('published')" class="action-btn">
               批量发布
             </el-button>
-            <el-button size="small" @click="batchUpdateStatus('cancelled')">
+            <el-button size="small" @click="batchUpdateStatus('cancelled')" class="action-btn">
               批量取消
             </el-button>
-            <el-button size="small" type="danger" @click="batchDelete">
+            <el-button size="small" type="danger" @click="batchDelete" class="action-btn">
               批量删除
             </el-button>
           </div>
         </div>
 
-        <el-table
-          :data="exams"
-          :loading="loading"
-          @selection-change="handleSelectionChange"
-          row-key="id"
-          stripe
-        >
+        <div class="table-container">
+          <el-table
+            :data="exams"
+            :loading="loading"
+            @selection-change="handleSelectionChange"
+            row-key="id"
+            stripe
+            class="modern-table"
+          >
           <el-table-column type="selection" width="55" />
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column prop="title" label="考试标题" min-width="200" show-overflow-tooltip>
             <template #default="{ row }">
-              <div class="exam-title">
-                <span>{{ row.title }}</span>
-                <div class="exam-meta">
-                  <el-tag :type="getStatusTagType(row.status)" size="small">
-                    {{ getStatusLabel(row.status) }}
-                  </el-tag>
-                  <span class="exam-info">
-                    {{ row.question_count }}题 | {{ row.total_points }}分 | {{ formatDuration(row.duration) }}
-                  </span>
+              <div class="exam-info">
+                <div class="exam-avatar">{{ row.title.charAt(0).toUpperCase() }}</div>
+                <div class="exam-details">
+                  <div class="exam-title-text">{{ row.title }}</div>
+                  <div class="exam-meta">
+                    <el-tag :type="getStatusTagType(row.status)" size="small" class="meta-tag">
+                      {{ getStatusLabel(row.status) }}
+                    </el-tag>
+                    <span class="exam-stats">
+                      {{ row.question_count }}题 | {{ row.total_points }}分 | {{ formatDuration(row.duration) }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </template>
@@ -152,36 +169,26 @@
               {{ formatDate(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="250" fixed="right">
+          <el-table-column label="操作" width="180" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" @click="viewExam(row)">
-                查看
-              </el-button>
-              <el-button size="small" type="primary" @click="editExam(row)">
-                编辑
-              </el-button>
-              <el-dropdown @command="(command) => handleAction(command, row)">
-                <el-button size="small">
-                  更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              <div class="action-buttons">
+                <el-button size="small" type="primary" @click="editExam(row)" class="action-btn edit-btn">
+                  <el-icon><Edit /></el-icon>
                 </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="toggle-status">
-                      {{ row.status === 'published' ? '取消发布' : '发布' }}
-                    </el-dropdown-item>
-                    <el-dropdown-item command="duplicate">复制</el-dropdown-item>
-                    <el-dropdown-item command="preview">预览</el-dropdown-item>
-                    <el-dropdown-item command="statistics">统计</el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+                <el-button size="small" type="warning" @click="toggleExamStatus(row)" class="action-btn status-btn">
+                  <el-icon><Switch /></el-icon>
+                </el-button>
+                <el-button size="small" type="danger" @click="deleteExam(row)" class="action-btn delete-btn">
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
-
+        </div>
+        
         <!-- 分页 -->
-        <div class="pagination">
+        <div class="pagination-wrapper">
           <el-pagination
             :current-page="pagination.page"
             :page-size="pagination.size"
@@ -190,9 +197,10 @@
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
             @current-change="handlePageChange"
+            class="modern-pagination"
           />
         </div>
-      </el-card>
+      </div>
     </div>
 
     <!-- 创建/编辑考试对话框 -->
@@ -255,7 +263,7 @@
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Document, Search, Refresh, ArrowDown } from '@element-plus/icons-vue'
+import { Plus, Document, Search, Refresh, ArrowLeft, Edit, Switch, Delete } from '@element-plus/icons-vue'
 import ExamForm from '@/components/exam/ExamForm.vue'
 import ExamView from '@/components/exam/ExamView.vue'
 import ExamTemplate from '@/components/exam/ExamTemplate.vue'
@@ -275,7 +283,10 @@ export default {
     Document,
     Search,
     Refresh,
-    ArrowDown
+    ArrowLeft,
+    Edit,
+    Switch,
+    Delete
   },
   setup() {
     // 响应式数据
@@ -594,6 +605,8 @@ export default {
       handleSelectionChange,
       viewExam,
       editExam,
+      toggleExamStatus,
+      deleteExam,
       handleSubmit,
       handleAction,
       batchUpdateStatus,
@@ -608,103 +621,461 @@ export default {
 }
 </script>
 
-<style scoped>
-.exam-management {
-  padding: 20px;
+<style lang="scss" scoped>
+.modern-exam-management {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
+.modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  .header-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-left {
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        
+        .title-icon {
+          width: 64px;
+          height: 64px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          
+          .el-icon {
+            font-size: 32px;
+            color: white;
+          }
+        }
+        
+        .title-text {
+          h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin: 0 0 8px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          
+          p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .header-right {
+      display: flex;
+      gap: 12px;
+      
+      .add-btn, .back-btn {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        
+        &.el-button--primary {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+          }
+        }
+        
+        &:not(.el-button--primary) {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
 }
 
 .search-section {
-  margin-bottom: 20px;
+  padding: 32px;
+  
+  .search-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .search-header {
+      margin-bottom: 24px;
+      
+      h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+      
+      p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+    
+    .search-form {
+      .el-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+        
+        .el-form-item {
+          margin-bottom: 0;
+          
+          .search-input {
+            width: 240px;
+            
+            :deep(.el-input__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .filter-select {
+            width: 160px;
+            
+            :deep(.el-select__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .search-btn, .reset-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            &.el-button--primary {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+              }
+            }
+            
+            &:not(.el-button--primary) {
+              background: #f8f9fa;
+              border-color: #e9ecef;
+              color: #6c757d;
+              
+              &:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 .table-section {
-  margin-bottom: 20px;
+  padding: 0 32px 32px;
+  
+  .table-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      
+      .table-title {
+        h3 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px 0;
+        }
+        
+        p {
+          color: #666;
+          font-size: 14px;
+          margin: 0;
+        }
+      }
+      
+      .table-actions {
+        display: flex;
+        gap: 8px;
+        
+        .action-btn {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          
+          &:not(.el-button--danger) {
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            
+            &:hover {
+              background: #e9ecef;
+              transform: translateY(-1px);
+            }
+          }
+        }
+      }
+    }
+    
+    .table-container {
+      .modern-table {
+        :deep(.el-table__header) {
+          th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+          }
+        }
+        
+        :deep(.el-table__body) {
+          tr {
+            &:hover {
+              background: rgba(102, 126, 234, 0.05);
+            }
+          }
+        }
+        
+        .exam-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .exam-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+          }
+          
+          .exam-details {
+            flex: 1;
+            
+            .exam-title-text {
+              font-weight: 600;
+              color: #1a1a1a;
+              margin-bottom: 8px;
+              line-height: 1.4;
+            }
+            
+            .exam-meta {
+              display: flex;
+              gap: 8px;
+              align-items: center;
+              flex-wrap: wrap;
+              
+              .meta-tag {
+                border-radius: 6px;
+                font-size: 12px;
+                padding: 2px 8px;
+              }
+              
+              .exam-stats {
+                font-size: 12px;
+                color: #666;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 8px;
+          
+          .el-button {
+            border-radius: 8px;
+            padding: 6px 12px;
+            
+            &.edit-btn {
+              background: #e3f2fd;
+              border-color: #bbdefb;
+              color: #1976d2;
+              
+              &:hover {
+                background: #bbdefb;
+                transform: translateY(-1px);
+              }
+            }
+            
+            &.status-btn {
+              &.el-button--warning {
+                background: #fff3e0;
+                border-color: #ffcc02;
+                color: #f57c00;
+                
+                &:hover {
+                  background: #ffcc02;
+                  transform: translateY(-1px);
+                }
+              }
+              
+              &.el-button--success {
+                background: #e8f5e8;
+                border-color: #4caf50;
+                color: #2e7d32;
+                
+                &:hover {
+                  background: #4caf50;
+                  transform: translateY(-1px);
+                }
+              }
+            }
+            
+            &.delete-btn {
+              background: #ffebee;
+              border-color: #ffcdd2;
+              color: #d32f2f;
+              
+              &:hover {
+                background: #ffcdd2;
+                transform: translateY(-1px);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .pagination-wrapper {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      
+      .modern-pagination {
+        :deep(.el-pagination) {
+          .el-pager li {
+            border-radius: 8px;
+            margin: 0 4px;
+            
+            &.is-active {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+            }
+          }
+          
+          .btn-prev, .btn-next {
+            border-radius: 8px;
+            margin: 0 4px;
+          }
+        }
+      }
+    }
+  }
 }
 
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.table-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.table-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.exam-title {
-  line-height: 1.5;
-}
-
-.exam-meta {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.exam-info {
-  color: #909399;
-  font-size: 12px;
-}
-
-.time-info {
-  font-size: 12px;
-}
-
-.time-item {
-  margin-bottom: 4px;
-}
-
-.time-item:last-child {
-  margin-bottom: 0;
-}
-
-.time-label {
-  color: #909399;
-}
-
-.time-value {
-  color: #606266;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-:deep(.el-table .el-table__row) {
-  cursor: pointer;
-}
-
-:deep(.el-table .el-table__row:hover) {
-  background-color: #f5f7fa;
+@media (max-width: 768px) {
+  .modern-header .header-content {
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+    padding: 0 16px;
+    
+    .header-right {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+  
+  .search-section {
+    padding: 16px;
+    
+    .search-card {
+      padding: 20px;
+      
+      .search-form .el-form {
+        flex-direction: column;
+        align-items: stretch;
+        
+        .el-form-item {
+          width: 100%;
+          
+          .search-input, .filter-select {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+  
+  .table-section {
+    padding: 0 16px 16px;
+    
+    .table-card {
+      padding: 20px;
+      
+      .table-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+      }
+    }
+  }
 }
 </style>

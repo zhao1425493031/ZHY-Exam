@@ -46,6 +46,10 @@ class SubjectSchema(Schema):
     description = fields.Str(validate=validate.Length(max=500))
     category = fields.Str(validate=validate.Length(max=50))
     status = fields.Str(validate=validate.OneOf(['active', 'inactive']))
+    is_free = fields.Bool(default=True)
+    price = fields.Decimal(places=2, validate=validate.Range(min=0, max=9999.99))
+    original_price = fields.Decimal(places=2, validate=validate.Range(min=0, max=9999.99))
+    discount_rate = fields.Decimal(places=2, validate=validate.Range(min=0, max=100))
 
 class QuestionSchema(Schema):
     """试题数据验证器"""

@@ -759,7 +759,7 @@ export default {
   z-index: 100;
   
   .header-content {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 0 32px;
     display: flex;
@@ -847,7 +847,7 @@ export default {
   padding: 32px;
   
   .search-card {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
@@ -938,7 +938,7 @@ export default {
   padding: 0 32px 32px;
   
   .table-card {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;

@@ -1,206 +1,227 @@
 <template>
-  <div class="question-management">
-    <div class="page-header">
-      <h1>试题管理</h1>
-      <div class="header-actions">
-        <el-button type="primary" @click="showCreateDialog = true">
-          <el-icon><Plus /></el-icon>
-          新增试题
-        </el-button>
-        <el-button @click="showImportDialog = true">
-          <el-icon><Upload /></el-icon>
-          批量导入
-        </el-button>
-        <el-button @click="exportQuestions">
-          <el-icon><Download /></el-icon>
-          导出试题
-        </el-button>
-        <el-button @click="downloadTemplate">
-          <el-icon><Document /></el-icon>
-          下载模板
-        </el-button>
+  <div class="modern-question-management">
+    <!-- 现代化头部 -->
+    <div class="modern-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="page-title">
+            <div class="title-icon">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="title-text">
+              <h1>试题管理</h1>
+              <p>管理题库和试题内容</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <el-button type="primary" @click="showCreateDialog = true" class="add-btn">
+            <el-icon><Plus /></el-icon>
+            <span>新增试题</span>
+          </el-button>
+          <el-button @click="showImportDialog = true" class="back-btn">
+            <el-icon><Upload /></el-icon>
+            <span>批量导入</span>
+          </el-button>
+          <el-button @click="exportQuestions" class="back-btn">
+            <el-icon><Download /></el-icon>
+            <span>导出试题</span>
+          </el-button>
+          <el-button @click="downloadTemplate" class="back-btn">
+            <el-icon><Document /></el-icon>
+            <span>下载模板</span>
+          </el-button>
+          <el-button @click="$router.push('/admin')" class="back-btn">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回控制台</span>
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <!-- 搜索和筛选 -->
+    <!-- 搜索和筛选区域 -->
     <div class="search-section">
-      <el-card>
-        <el-form :model="searchForm" inline>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="searchForm.keyword"
-              placeholder="搜索题目内容"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
-          <el-form-item label="科目">
-            <el-select
-              v-model="searchForm.subject_id"
-              placeholder="选择科目"
-              clearable
-              style="width: 200px"
-            >
-              <el-option
-                v-for="subject in subjects"
-                :key="subject.id"
-                :label="subject.name"
-                :value="subject.id"
+      <div class="search-card">
+        <div class="search-header">
+          <h3>搜索和筛选</h3>
+          <p>快速查找试题信息</p>
+        </div>
+        <div class="search-form">
+          <el-form :model="searchForm" inline>
+            <el-form-item>
+              <el-input
+                v-model="searchForm.keyword"
+                placeholder="请输入题目内容"
+                prefix-icon="Search"
+                class="search-input"
+                clearable
+                @keyup.enter="handleSearch"
               />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="题型">
-            <el-select
-              v-model="searchForm.type"
-              placeholder="选择题型"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="单选题" value="single" />
-              <el-option label="多选题" value="multiple" />
-              <el-option label="判断题" value="judge" />
-              <el-option label="填空题" value="fill" />
-              <el-option label="简答题" value="essay" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="难度">
-            <el-select
-              v-model="searchForm.difficulty"
-              placeholder="选择难度"
-              clearable
-              style="width: 100px"
-            >
-              <el-option label="简单" value="easy" />
-              <el-option label="中等" value="medium" />
-              <el-option label="困难" value="hard" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select
-              v-model="searchForm.status"
-              placeholder="选择状态"
-              clearable
-              style="width: 100px"
-            >
-              <el-option label="草稿" value="draft" />
-              <el-option label="已发布" value="published" />
-              <el-option label="已归档" value="archived" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.subject_id"
+                placeholder="选择科目"
+                clearable
+                class="filter-select"
+              >
+                <el-option
+                  v-for="subject in subjects"
+                  :key="subject.id"
+                  :label="subject.name"
+                  :value="subject.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.type"
+                placeholder="选择题型"
+                clearable
+                class="filter-select"
+              >
+                <el-option label="单选题" value="single" />
+                <el-option label="多选题" value="multiple" />
+                <el-option label="判断题" value="judge" />
+                <el-option label="填空题" value="fill" />
+                <el-option label="简答题" value="essay" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.difficulty"
+                placeholder="选择难度"
+                clearable
+                class="filter-select"
+              >
+                <el-option label="简单" value="easy" />
+                <el-option label="中等" value="medium" />
+                <el-option label="困难" value="hard" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.status"
+                placeholder="选择状态"
+                clearable
+                class="filter-select"
+              >
+                <el-option label="草稿" value="draft" />
+                <el-option label="已发布" value="published" />
+                <el-option label="已归档" value="archived" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch" class="search-btn">
+                <el-icon><Search /></el-icon>
+                <span>搜索</span>
+              </el-button>
+              <el-button @click="handleReset" class="reset-btn">
+                <el-icon><Refresh /></el-icon>
+                <span>重置</span>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
     </div>
 
     <!-- 试题列表 -->
     <div class="table-section">
-      <el-card>
+      <div class="table-card">
         <div class="table-header">
           <div class="table-title">
-            <span>试题列表</span>
-            <el-tag v-if="selectedQuestions.length > 0" type="info">
-              已选择 {{ selectedQuestions.length }} 题
-            </el-tag>
+            <h3>试题列表</h3>
+            <p>共 {{ pagination.total }} 个试题</p>
           </div>
           <div class="table-actions" v-if="selectedQuestions.length > 0">
-            <el-button size="small" @click="batchUpdateStatus('published')">
+            <el-button size="small" @click="batchUpdateStatus('published')" class="action-btn">
               批量发布
             </el-button>
-            <el-button size="small" @click="batchUpdateStatus('archived')">
+            <el-button size="small" @click="batchUpdateStatus('archived')" class="action-btn">
               批量归档
             </el-button>
-            <el-button size="small" type="danger" @click="batchDelete">
+            <el-button size="small" type="danger" @click="batchDelete" class="action-btn">
               批量删除
             </el-button>
           </div>
         </div>
-
-        <el-table
-          :data="questions"
-          :loading="loading"
-          @selection-change="handleSelectionChange"
-          row-key="id"
-          stripe
-        >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="title" label="题目" min-width="200" show-overflow-tooltip>
-            <template #default="{ row }">
-              <div class="question-title">
-                <span v-html="formatQuestionTitle(row.title)"></span>
-                <div class="question-meta">
-                  <el-tag :type="getTypeTagType(row.type)" size="small">
-                    {{ getTypeLabel(row.type) }}
-                  </el-tag>
-                  <el-tag :type="getDifficultyTagType(row.difficulty)" size="small">
-                    {{ getDifficultyLabel(row.difficulty) }}
-                  </el-tag>
-                  <el-tag :type="getStatusTagType(row.status)" size="small">
-                    {{ getStatusLabel(row.status) }}
-                  </el-tag>
+        
+        <div class="table-container">
+          <el-table
+            :data="questions"
+            :loading="loading"
+            @selection-change="handleSelectionChange"
+            row-key="id"
+            stripe
+            class="modern-table"
+          >
+            <el-table-column type="selection" width="55" />
+            <el-table-column prop="id" label="ID" width="80" />
+            <el-table-column prop="title" label="题目" min-width="200" show-overflow-tooltip>
+              <template #default="{ row }">
+                <div class="question-info">
+                  <div class="question-avatar">{{ getTypeLabel(row.type).charAt(0) }}</div>
+                  <div class="question-details">
+                    <div class="question-title-text">{{ row.title }}</div>
+                    <div class="question-meta">
+                      <el-tag :type="getTypeTagType(row.type)" size="small" class="meta-tag">
+                        {{ getTypeLabel(row.type) }}
+                      </el-tag>
+                      <el-tag :type="getDifficultyTagType(row.difficulty)" size="small" class="meta-tag">
+                        {{ getDifficultyLabel(row.difficulty) }}
+                      </el-tag>
+                      <el-tag :type="getStatusTagType(row.status)" size="small" class="meta-tag">
+                        {{ getStatusLabel(row.status) }}
+                      </el-tag>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="subject_id" label="科目" width="120">
-            <template #default="{ row }">
-              {{ getSubjectName(row.subject_id) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="points" label="分值" width="80" />
-          <el-table-column prop="created_at" label="创建时间" width="160">
-            <template #default="{ row }">
-              {{ formatDate(row.created_at) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <el-button size="small" @click="viewQuestion(row)">
-                查看
-              </el-button>
-              <el-button size="small" type="primary" @click="editQuestion(row)">
-                编辑
-              </el-button>
-              <el-dropdown @command="(command) => handleAction(command, row)">
-                <el-button size="small">
-                  更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="toggle-status">
-                      {{ row.status === 'published' ? '取消发布' : '发布' }}
-                    </el-dropdown-item>
-                    <el-dropdown-item command="duplicate">复制</el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <!-- 分页 -->
-        <div class="pagination">
-        <el-pagination
-          :current-page="pagination.page"
-          :page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handlePageChange"
-        />
+              </template>
+            </el-table-column>
+            <el-table-column prop="subject_id" label="科目" width="120">
+              <template #default="{ row }">
+                {{ getSubjectName(row.subject_id) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="points" label="分值" width="80" />
+            <el-table-column prop="created_at" label="创建时间" width="160">
+              <template #default="{ row }">
+                {{ formatDate(row.created_at) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="180" fixed="right">
+              <template #default="{ row }">
+                <div class="action-buttons">
+                  <el-button size="small" type="primary" @click="editQuestion(row)" class="action-btn edit-btn">
+                    <el-icon><Edit /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="warning" @click="toggleQuestionStatus(row)" class="action-btn status-btn">
+                    <el-icon><Switch /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="danger" @click="deleteQuestion(row)" class="action-btn delete-btn">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
-      </el-card>
+        
+        <!-- 分页 -->
+        <div class="pagination-wrapper">
+          <el-pagination
+            :current-page="pagination.page"
+            :page-size="pagination.size"
+            :total="pagination.total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
+            class="modern-pagination"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- 创建/编辑试题对话框 -->
@@ -209,6 +230,7 @@
       :title="editingQuestion ? '编辑试题' : '新增试题'"
       width="80%"
       :close-on-click-modal="false"
+      class="modern-question-dialog"
     >
       <QuestionForm
         v-if="showCreateDialog"
@@ -224,6 +246,7 @@
       v-model="showViewDialog"
       title="试题详情"
       width="60%"
+      class="modern-question-dialog"
     >
       <QuestionView
         v-if="showViewDialog && viewingQuestion"
@@ -237,6 +260,7 @@
       v-model="showImportDialog"
       title="批量导入试题"
       width="50%"
+      class="modern-question-dialog"
     >
       <QuestionImport
         v-if="showImportDialog"
@@ -251,7 +275,7 @@
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Upload, Download, Document, Search, Refresh, ArrowDown } from '@element-plus/icons-vue'
+import { Plus, Upload, Download, Document, Search, Refresh, ArrowLeft, Edit, Switch, Delete } from '@element-plus/icons-vue'
 import QuestionForm from '@/components/question/QuestionForm.vue'
 import QuestionView from '@/components/question/QuestionView.vue'
 import QuestionImport from '@/components/question/QuestionImport.vue'
@@ -271,7 +295,10 @@ export default {
     Document,
     Search,
     Refresh,
-    ArrowDown
+    ArrowLeft,
+    Edit,
+    Switch,
+    Delete
   },
   setup() {
     // 响应式数据
@@ -381,6 +408,18 @@ export default {
       showViewDialog.value = true
     }
     
+    const toggleQuestionStatus = async (question) => {
+      try {
+        const newStatus = question.status === 'published' ? 'draft' : 'published'
+        await questionApi.updateQuestionStatus(question.id, { status: newStatus })
+        ElMessage.success(`试题已${newStatus === 'published' ? '发布' : '取消发布'}`)
+        loadQuestions()
+      } catch (error) {
+        ElMessage.error('更新试题状态失败')
+        console.error('Toggle status error:', error)
+      }
+    }
+    
     const editQuestion = (question) => {
       editingQuestion.value = question
       showCreateDialog.value = true
@@ -416,36 +455,6 @@ export default {
         case 'delete':
           await deleteQuestion(question)
           break
-      }
-    }
-    
-    const toggleQuestionStatus = async (question) => {
-      try {
-        const newStatus = question.status === 'published' ? 'draft' : 'published'
-        await questionApi.updateQuestionStatus(question.id, { status: newStatus })
-        ElMessage.success(`试题已${newStatus === 'published' ? '发布' : '取消发布'}`)
-        loadQuestions()
-      } catch (error) {
-        ElMessage.error('更新试题状态失败')
-        console.error('Toggle status error:', error)
-      }
-    }
-    
-    const duplicateQuestion = async (question) => {
-      try {
-        const duplicateData = { ...question }
-        delete duplicateData.id
-        delete duplicateData.created_at
-        delete duplicateData.updated_at
-        duplicateData.title = duplicateData.title + ' (副本)'
-        duplicateData.status = 'draft'
-        
-        await questionApi.createQuestion(duplicateData)
-        ElMessage.success('试题复制成功')
-        loadQuestions()
-      } catch (error) {
-        ElMessage.error('复制试题失败')
-        console.error('Duplicate question error:', error)
       }
     }
     
@@ -632,6 +641,8 @@ export default {
       handleSelectionChange,
       viewQuestion,
       editQuestion,
+      toggleQuestionStatus,
+      deleteQuestion,
       handleSubmit,
       handleAction,
       batchUpdateStatus,
@@ -639,7 +650,6 @@ export default {
       exportQuestions,
       downloadTemplate,
       handleImportSuccess,
-      formatQuestionTitle,
       getTypeLabel,
       getTypeTagType,
       getDifficultyLabel,
@@ -652,77 +662,454 @@ export default {
 }
 </script>
 
-<style scoped>
-.question-management {
-  padding: 20px;
+<style lang="scss" scoped>
+.modern-question-management {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
+.modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  .header-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-left {
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        
+        .title-icon {
+          width: 64px;
+          height: 64px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          
+          .el-icon {
+            font-size: 32px;
+            color: white;
+          }
+        }
+        
+        .title-text {
+          h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin: 0 0 8px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          
+          p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .header-right {
+      display: flex;
+      gap: 12px;
+      
+      .add-btn, .back-btn {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        
+        &.el-button--primary {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+          }
+        }
+        
+        &:not(.el-button--primary) {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
 }
 
 .search-section {
-  margin-bottom: 20px;
+  padding: 32px;
+  
+  .search-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .search-header {
+      margin-bottom: 24px;
+      
+      h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+      
+      p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+    
+    .search-form {
+      .el-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+        
+        .el-form-item {
+          margin-bottom: 0;
+          
+          .search-input {
+            width: 240px;
+            
+            :deep(.el-input__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .filter-select {
+            width: 160px;
+            
+            :deep(.el-select__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .search-btn, .reset-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            &.el-button--primary {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+              }
+            }
+            
+            &:not(.el-button--primary) {
+              background: #f8f9fa;
+              border-color: #e9ecef;
+              color: #6c757d;
+              
+              &:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 .table-section {
-  margin-bottom: 20px;
+  padding: 0 32px 32px;
+  
+  .table-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      
+      .table-title {
+        h3 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px 0;
+        }
+        
+        p {
+          color: #666;
+          font-size: 14px;
+          margin: 0;
+        }
+      }
+      
+      .table-actions {
+        display: flex;
+        gap: 8px;
+        
+        .action-btn {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          
+          &:not(.el-button--danger) {
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            
+            &:hover {
+              background: #e9ecef;
+              transform: translateY(-1px);
+            }
+          }
+        }
+      }
+    }
+    
+    .table-container {
+      .modern-table {
+        :deep(.el-table__header) {
+          th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+          }
+        }
+        
+        :deep(.el-table__body) {
+          tr {
+            &:hover {
+              background: rgba(102, 126, 234, 0.05);
+            }
+          }
+        }
+        
+        .question-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .question-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+          }
+          
+          .question-details {
+            flex: 1;
+            
+            .question-title-text {
+              font-weight: 600;
+              color: #1a1a1a;
+              margin-bottom: 8px;
+              line-height: 1.4;
+            }
+            
+            .question-meta {
+              display: flex;
+              gap: 6px;
+              flex-wrap: wrap;
+              
+              .meta-tag {
+                border-radius: 6px;
+                font-size: 12px;
+                padding: 2px 8px;
+              }
+            }
+          }
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 8px;
+          
+          .el-button {
+            border-radius: 8px;
+            padding: 6px 12px;
+            
+            &.edit-btn {
+              background: #e3f2fd;
+              border-color: #bbdefb;
+              color: #1976d2;
+              
+              &:hover {
+                background: #bbdefb;
+                transform: translateY(-1px);
+              }
+            }
+            
+            &.status-btn {
+              &.el-button--warning {
+                background: #fff3e0;
+                border-color: #ffcc02;
+                color: #f57c00;
+                
+                &:hover {
+                  background: #ffcc02;
+                  transform: translateY(-1px);
+                }
+              }
+              
+              &.el-button--success {
+                background: #e8f5e8;
+                border-color: #4caf50;
+                color: #2e7d32;
+                
+                &:hover {
+                  background: #4caf50;
+                  transform: translateY(-1px);
+                }
+              }
+            }
+            
+            &.delete-btn {
+              background: #ffebee;
+              border-color: #ffcdd2;
+              color: #d32f2f;
+              
+              &:hover {
+                background: #ffcdd2;
+                transform: translateY(-1px);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .pagination-wrapper {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      
+      .modern-pagination {
+        :deep(.el-pagination) {
+          .el-pager li {
+            border-radius: 8px;
+            margin: 0 4px;
+            
+            &.is-active {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+            }
+          }
+          
+          .btn-prev, .btn-next {
+            border-radius: 8px;
+            margin: 0 4px;
+          }
+        }
+      }
+    }
+  }
 }
 
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.table-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.table-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.question-title {
-  line-height: 1.5;
-}
-
-.question-meta {
-  margin-top: 8px;
-  display: flex;
-  gap: 5px;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-:deep(.el-table .el-table__row) {
-  cursor: pointer;
-}
-
-:deep(.el-table .el-table__row:hover) {
-  background-color: #f5f7fa;
+@media (max-width: 768px) {
+  .modern-header .header-content {
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+    padding: 0 16px;
+    
+    .header-right {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+  
+  .search-section {
+    padding: 16px;
+    
+    .search-card {
+      padding: 20px;
+      
+      .search-form .el-form {
+        flex-direction: column;
+        align-items: stretch;
+        
+        .el-form-item {
+          width: 100%;
+          
+          .search-input, .filter-select {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+  
+  .table-section {
+    padding: 0 16px 16px;
+    
+    .table-card {
+      padding: 20px;
+      
+      .table-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+      }
+    }
+  }
 }
 </style>

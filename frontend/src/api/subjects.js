@@ -60,5 +60,41 @@ export const subjectsApi = {
       url: '/subjects/stats',
       method: 'get'
     })
+  },
+
+  // 获取科目分类列表
+  getCategories() {
+    return request({
+      url: '/subjects/categories',
+      method: 'get'
+    })
+  },
+
+  // 导出科目数据
+  exportSubjects(params = {}) {
+    return request({
+      url: '/import-export/subjects/export',
+      method: 'get',
+      params,
+      responseType: 'blob'
+    })
+  },
+
+  // 批量删除科目
+  batchDeleteSubjects(ids) {
+    return request({
+      url: '/subjects/batch',
+      method: 'delete',
+      data: { ids }
+    })
+  },
+
+  // 批量更新科目状态
+  batchUpdateSubjectStatus(ids, status) {
+    return request({
+      url: '/subjects/batch/status',
+      method: 'put',
+      data: { ids, status }
+    })
   }
 }
