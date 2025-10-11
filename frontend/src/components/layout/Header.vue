@@ -103,7 +103,8 @@ export default {
               }
             )
             await authStore.logoutAction()
-            router.push('/login')
+            // 退出后跳转到首页
+            router.push('/')
           } catch (error) {
             // 用户取消
           }

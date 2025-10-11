@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { ElMessage } from 'element-plus'
 
 // 路由配置
 const routes = [
@@ -37,24 +38,6 @@ const routes = [
     meta: { 
       title: '在线考试',
       requiresAuth: true 
-    }
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/auth/Login.vue'),
-    meta: { 
-      title: '登录',
-      requiresAuth: false 
-    }
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/auth/Register.vue'),
-    meta: { 
-      title: '注册',
-      requiresAuth: false 
     }
   },
   {
@@ -290,23 +273,17 @@ router.beforeEach(async (to, from, next) => {
   
   // 检查是否需要认证
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    next('/login')
+    // 显示登录弹窗而不是跳转到登录页
+    authStore.openLoginDialog()
+    ElMessage.warning('请先登录')
+    next(false) // 取消导航
     return
   }
   
   // 检查角色权限
   if (to.meta.requiresRole && !to.meta.requiresRole.includes(authStore.userRole)) {
-    next('/dashboard')
-    return
-  }
-  
-  // 已登录用户访问登录页面，根据角色重定向
-  if ((to.path === '/login' || to.path === '/register') && authStore.isLoggedIn) {
-    if (authStore.userRole === 'admin') {
-      next('/admin')
-    } else {
-      next('/user/dashboard')
-    }
+    ElMessage.error('权限不足')
+    next(from.path || '/')
     return
   }
   

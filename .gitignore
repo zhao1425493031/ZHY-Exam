@@ -1,1 +1,9 @@
 frontend/node_modules
+backend/app/__pycache__
+backend/app/api/__pycache__
+backend/app/api/auth/__pycache__
+/backend/app/config/__pycache__/
+/backend/app/services/__pycache__/
+/backend/app/models/__pycache__/
+/backend/app/utils/__pycache__/
+/backend/logs/

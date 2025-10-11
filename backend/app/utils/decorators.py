@@ -12,7 +12,8 @@ def require_roles(*roles):
         def decorated_function(*args, **kwargs):
             from app.models.user import User
             current_user_id = get_jwt_identity()
-            current_user = User.query.get(current_user_id)
+            # 将字符串ID转换为整数
+            current_user = User.query.get(int(current_user_id))
             
             if not current_user or current_user.role not in roles:
                 return jsonify({'message': '权限不足'}), 403

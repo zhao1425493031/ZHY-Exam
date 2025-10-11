@@ -2394,12 +2394,12 @@ npm run build
     
     # API 代理到后端
     ProxyPreserveHost On
-    ProxyPass /api/ http://localhost:5000/api/
-    ProxyPassReverse /api/ http://localhost:5000/api/
+    ProxyPass /api/ http://localhost:9999/api/
+    ProxyPassReverse /api/ http://localhost:9999/api/
     
     # 静态资源
-    ProxyPass /static/ http://localhost:5000/static/
-    ProxyPassReverse /static/ http://localhost:5000/static/
+    ProxyPass /static/ http://localhost:9999/static/
+    ProxyPassReverse /static/ http://localhost:9999/static/
 </VirtualHost>
 ```
 
@@ -2440,7 +2440,7 @@ flask db upgrade
 
 # 9. 使用 Gunicorn 启动
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
+gunicorn -w 4 -b 0.0.0.0:9999 run:app
 ```
 
 #### 9.2.2 前端部署
@@ -2482,12 +2482,12 @@ sudo cp -r dist/* /var/www/html/examsphere/
     
     # API 代理到后端
     ProxyPreserveHost On
-    ProxyPass /api/ http://localhost:5000/api/
-    ProxyPassReverse /api/ http://localhost:5000/api/
+    ProxyPass /api/ http://localhost:9999/api/
+    ProxyPassReverse /api/ http://localhost:9999/api/
     
     # 静态资源
-    ProxyPass /static/ http://localhost:5000/static/
-    ProxyPassReverse /static/ http://localhost:5000/static/
+    ProxyPass /static/ http://localhost:9999/static/
+    ProxyPassReverse /static/ http://localhost:9999/static/
     
     # 启用必要的模块
     LoadModule rewrite_module modules/mod_rewrite.so
@@ -2506,7 +2506,7 @@ sudo systemctl reload apache2
 ```python
 # 使用 Gunicorn 配置
 # gunicorn.conf.py
-bind = "0.0.0.0:5000"
+bind = "0.0.0.0:9999"
 workers = 4
 worker_class = "sync"
 worker_connections = 1000

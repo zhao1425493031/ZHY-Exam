@@ -375,7 +375,7 @@ python run.py
 - 密码：`admin123`
 - 邮箱：`admin@examsphere.com`
 
-后端服务将在 `http://localhost:5000` 启动
+后端服务将在 `http://localhost:9999` 启动
 
 ### 4. 前端部署
 
@@ -392,7 +392,7 @@ cp .env.example .env
 
 编辑 `.env` 文件：
 ```env
-VUE_APP_API_BASE_URL=http://localhost:5000/api
+VUE_APP_API_BASE_URL=http://localhost:9999/api
 VUE_APP_TITLE=ExamSphere 考试管理系统
 ```
 
@@ -458,12 +458,12 @@ npm run build
     
     # API 代理到后端
     ProxyPreserveHost On
-    ProxyPass /api/ http://localhost:5000/api/
-    ProxyPassReverse /api/ http://localhost:5000/api/
+    ProxyPass /api/ http://localhost:9999/api/
+    ProxyPassReverse /api/ http://localhost:9999/api/
     
     # 静态资源
-    ProxyPass /static/ http://localhost:5000/static/
-    ProxyPassReverse /static/ http://localhost:5000/static/
+    ProxyPass /static/ http://localhost:9999/static/
+    ProxyPassReverse /static/ http://localhost:9999/static/
 </VirtualHost>
 ```
 
@@ -479,7 +479,7 @@ python run.py
 
 # 或者使用 Gunicorn 启动（生产环境）
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
+gunicorn -w 4 -b 0.0.0.0:9999 run:app
 ```
 
 #### 2. 前端部署
@@ -517,12 +517,12 @@ sudo cp -r dist/* /var/www/html/examsphere/
     
     # API 代理到后端
     ProxyPreserveHost On
-    ProxyPass /api/ http://localhost:5000/api/
-    ProxyPassReverse /api/ http://localhost:5000/api/
+    ProxyPass /api/ http://localhost:9999/api/
+    ProxyPassReverse /api/ http://localhost:9999/api/
     
     # 静态资源
-    ProxyPass /static/ http://localhost:5000/static/
-    ProxyPassReverse /static/ http://localhost:5000/static/
+    ProxyPass /static/ http://localhost:9999/static/
+    ProxyPassReverse /static/ http://localhost:9999/static/
 </VirtualHost>
 
 # 启用站点
@@ -541,9 +541,9 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-EXPOSE 5000
+EXPOSE 9999
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:9999", "run:app"]
 ```
 
 #### 2. 前端 Dockerfile
@@ -594,7 +594,7 @@ services:
       - mysql
       - redis
     ports:
-      - "5000:5000"
+      - "9999:9999"
 
   frontend:
     build: ./frontend

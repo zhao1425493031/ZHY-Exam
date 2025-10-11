@@ -267,7 +267,7 @@ def initialize_system():
     print("=" * 50)
     print("✅ ExamSphere 系统初始化完成！")
     print("📝 默认管理员账户: admin / admin123")
-    print("🌐 系统访问地址: http://localhost:5000")
+    print("🌐 系统访问地址: http://localhost:9999")
     print("=" * 50)
     
     return True
@@ -294,7 +294,7 @@ if __name__ == '__main__':
     print("🚀 启动 ExamSphere 考试管理系统...")
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=9999,
         debug=app.config['DEBUG']
     )
 

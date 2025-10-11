@@ -1,12 +1,43 @@
 <template>
   <div id="app">
     <router-view />
+    
+    <!-- 全局登录弹窗 -->
+    <LoginDialog 
+      v-model="authStore.showLoginDialog" 
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 
 <script>
+import { onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import LoginDialog from '@/components/auth/LoginDialog.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    LoginDialog
+  },
+  setup() {
+    const authStore = useAuthStore()
+
+    // 初始化用户状态
+    onMounted(() => {
+      authStore.initUser()
+    })
+
+    // 登录成功处理
+    const handleLoginSuccess = () => {
+      authStore.closeLoginDialog()
+    }
+
+    return {
+      authStore,
+      handleLoginSuccess
+    }
+  }
 }
 </script>
 

@@ -375,9 +375,7 @@ export default {
         
         // 检查是否是401错误
         if (error.response?.status === 401) {
-          ElMessage.error('未授权访问，请确保您已以管理员身份登录')
-          // 重定向到登录页面
-          router.push('/login')
+          // 401错误已由请求拦截器处理，会自动显示登录弹窗
           return
         }
         

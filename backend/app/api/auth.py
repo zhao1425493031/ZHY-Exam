@@ -70,7 +70,7 @@ def login():
             return jsonify(build_error_response(403, '账户已被禁用')), 403
         
         # 生成JWT token
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         # 记录操作日志
         log_operation(

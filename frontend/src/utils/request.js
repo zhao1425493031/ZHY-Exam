@@ -19,8 +19,14 @@ request.interceptors.request.use(
   config => {
     // 添加认证token
     const authStore = useAuthStore()
+    console.log('请求拦截器 - 当前token:', authStore.token)
+    console.log('请求拦截器 - localStorage token:', localStorage.getItem('token'))
+    
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`
+      console.log('请求拦截器 - 设置Authorization头:', config.headers.Authorization)
+    } else {
+      console.warn('请求拦截器 - 没有token，请求可能失败')
     }
     
     // 添加请求时间戳
@@ -64,11 +70,13 @@ request.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // 未授权，清除token并跳转到登录页
+          // 未授权，清除token并显示登录弹窗
           const authStore = useAuthStore()
           // 避免循环调用，直接清除本地状态
           authStore.clearAuth()
           ElMessage.error('登录已过期，请重新登录')
+          // 触发登录弹窗
+          authStore.openLoginDialog()
           break
         case 403:
           ElMessage.error('权限不足')

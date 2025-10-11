@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const token = ref(localStorage.getItem('token') || '')
   const isLoggedIn = computed(() => !!token.value && !!user.value)
+  const showLoginDialog = ref(false) // 登录弹窗显示状态
 
   // 计算属性
   const userRole = computed(() => user.value?.role || '')
@@ -16,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isUser = computed(() => ['admin', 'user'].includes(user.value?.role))
 
   // 登录
-  const loginAction = async (credentials) => {
+  const loginAction = async (credentials, skipRedirect = false) => {
     try {
       const response = await authApi.login(credentials)
       token.value = response.data.token
@@ -26,13 +27,30 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', token.value)
       localStorage.setItem('user', JSON.stringify(user.value))
       
+      // 调试：打印token信息
+      console.log('登录成功，保存的token:', token.value)
+      console.log('登录成功，保存的用户:', user.value)
+      console.log('localStorage中的token:', localStorage.getItem('token'))
+      
       ElMessage.success('登录成功')
       
-      // 根据角色进行跳转
-      if (user.value.role === 'admin') {
-        router.push('/admin')
-      } else {
-        router.push('/user/dashboard')
+      // 关闭登录弹窗
+      closeLoginDialog()
+      
+      // 根据角色进行跳转（除非明确跳过）
+      if (!skipRedirect) {
+        // 如果在首页，根据角色跳转到对应的仪表盘
+        if (router.currentRoute.value.path === '/' || router.currentRoute.value.path === '/courses') {
+          if (user.value.role === 'admin') {
+            router.push('/admin')
+          } else {
+            router.push('/user/dashboard')
+          }
+        } else {
+          // 如果在其他页面，不刷新页面，让用户手动刷新或重新请求
+          console.log('登录成功，当前页面:', router.currentRoute.value.path)
+          ElMessage.info('登录成功，请重新操作')
+        }
       }
       
       return response
@@ -118,11 +136,22 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = { ...user.value, ...userData }
   }
 
+  // 显示登录弹窗
+  const openLoginDialog = () => {
+    showLoginDialog.value = true
+  }
+
+  // 关闭登录弹窗
+  const closeLoginDialog = () => {
+    showLoginDialog.value = false
+  }
+
   return {
     // 状态
     user,
     token,
     isLoggedIn,
+    showLoginDialog,
     
     // 计算属性
     userRole,
@@ -136,6 +165,8 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth,
     fetchProfile,
     initUser,
-    updateUser
+    updateUser,
+    openLoginDialog,
+    closeLoginDialog
   }
 })

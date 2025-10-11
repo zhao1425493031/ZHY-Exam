@@ -372,14 +372,14 @@ export default {
       }
     }
 
-    // 跳转到登录页面
+    // 显示登录弹窗
     const goToLogin = () => {
-      router.push('/login')
+      authStore.openLoginDialog()
     }
 
-    // 跳转到注册页面
+    // 显示注册弹窗（通过登录弹窗切换）
     const goToRegister = () => {
-      router.push('/register')
+      authStore.openLoginDialog()
     }
 
     // 点击外部关闭通知面板

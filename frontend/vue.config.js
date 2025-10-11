@@ -5,14 +5,27 @@ module.exports = defineConfig({
 
   // 开发服务器配置
   devServer: {
-    port: 8080,
+    port: 8081,
     open: true,
+    hot: true,
     client: {
-      overlay: false
+      overlay: {
+        warnings: false,
+        errors: true
+      },
+      webSocketURL: {
+        hostname: 'localhost',
+        pathname: '/ws',
+        port: 8081,
+        protocol: 'ws'
+      },
+      // 解决 WebSocket 连接问题
+      logging: 'warn'
     },
+    // 解决跨域问题（可选，因为后端已配置CORS）
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:9999',
         changeOrigin: true,
         pathRewrite: {
           '^/api': '/api'

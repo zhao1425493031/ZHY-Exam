@@ -41,7 +41,14 @@ def create_app(config_name=None):
     # CORS配置
     cors.init_app(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:3000", "http://127.0.0.1:3000"],
+            "origins": [
+                "http://localhost:8080", 
+                "http://127.0.0.1:8080", 
+                "http://localhost:8081",  # Vue开发服务器端口
+                "http://127.0.0.1:8081",
+                "http://localhost:3000", 
+                "http://127.0.0.1:3000"
+            ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
             "supports_credentials": True
