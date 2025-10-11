@@ -114,10 +114,25 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="code" label="科目代码" width="120" />
-            <el-table-column prop="category" label="分类" width="120" />
-            <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="status" label="状态" width="100">
+                   <el-table-column prop="code" label="科目代码" width="120" />
+                   <el-table-column prop="category" label="分类" width="120" />
+                   <el-table-column prop="is_free" label="付费类型" width="120">
+                     <template #default="{ row }">
+                       <el-tag :type="row.is_free ? 'success' : 'warning'" size="small" class="pricing-tag">
+                         {{ row.is_free ? '免费' : '付费' }}
+                       </el-tag>
+                     </template>
+                   </el-table-column>
+                   <el-table-column prop="price_info" label="价格信息" width="150">
+                     <template #default="{ row }">
+                       <div v-if="!row.is_free" class="price-info">
+                         <div class="current-price">¥{{ formatPrice(row.price) }}</div>
+                         <div v-if="row.original_price > row.price" class="original-price">¥{{ formatPrice(row.original_price) }}</div>
+                       </div>
+                       <div v-else class="free-text">免费</div>
+                     </template>
+                   </el-table-column>
+                   <el-table-column prop="status" label="状态" width="100">
               <template #default="{ row }">
                 <el-tag :type="getStatusTagType(row.status)" size="small" class="status-tag">
                   {{ getStatusLabel(row.status) }}
@@ -531,6 +546,10 @@ export default {
       return types[status] || 'default'
     }
     
+    const formatPrice = (price) => {
+      return parseFloat(price || 0).toFixed(2)
+    }
+    
     // 生命周期
     onMounted(() => {
       loadSubjects()
@@ -567,7 +586,8 @@ export default {
       handleExport,
       getStatusLabel,
       getStatusTagType,
-      formatDate
+      formatDate,
+      formatPrice
     }
   }
 }
@@ -856,11 +876,41 @@ export default {
           }
         }
         
-        .status-tag {
-          border-radius: 8px;
-          font-weight: 600;
-          padding: 4px 12px;
-        }
+               .status-tag {
+                 border-radius: 8px;
+                 font-weight: 600;
+                 padding: 4px 12px;
+               }
+               
+               .pricing-tag {
+                 border-radius: 8px;
+                 font-weight: 600;
+                 padding: 4px 12px;
+               }
+               
+               .price-info {
+                 display: flex;
+                 flex-direction: column;
+                 gap: 2px;
+                 
+                 .current-price {
+                   font-weight: 600;
+                   color: #e6a23c;
+                   font-size: 14px;
+                 }
+                 
+                 .original-price {
+                   font-size: 12px;
+                   color: #909399;
+                   text-decoration: line-through;
+                 }
+               }
+               
+               .free-text {
+                 color: #67c23a;
+                 font-weight: 600;
+                 font-size: 14px;
+               }
         
         .action-buttons {
           display: flex;
