@@ -135,10 +135,13 @@
             <p>共 {{ pagination.total }} 个试题</p>
           </div>
           <div class="table-actions" v-if="selectedQuestions.length > 0">
-            <el-button size="small" @click="batchUpdateStatus('published')" class="action-btn">
+            <el-button size="small" type="info" @click="batchUpdateStatus('draft')" class="action-btn">
+              批量草稿
+            </el-button>
+            <el-button size="small" type="success" @click="batchUpdateStatus('published')" class="action-btn">
               批量发布
             </el-button>
-            <el-button size="small" @click="batchUpdateStatus('archived')" class="action-btn">
+            <el-button size="small" type="warning" @click="batchUpdateStatus('archived')" class="action-btn">
               批量归档
             </el-button>
             <el-button size="small" type="danger" @click="batchDelete" class="action-btn">
@@ -503,7 +506,15 @@ export default {
       try {
         const ids = selectedQuestions.value.map(q => q.id)
         await questionApi.batchUpdateStatus({ ids, status })
-        ElMessage.success(`批量${status === 'published' ? '发布' : '归档'}成功`)
+        
+        // 根据状态显示不同的提示信息
+        const statusText = {
+          'draft': '设为草稿',
+          'published': '发布',
+          'archived': '归档'
+        }
+        ElMessage.success(`批量${statusText[status] || '更新'}成功`)
+        
         selectedQuestions.value = []
         loadQuestions()
       } catch (error) {
@@ -546,7 +557,21 @@ export default {
           Object.assign(params, searchForm)
         }
         
-        await questionApi.exportQuestions(params)
+        const response = await questionApi.exportQuestions(params)
+        
+        // 创建Blob并下载文件
+        const blob = new Blob([response], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `试题导出_${new Date().toISOString().slice(0, 10)}.xlsx`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
         ElMessage.success('导出成功')
       } catch (error) {
         ElMessage.error('导出失败')
