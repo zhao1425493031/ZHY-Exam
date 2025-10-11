@@ -11,6 +11,7 @@ from app.models.exam_record import ExamRecord
 from app.models.import_record import ImportRecord
 from app import db
 from werkzeug.security import generate_password_hash
+from app.services.excel_style_service import ExcelStyleService
 
 logger = logging.getLogger(__name__)
 
@@ -564,3 +565,100 @@ class ImportExportService:
         except Exception as e:
             logger.error(f'Get import records error: {str(e)}')
             raise Exception(f'获取导入记录失败: {str(e)}')
+    
+    # ==================== 美化导出方法 ====================
+    
+    @staticmethod
+    def export_users_styled(role: Optional[str] = None, status: Optional[str] = None):
+        """导出用户数据（美化版）"""
+        try:
+            # 获取原始数据
+            df = ImportExportService.export_users(role=role, status=status)
+            
+            # 创建美化Excel
+            wb = ExcelStyleService.create_user_export_excel(df)
+            
+            # 转换为字节流
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f'Export users styled error: {str(e)}')
+            raise Exception(f'导出用户数据失败: {str(e)}')
+    
+    @staticmethod
+    def export_subjects_styled(status: Optional[str] = None):
+        """导出科目数据（美化版）"""
+        try:
+            # 获取原始数据
+            df = ImportExportService.export_subjects(status=status)
+            
+            # 创建美化Excel
+            wb = ExcelStyleService.create_subject_export_excel(df)
+            
+            # 转换为字节流
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f'Export subjects styled error: {str(e)}')
+            raise Exception(f'导出科目数据失败: {str(e)}')
+    
+    @staticmethod
+    def export_questions_styled(subject_id: Optional[int] = None, question_type: Optional[str] = None, 
+                               difficulty: Optional[str] = None):
+        """导出试题数据（美化版）"""
+        try:
+            # 获取原始数据
+            df = ImportExportService.export_questions(
+                subject_id=subject_id,
+                question_type=question_type,
+                difficulty=difficulty
+            )
+            
+            # 创建美化Excel
+            wb = ExcelStyleService.create_question_export_excel(df)
+            
+            # 转换为字节流
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f'Export questions styled error: {str(e)}')
+            raise Exception(f'导出试题数据失败: {str(e)}')
+    
+    @staticmethod
+    def export_exam_results_styled(exam_id: Optional[int] = None, user_id: Optional[int] = None,
+                                  start_date: Optional[str] = None, end_date: Optional[str] = None):
+        """导出考试结果数据（美化版）"""
+        try:
+            # 获取原始数据
+            df = ImportExportService.export_exam_results(
+                exam_id=exam_id,
+                user_id=user_id,
+                start_date=start_date,
+                end_date=end_date
+            )
+            
+            # 创建美化Excel
+            wb = ExcelStyleService.create_exam_result_export_excel(df)
+            
+            # 转换为字节流
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f'Export exam results styled error: {str(e)}')
+            raise Exception(f'导出考试结果失败: {str(e)}')

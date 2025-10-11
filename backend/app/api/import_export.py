@@ -110,15 +110,8 @@ def export_users():
         role = request.args.get('role')
         status = request.args.get('status')
         
-        # 导出用户数据
-        excel_data = ImportExportService.export_users(role=role, status=status)
-        
-        # 创建Excel文件
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            excel_data.to_excel(writer, sheet_name='用户数据', index=False)
-        
-        output.seek(0)
+        # 导出用户数据（美化版）
+        output = ImportExportService.export_users_styled(role=role, status=status)
         
         return send_file(
             output,
@@ -140,15 +133,8 @@ def export_subjects():
         # 获取查询参数
         status = request.args.get('status')
         
-        # 导出科目数据
-        excel_data = ImportExportService.export_subjects(status=status)
-        
-        # 创建Excel文件
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            excel_data.to_excel(writer, sheet_name='科目数据', index=False)
-        
-        output.seek(0)
+        # 导出科目数据（美化版）
+        output = ImportExportService.export_subjects_styled(status=status)
         
         return send_file(
             output,
@@ -172,19 +158,12 @@ def export_questions():
         question_type = request.args.get('type')
         difficulty = request.args.get('difficulty')
         
-        # 导出试题数据
-        excel_data = ImportExportService.export_questions(
+        # 导出试题数据（美化版）
+        output = ImportExportService.export_questions_styled(
             subject_id=subject_id,
             question_type=question_type,
             difficulty=difficulty
         )
-        
-        # 创建Excel文件
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            excel_data.to_excel(writer, sheet_name='试题数据', index=False)
-        
-        output.seek(0)
         
         return send_file(
             output,
@@ -209,20 +188,13 @@ def export_exam_results():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         
-        # 导出考试结果数据
-        excel_data = ImportExportService.export_exam_results(
+        # 导出考试结果数据（美化版）
+        output = ImportExportService.export_exam_results_styled(
             exam_id=exam_id,
             user_id=user_id,
             start_date=start_date,
             end_date=end_date
         )
-        
-        # 创建Excel文件
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            excel_data.to_excel(writer, sheet_name='考试结果', index=False)
-        
-        output.seek(0)
         
         return send_file(
             output,
