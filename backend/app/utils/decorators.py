@@ -29,17 +29,27 @@ def validate_json(schema_class):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            from app.services.log_service import LogService
+            
             try:
                 data = request.get_json()
+                LogService.log_info(f"[VALIDATE_JSON] 接收到原始数据: {data}", 'VALIDATION')
+                
                 if not data:
+                    LogService.log_warning("[VALIDATE_JSON] 请求数据为空", 'VALIDATION')
                     return jsonify({'message': '请求数据不能为空'}), 400
                 
                 # 实例化schema并加载数据
                 schema = schema_class()
                 validated_data = schema.load(data)
+                LogService.log_info(f"[VALIDATE_JSON] 验证通过的数据: {validated_data}", 'VALIDATION')
+                
                 request.validated_data = validated_data
                 return f(*args, **kwargs)
             except ValidationError as e:
+                LogService.log_error(f"[VALIDATE_JSON] 数据验证失败: {e.messages}", 'VALIDATION')
+                LogService.log_error(f"[VALIDATE_JSON] 原始数据: {request.get_json()}", 'VALIDATION')
+                LogService.log_error(f"[VALIDATE_JSON] Schema: {schema_class.__name__}", 'VALIDATION')
                 return jsonify({
                     'message': '数据验证失败', 
                     'errors': e.messages

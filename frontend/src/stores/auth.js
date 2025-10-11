@@ -27,10 +27,6 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', token.value)
       localStorage.setItem('user', JSON.stringify(user.value))
       
-      // 调试：打印token信息
-      console.log('登录成功，保存的token:', token.value)
-      console.log('登录成功，保存的用户:', user.value)
-      console.log('localStorage中的token:', localStorage.getItem('token'))
       
       ElMessage.success('登录成功')
       

@@ -14,7 +14,7 @@ class WrongAnswer(BaseModel):
     correct_answer = Column(Text)  # 正确答案
     is_reviewed = Column(Boolean, default=False)  # 是否已复习
     reviewed_at = Column(DateTime)  # 复习时间
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    # created_at 和 updated_at 继承自 BaseModel
 
     # 关系
     user = relationship('User', backref='wrong_answers')

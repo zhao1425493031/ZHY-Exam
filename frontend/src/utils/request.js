@@ -19,14 +19,8 @@ request.interceptors.request.use(
   config => {
     // 添加认证token
     const authStore = useAuthStore()
-    console.log('请求拦截器 - 当前token:', authStore.token)
-    console.log('请求拦截器 - localStorage token:', localStorage.getItem('token'))
-    
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`
-      console.log('请求拦截器 - 设置Authorization头:', config.headers.Authorization)
-    } else {
-      console.warn('请求拦截器 - 没有token，请求可能失败')
     }
     
     // 添加请求时间戳
@@ -53,6 +47,11 @@ request.interceptors.response.use(
     // 统一处理响应数据
     const { data } = response
     
+    // 如果是文件下载（blob类型），直接返回数据
+    if (response.config.responseType === 'blob') {
+      return data
+    }
+    
     if (data.code === 200) {
       return data
     } else {
@@ -67,6 +66,9 @@ request.interceptors.response.use(
     
     if (error.response) {
       const { status, data } = error.response
+      
+      // 打印详细的错误信息到控制台
+      console.error(`API错误 ${status}:`, data)
       
       switch (status) {
         case 401:
@@ -83,6 +85,21 @@ request.interceptors.response.use(
           break
         case 404:
           ElMessage.error('请求的资源不存在')
+          break
+        case 422:
+          // 数据验证失败，显示详细错误信息
+          if (data?.errors) {
+            // 如果有具体的字段错误，显示详细信息
+            const errorMessages = Object.entries(data.errors).map(([field, messages]) => {
+              if (Array.isArray(messages)) {
+                return `${field}: ${messages.join(', ')}`
+              }
+              return `${field}: ${messages}`
+            }).join('; ')
+            ElMessage.error(`数据验证失败: ${errorMessages}`)
+          } else {
+            ElMessage.error(data?.message || '数据验证失败')
+          }
           break
         case 500:
           ElMessage.error('服务器内部错误')

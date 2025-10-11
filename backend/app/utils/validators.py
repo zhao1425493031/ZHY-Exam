@@ -12,6 +12,7 @@ class UserSchema(Schema):
     real_name = fields.Str(validate=validate.Length(max=50))
     role = fields.Str(validate=validate.OneOf(['admin', 'user']))
     phone = fields.Str(validate=validate.Length(max=20))
+    status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned']))
 
 class UserUpdateSchema(Schema):
     """用户更新数据验证器"""

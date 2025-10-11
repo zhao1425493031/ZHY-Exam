@@ -181,45 +181,161 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="600px"
-      class="modern-dialog"
+      width="720px"
+      :close-on-click-modal="false"
+      class="modern-user-dialog"
       @close="handleDialogClose"
     >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-      >
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="真实姓名" prop="real_name">
-          <el-input v-model="form.real_name" placeholder="请输入真实姓名" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password" v-if="!form.id">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" />
-        </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role" placeholder="请选择角色">
-            <el-option label="普通用户" value="user" />
-            <el-option label="管理员" value="admin" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="请选择状态">
-            <el-option label="正常" value="active" />
-            <el-option label="禁用" value="inactive" />
-          </el-select>
-        </el-form-item>
-      </el-form>
+      <div class="dialog-content">
+        <!-- 用户头像区域 -->
+        <div class="user-avatar-section">
+          <div class="avatar-container">
+            <el-avatar :size="80" class="user-avatar">
+              <el-icon><User /></el-icon>
+            </el-avatar>
+            <div class="avatar-text">
+              <h3>{{ form.id ? '编辑用户信息' : '创建新用户' }}</h3>
+              <p>{{ form.id ? '修改用户的基本信息和权限设置' : '填写用户的基本信息创建账户' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 表单区域 -->
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-width="120px"
+          class="user-form"
+        >
+          <div class="form-row">
+            <el-form-item label="用户名" prop="username" class="form-item-half">
+              <el-input 
+                v-model="form.username" 
+                placeholder="请输入用户名"
+                prefix-icon="User"
+                clearable
+                :disabled="!!form.id"
+              />
+            </el-form-item>
+            
+            <el-form-item label="邮箱" prop="email" class="form-item-half">
+              <el-input 
+                v-model="form.email" 
+                placeholder="请输入邮箱地址"
+                prefix-icon="Message"
+                clearable
+              />
+            </el-form-item>
+          </div>
+          
+          <div class="form-row">
+            <el-form-item label="真实姓名" prop="real_name" class="form-item-half">
+              <el-input 
+                v-model="form.real_name" 
+                placeholder="请输入真实姓名"
+                prefix-icon="UserFilled"
+                clearable
+              />
+            </el-form-item>
+            
+            <el-form-item label="手机号" prop="phone" class="form-item-half">
+              <el-input 
+                v-model="form.phone" 
+                placeholder="请输入手机号"
+                prefix-icon="Phone"
+                clearable
+              />
+            </el-form-item>
+          </div>
+          
+          <el-form-item 
+            label="密码" 
+            prop="password"
+            class="password-field"
+          >
+            <el-input
+              v-model="form.password"
+              type="password"
+              :placeholder="form.id ? '留空则不修改密码' : '请输入密码'"
+              prefix-icon="Lock"
+              show-password
+              clearable
+            />
+            <div class="password-tip" v-if="form.id">
+              <el-icon><InfoFilled /></el-icon>
+              <span>留空则不修改密码</span>
+            </div>
+          </el-form-item>
+          
+          <div class="form-row">
+            <el-form-item label="角色" prop="role" class="form-item-half">
+              <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
+                <el-option 
+                  label="管理员" 
+                  value="admin"
+                >
+                  <div class="role-option">
+                    <el-icon class="admin-icon"><Crown /></el-icon>
+                    <span>管理员</span>
+                    <small>拥有所有权限</small>
+                  </div>
+                </el-option>
+                <el-option 
+                  label="普通用户" 
+                  value="user"
+                >
+                  <div class="role-option">
+                    <el-icon class="user-icon"><User /></el-icon>
+                    <span>普通用户</span>
+                    <small>基础功能权限</small>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+            
+            <el-form-item label="状态" prop="status" class="form-item-half">
+              <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
+                <el-option label="正常" value="active">
+                  <div class="status-option">
+                    <el-icon class="status-active"><CircleCheck /></el-icon>
+                    <span>正常</span>
+                  </div>
+                </el-option>
+                <el-option label="禁用" value="inactive">
+                  <div class="status-option">
+                    <el-icon class="status-inactive"><CircleClose /></el-icon>
+                    <span>禁用</span>
+                  </div>
+                </el-option>
+                <el-option label="封禁" value="banned">
+                  <div class="status-option">
+                    <el-icon class="status-banned"><Warning /></el-icon>
+                    <span>封禁</span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+        </el-form>
+      </div>
       
       <template #footer>
-        <el-button @click="handleDialogClose">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false" size="large">
+            <el-icon><Close /></el-icon>
+            取消
+          </el-button>
+          <el-button 
+            type="primary" 
+            @click="handleSubmit" 
+            :loading="loading"
+            size="large"
+          >
+            <el-icon v-if="!loading"><Check /></el-icon>
+            {{ form.id ? '更新用户' : '创建用户' }}
+          </el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -275,18 +391,41 @@ export default {
       username: '',
       email: '',
       real_name: '',
+      phone: '',
       password: '',
       role: 'user',
       status: 'active'
     })
     
+    // 密码验证函数
+    const validatePassword = (rule, value, callback) => {
+      if (!form.id && (!value || value.length === 0)) {
+        callback(new Error('请输入密码'))
+      } else if (value && value.length < 6) {
+        callback(new Error('密码长度不能少于6个字符'))
+      } else {
+        callback()
+      }
+    }
+    
     const rules = {
       username: [
-        { required: true, message: '请输入用户名', trigger: 'blur' }
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 3, max: 20, message: '用户名长度在3到20个字符', trigger: 'blur' },
+        { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字、下划线', trigger: 'blur' }
       ],
       email: [
         { required: true, message: '请输入邮箱', trigger: 'blur' },
         { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+      ],
+      password: [
+        { validator: validatePassword, trigger: 'blur' }
+      ],
+      real_name: [
+        { max: 50, message: '真实姓名长度不能超过50个字符', trigger: 'blur' }
+      ],
+      phone: [
+        { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
       ],
       role: [
         { required: true, message: '请选择角色', trigger: 'change' }
@@ -486,14 +625,24 @@ export default {
     
     const handleSubmit = async () => {
       try {
+        // 验证表单
         await formRef.value.validate()
         
         if (form.id) {
           // 更新用户
           const updateData = { ...form }
           delete updateData.id // 移除id字段
-          delete updateData.password // 更新时不包含密码
           
+          // 移除不需要的字段
+          delete updateData.avatar_url
+          delete updateData.created_at
+          delete updateData.updated_at
+          
+          // 如果密码为空，则不更新密码
+          if (!updateData.password || updateData.password.trim() === '') {
+            delete updateData.password
+          }
+
           const response = await usersApi.updateUser(form.id, updateData)
           if (response.code === 200) {
             ElMessage.success('用户更新成功')
@@ -507,18 +656,25 @@ export default {
           const createData = { ...form }
           delete createData.id // 移除id字段
           
+          // 移除不需要的字段
+          delete createData.avatar_url
+          delete createData.created_at
+          delete createData.updated_at
+          
+          console.log('提交创建用户数据:', createData)
           const response = await usersApi.createUser(createData)
           if (response.code === 200 || response.code === 201) {
             ElMessage.success('用户创建成功')
-        dialogVisible.value = false
-        loadUsers()
+            dialogVisible.value = false
+            loadUsers()
           } else {
             ElMessage.error(response.message || '创建用户失败')
           }
         }
       } catch (error) {
         console.error('提交用户表单失败:', error)
-        ElMessage.error('操作失败')
+        // 错误信息已经在请求拦截器中处理了
+        // 这里不需要再次显示错误消息
       }
     }
     
@@ -1048,6 +1204,376 @@ export default {
         align-items: stretch;
       }
     }
+  }
+}
+
+/* 现代化用户对话框样式 */
+.modern-user-dialog :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: visible;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modern-user-dialog :deep(.el-dialog__header) {
+  background: transparent;
+  color: #1f2937;
+  padding: 32px 40px 0 40px;
+  margin: 0;
+  border-bottom: none;
+  position: relative;
+}
+
+.modern-user-dialog :deep(.el-dialog__header::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+}
+
+.modern-user-dialog :deep(.el-dialog__title) {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modern-user-dialog :deep(.el-dialog__headerbtn) {
+  top: 32px;
+  right: 40px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  transition: all 0.3s ease;
+}
+
+.modern-user-dialog :deep(.el-dialog__headerbtn:hover) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: scale(1.05);
+}
+
+.modern-user-dialog :deep(.el-dialog__close) {
+  color: #ef4444;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modern-user-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.dialog-content {
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 用户头像区域 */
+.user-avatar-section {
+  margin-bottom: 40px;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.user-avatar-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(102,126,234,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(118,75,162,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(102,126,234,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(118,75,162,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(102,126,234,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.avatar-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 36px;
+  box-shadow: 
+    0 8px 32px rgba(102, 126, 234, 0.3),
+    0 0 0 4px rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.avatar-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.avatar-text p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* 表单样式 */
+.user-form {
+  margin-top: 32px;
+}
+
+.form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.form-item-half {
+  flex: 1;
+}
+
+.password-field {
+  margin-bottom: 24px;
+}
+
+.password-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.password-tip .el-icon {
+  font-size: 16px;
+  color: #3b82f6;
+}
+
+/* 角色选项样式 */
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.role-option .admin-icon {
+  color: #f59e0b;
+  font-size: 18px;
+}
+
+.role-option .user-icon {
+  color: #3b82f6;
+  font-size: 18px;
+}
+
+.role-option span {
+  font-weight: 500;
+}
+
+.role-option small {
+  color: #6b7280;
+  margin-left: auto;
+}
+
+/* 状态选项样式 */
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-active {
+  color: #10b981;
+}
+
+.status-inactive {
+  color: #6b7280;
+}
+
+.status-banned {
+  color: #ef4444;
+}
+
+/* 对话框底部 */
+.modern-user-dialog :deep(.el-dialog__footer) {
+  background: rgba(248, 250, 252, 0.8);
+  padding: 32px 40px;
+  border-top: 1px solid rgba(229, 231, 235, 0.5);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.modern-user-dialog :deep(.el-dialog__footer::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.dialog-footer .el-button {
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 14px 28px;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.dialog-footer .el-button:not(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
+  border: 1px solid rgba(209, 213, 219, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.dialog-footer .el-button:not(.el-button--primary):hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #374151;
+  border-color: rgba(156, 163, 175, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dialog-footer .el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dialog-footer .el-button--primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.dialog-footer .el-button--primary:hover::before {
+  left: 100%;
+}
+
+.dialog-footer .el-button--primary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 输入框样式优化 */
+.user-form :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  border: 1px solid rgba(209, 213, 219, 0.6);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-form :deep(.el-input__wrapper:hover) {
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.user-form :deep(.el-input__wrapper.is-focus) {
+  border-color: #667eea;
+  box-shadow: 
+    0 0 0 3px rgba(102, 126, 234, 0.1),
+    0 4px 16px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.user-form :deep(.el-input__inner) {
+  color: #1f2937;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.user-form :deep(.el-input__prefix) {
+  color: #9ca3af;
+}
+
+.user-form :deep(.el-select .el-input__wrapper) {
+  border-radius: 12px;
+}
+
+/* 表单项标签样式 */
+.user-form :deep(.el-form-item__label) {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .avatar-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .dialog-content {
+    padding: 24px;
+  }
+  
+  .modern-user-dialog :deep(.el-dialog__header),
+  .modern-user-dialog :deep(.el-dialog__footer) {
+    padding: 20px 24px;
   }
 }
 </style>
