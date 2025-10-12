@@ -236,15 +236,26 @@ class ExamScoringService:
             if isinstance(exam_record.answers, str):
                 # 如果是字符串，尝试解析JSON
                 try:
-                    user_answers = json.loads(exam_record.answers)
+                    parsed_answers = json.loads(exam_record.answers)
+                    # 如果是字典，直接使用；如果是列表，转换为字典
+                    if isinstance(parsed_answers, dict):
+                        user_answers = parsed_answers
+                    elif isinstance(parsed_answers, list):
+                        # 将列表转换为字典，使用索引作为键
+                        user_answers = {str(i): answer for i, answer in enumerate(parsed_answers)}
+                    else:
+                        user_answers = {}
                 except (json.JSONDecodeError, TypeError):
-                    user_answers = []
-            elif isinstance(exam_record.answers, list):
-                # 如果已经是列表，直接使用
+                    user_answers = {}
+            elif isinstance(exam_record.answers, dict):
+                # 如果已经是字典，直接使用
                 user_answers = exam_record.answers
+            elif isinstance(exam_record.answers, list):
+                # 如果是列表，转换为字典
+                user_answers = {str(i): answer for i, answer in enumerate(exam_record.answers)}
             else:
-                # 其他情况，设为空列表
-                user_answers = []
+                # 其他情况，设为空字典
+                user_answers = {}
             
             # 构建结果详情
             result_details = []
@@ -253,7 +264,8 @@ class ExamScoringService:
                 if not question:
                     continue
                 
-                user_answer = user_answers[i] if i < len(user_answers) else ''
+                # 使用字符串索引作为键来获取用户答案
+                user_answer = user_answers.get(str(i), '')
                 correct_answer = question.answer
                 
                 # 判断答案是否正确

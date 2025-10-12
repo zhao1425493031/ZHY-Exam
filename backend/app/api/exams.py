@@ -158,11 +158,18 @@ def get_exam(exam_id):
         subject = Subject.query.get(exam.subject_id)
         subject_name = subject.name if subject else '未知科目'
         
-        # 获取题目数据
+        # 获取题目数据（按照exam.question_ids的顺序）
         questions = []
         if exam.question_ids:
-            questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
-            questions = [q.to_dict() for q in questions]
+            # 按照exam.question_ids的顺序获取题目
+            question_dict = {}
+            for q in Question.query.filter(Question.id.in_(exam.question_ids)).all():
+                question_dict[q.id] = q
+            
+            # 按照exam.question_ids的顺序构建题目列表
+            for question_id in exam.question_ids:
+                if question_id in question_dict:
+                    questions.append(question_dict[question_id].to_dict())
         
         # 构建响应数据
         exam_data = exam.to_dict()
@@ -306,16 +313,19 @@ def get_exam_questions(exam_id):
     try:
         exam = Exam.query.get_or_404(exam_id)
         
-        # 获取试题详情
-        questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
+        # 获取试题详情（按照exam.question_ids的顺序）
+        question_dict = {}
+        for q in Question.query.filter(Question.id.in_(exam.question_ids)).all():
+            question_dict[q.id] = q
         
-        # 构建试题数据（不包含答案）
+        # 构建试题数据（不包含答案，按照exam.question_ids的顺序）
         question_data = []
-        for question in questions:
-            q_data = question.to_dict()
-            # 移除答案信息
-            q_data.pop('answer', None)
-            question_data.append(q_data)
+        for question_id in exam.question_ids:
+            if question_id in question_dict:
+                q_data = question_dict[question_id].to_dict()
+                # 移除答案信息
+                q_data.pop('answer', None)
+                question_data.append(q_data)
         
         return jsonify(build_response(data=question_data))
         
@@ -475,8 +485,15 @@ def submit_exam(exam_id):
         total_count = 0
         question_details = []
         
-        # 获取考试题目
-        questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
+        # 获取考试题目（按照exam.question_ids的顺序）
+        question_dict = {}
+        for q in Question.query.filter(Question.id.in_(exam.question_ids)).all():
+            question_dict[q.id] = q
+        
+        questions = []
+        for question_id in exam.question_ids:
+            if question_id in question_dict:
+                questions.append(question_dict[question_id])
         
         for i, question in enumerate(questions):
             total_count += 1
@@ -485,8 +502,24 @@ def submit_exam(exam_id):
             
             # 根据题型判断答案是否正确
             if question.type in ['single', 'multiple']:
-                # 选择题：比较答案字符串
-                is_correct = user_answer == question.answer
+                # 选择题：需要将选项字母转换为内容进行比较
+                if question.options and isinstance(question.options, list):
+                    # 创建选项映射 A->options[0], B->options[1], ...
+                    option_map = {}
+                    for j, option in enumerate(question.options):
+                        option_map[chr(65 + j)] = option  # A, B, C, D...
+                    
+                    if question.type == 'single':
+                        # 单选题：将用户答案的选项字母转换为内容
+                        user_answer_content = option_map.get(user_answer, user_answer)
+                        is_correct = user_answer_content == question.answer
+                    else:
+                        # 多选题：将用户答案的选项字母转换为内容
+                        user_answer_content = '|'.join([option_map.get(char, char) for char in user_answer])
+                        is_correct = user_answer_content == question.answer
+                else:
+                    # 如果没有选项，直接比较
+                    is_correct = user_answer == question.answer
             elif question.type == 'judge':
                 # 判断题：比较布尔值字符串
                 is_correct = user_answer == question.answer
@@ -641,16 +674,40 @@ def get_exam_result(exam_id):
         question_details = []
         if exam_record.answers and exam.question_ids:
             questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
-            for i, question in enumerate(questions):
+            # 按题目ID顺序排序，确保与exam.question_ids的顺序一致
+            question_id_to_index = {qid: idx for idx, qid in enumerate(exam.question_ids)}
+            questions_sorted = sorted(questions, key=lambda q: question_id_to_index[q.id])
+            
+            for i, question in enumerate(questions_sorted):
                 user_answer = exam_record.answers.get(str(i), '')
+                print(f"[调试] 题目索引={i}, 题目ID={question.id}, 用户答案={user_answer}, answers={exam_record.answers}")
                 is_correct = False
                 
                 # 根据题型判断答案是否正确
                 if question.type in ['single', 'multiple']:
-                    is_correct = user_answer == question.answer
+                    # 选择题：需要将选项字母转换为内容进行比较
+                    if question.options and isinstance(question.options, list):
+                        # 创建选项映射 A->options[0], B->options[1], ...
+                        option_map = {}
+                        for j, option in enumerate(question.options):
+                            option_map[chr(65 + j)] = option  # A, B, C, D...
+                        
+                        if question.type == 'single':
+                            # 单选题：将用户答案的选项字母转换为内容
+                            user_answer_content = option_map.get(user_answer, user_answer)
+                            is_correct = user_answer_content == question.answer
+                        else:
+                            # 多选题：将用户答案的选项字母转换为内容
+                            user_answer_content = '|'.join([option_map.get(char, char) for char in user_answer])
+                            is_correct = user_answer_content == question.answer
+                    else:
+                        # 如果没有选项，直接比较
+                        is_correct = user_answer == question.answer
                 elif question.type == 'judge':
+                    # 判断题：比较布尔值字符串
                     is_correct = user_answer == question.answer
                 elif question.type in ['fill', 'essay']:
+                    # 填空题和简答题：简单比较（实际项目中可能需要更复杂的判断）
                     is_correct = user_answer.strip().lower() == question.answer.strip().lower()
                 
                 # 格式化答案显示

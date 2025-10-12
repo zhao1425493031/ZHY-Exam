@@ -35,7 +35,7 @@ def format_answer_for_display(answer, question, is_user_answer=True):
             else:
                 # 正确答案：已经是内容格式，直接返回
                 formatted = answer
-            print(f"[格式化答案] 单选题: 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
+            print(f"[格式化答案] 单选题: 题目ID={question.id}, 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
             return formatted
         else:
             # 多选题：多个选项
@@ -67,6 +67,7 @@ def format_answer_for_display(answer, question, is_user_answer=True):
     
     else:
         # 填空题和简答题：直接返回
+        print(f"[格式化答案] {question_type}题: 题目ID={question.id}, 原始答案={answer}, 格式化后={answer}, 是用户答案={is_user_answer}")
         return answer
 
 # 创建蓝图

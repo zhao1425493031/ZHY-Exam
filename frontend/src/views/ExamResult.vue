@@ -25,7 +25,7 @@
         <!-- 成绩统计 -->
         <div class="score-stats">
           <div class="stat-card">
-            <div class="stat-value">{{ examResult.score }}</div>
+            <div class="stat-value">{{ Math.round(examResult.score) }}</div>
             <div class="stat-label">总分</div>
           </div>
           <div class="stat-card">
