@@ -100,14 +100,36 @@ class ExamScoringService:
             question_type = question.type
             
             if question_type == 'single':
-                # 单选题：直接比较答案
-                return user_answer.strip().lower() == correct_answer.strip().lower()
+                # 单选题：需要将选项字母转换为内容进行比较
+                if question.options and isinstance(question.options, list):
+                    # 创建选项映射 A->options[0], B->options[1], ...
+                    option_map = {}
+                    for j, option in enumerate(question.options):
+                        option_map[chr(65 + j)] = option  # A, B, C, D...
+                    
+                    # 将用户答案的选项字母转换为内容
+                    user_answer_content = option_map.get(user_answer, user_answer)
+                    return user_answer_content.strip().lower() == correct_answer.strip().lower()
+                else:
+                    # 如果没有选项，直接比较
+                    return user_answer.strip().lower() == correct_answer.strip().lower()
             
             elif question_type == 'multiple':
-                # 多选题：比较答案集合
-                user_answers = set(user_answer.split(',')) if user_answer else set()
-                correct_answers = set(correct_answer.split(',')) if correct_answer else set()
-                return user_answers == correct_answers
+                # 多选题：需要将选项字母转换为内容进行比较
+                if question.options and isinstance(question.options, list):
+                    # 创建选项映射 A->options[0], B->options[1], ...
+                    option_map = {}
+                    for j, option in enumerate(question.options):
+                        option_map[chr(65 + j)] = option  # A, B, C, D...
+                    
+                    # 将用户答案的选项字母转换为内容
+                    user_answer_content = '|'.join([option_map.get(char, char) for char in user_answer])
+                    return user_answer_content.strip().lower() == correct_answer.strip().lower()
+                else:
+                    # 如果没有选项，直接比较
+                    user_answers = set(user_answer.split(',')) if user_answer else set()
+                    correct_answers = set(correct_answer.split(',')) if correct_answer else set()
+                    return user_answers == correct_answers
             
             elif question_type == 'judge':
                 # 判断题：比较布尔值

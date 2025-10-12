@@ -187,13 +187,13 @@
               <span class="user-answer">{{ row.user_answer || '未作答' }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="correct_answer" label="正确答案" width="150" show-overflow-tooltip>
+          <el-table-column prop="correct_answer" label="正确答案" width="500" show-overflow-tooltip>
             <template #default="{ row }">
               <span class="correct-answer">{{ row.correct_answer }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="exam_title" label="来源考试" width="150" show-overflow-tooltip />
-          <el-table-column prop="created_at" label="错题时间" width="160">
+          <el-table-column prop="exam_title" label="来源考试" width="250" show-overflow-tooltip />
+          <el-table-column prop="created_at" label="错题时间" width="200">
             <template #default="{ row }">
               {{ formatDate(row.created_at) }}
             </template>
