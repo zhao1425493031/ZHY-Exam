@@ -12,6 +12,9 @@ from app.utils.helpers import build_response, build_error_response, get_client_i
 from app.services.exam_service import ExamService
 from datetime import datetime, timedelta
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 # 创建考试API实例
 exam_api = BaseAPI(Exam, ExamSchema)
@@ -324,6 +327,8 @@ def get_exam_questions(exam_id):
 def start_exam(exam_id):
     """开始考试"""
     try:
+        from app.models.exam_record import ExamRecord
+        
         exam = Exam.query.get_or_404(exam_id)
         current_user_id = get_jwt_identity()
         
@@ -339,8 +344,39 @@ def start_exam(exam_id):
         if exam.end_time and now > exam.end_time:
             return jsonify(build_error_response(400, '考试已结束')), 400
         
-        # TODO: 检查用户是否已经参加过此考试
-        # 这里可以添加重复考试检查逻辑
+        # 检查是否已有进行中的考试记录
+        existing_record = ExamRecord.query.filter_by(
+            exam_id=exam_id,
+            user_id=current_user_id,
+            status='in_progress'
+        ).first()
+        
+        if existing_record:
+            # 如果已有进行中的记录，返回现有记录
+            logger.info(f'用户已有进行中的考试记录: record_id={existing_record.id}')
+            return jsonify(build_response(
+                message='继续考试',
+                data={
+                    'exam_id': exam.id,
+                    'exam_record_id': existing_record.id,
+                    'title': exam.title,
+                    'duration': exam.duration,
+                    'question_count': exam.question_count,
+                    'start_time': existing_record.start_time.isoformat()
+                }
+            ))
+        
+        # 创建新的考试记录
+        exam_record = ExamRecord(
+            exam_id=exam_id,
+            user_id=current_user_id,
+            start_time=now,
+            status='in_progress'
+        )
+        db.session.add(exam_record)
+        db.session.commit()
+        
+        logger.info(f'创建考试记录: record_id={exam_record.id}, start_time={exam_record.start_time}')
         
         # 记录操作日志
         log_operation(
@@ -354,6 +390,7 @@ def start_exam(exam_id):
             message='考试开始成功',
             data={
                 'exam_id': exam.id,
+                'exam_record_id': exam_record.id,
                 'title': exam.title,
                 'duration': exam.duration,
                 'question_count': exam.question_count,
@@ -377,29 +414,61 @@ def submit_exam(exam_id):
         data = request.get_json()
         
         answers = data.get('answers', {})
+        start_time_str = data.get('start_time')  # 前端传来的开始时间
+        
+        logger.info(f'提交考试: exam_id={exam_id}, user_id={current_user_id}, start_time={start_time_str}')
         
         # 检查考试设置是否允许重复考试
         settings = exam.settings or {}
         allow_retake = settings.get('allow_retake', True)  # 默认允许重复考试
         
-        # 检查是否已有考试记录
-        existing_record = ExamRecord.query.filter_by(
-            exam_id=exam_id,
-            user_id=current_user_id
-        ).first()
-        
-        if existing_record and not allow_retake:
-            return jsonify(build_error_response(400, '该考试不允许重复参加')), 400
-        
-        # 创建新的考试记录
-        exam_record = ExamRecord(
+        # 查找进行中的考试记录
+        exam_record = ExamRecord.query.filter_by(
             exam_id=exam_id,
             user_id=current_user_id,
-            start_time=datetime.utcnow(),
-            submit_time=datetime.utcnow(),
-            answers=answers,
-            status='submitted'
-        )
+            status='in_progress'
+        ).first()
+        
+        if exam_record:
+            # 更新现有记录
+            logger.info(f'更新现有考试记录: record_id={exam_record.id}, start_time={exam_record.start_time}')
+            exam_record.submit_time = datetime.utcnow()
+            exam_record.answers = answers
+            exam_record.status = 'submitted'
+        else:
+            # 检查是否已有已提交的记录
+            submitted_record = ExamRecord.query.filter_by(
+                exam_id=exam_id,
+                user_id=current_user_id,
+                status='submitted'
+            ).first()
+            
+            if submitted_record and not allow_retake:
+                return jsonify(build_error_response(400, '该考试不允许重复参加')), 400
+            
+            # 创建新的考试记录
+            # 如果前端传来了开始时间，使用前端的时间；否则使用当前时间
+            if start_time_str:
+                try:
+                    from dateutil import parser
+                    start_time = parser.parse(start_time_str)
+                    logger.info(f'使用前端传来的开始时间: {start_time}')
+                except:
+                    start_time = datetime.utcnow()
+                    logger.warning(f'解析开始时间失败，使用当前时间: {start_time}')
+            else:
+                start_time = datetime.utcnow()
+                logger.warning(f'前端未传开始时间，使用当前时间: {start_time}')
+            
+            exam_record = ExamRecord(
+                exam_id=exam_id,
+                user_id=current_user_id,
+                start_time=start_time,
+                submit_time=datetime.utcnow(),
+                answers=answers,
+                status='submitted'
+            )
+            logger.info(f'创建新考试记录: start_time={exam_record.start_time}, submit_time={exam_record.submit_time}')
         
         # 计算分数和统计
         correct_count = 0
@@ -445,6 +514,25 @@ def submit_exam(exam_id):
         exam_record.total_count = total_count
         
         db.session.add(exam_record)
+        db.session.flush()  # 先flush获取exam_record.id
+        
+        # 生成错题记录
+        from app.models.wrong_answer import WrongAnswer
+        for i, question in enumerate(questions):
+            user_answer = answers.get(str(i), '')
+            is_correct = question_details[i]['is_correct']
+            
+            if not is_correct:  # 如果答案错误，记录错题
+                wrong_answer = WrongAnswer(
+                    user_id=current_user_id,
+                    question_id=question.id,
+                    exam_record_id=exam_record.id,
+                    user_answer=user_answer,
+                    correct_answer=question.answer
+                )
+                db.session.add(wrong_answer)
+                logger.info(f'生成错题记录: question_id={question.id}, user_answer={user_answer}, correct_answer={question.answer}')
+        
         db.session.commit()
         
         # 记录操作日志
@@ -565,10 +653,15 @@ def get_exam_result(exam_id):
                 elif question.type in ['fill', 'essay']:
                     is_correct = user_answer.strip().lower() == question.answer.strip().lower()
                 
+                # 格式化答案显示
+                from app.api.exam_scoring import format_answer_for_display
+                formatted_user_answer = format_answer_for_display(user_answer, question, is_user_answer=True)
+                formatted_correct_answer = format_answer_for_display(question.answer, question, is_user_answer=False)
+                
                 question_details.append({
                     'question_title': question.title,
-                    'user_answer': user_answer,
-                    'correct_answer': question.answer,
+                    'user_answer': formatted_user_answer,
+                    'correct_answer': formatted_correct_answer,
                     'is_correct': is_correct,
                     'points': question.points
                 })

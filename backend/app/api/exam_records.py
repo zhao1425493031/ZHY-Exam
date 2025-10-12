@@ -35,7 +35,7 @@ def get_exam_records():
         search_data = search_schema.load(request.args)
         
         # 构建查询
-        query = ExamRecord.query.filter_by(user_id=current_user_id)
+        query = ExamRecord.query.filter_by(user_id=int(current_user_id))
         
         # 应用搜索过滤
         if search_data.get('exam_id'):
@@ -106,7 +106,7 @@ def get_exam_record(record_id):
     """获取考试记录详情"""
     try:
         current_user_id = get_jwt_identity()
-        record = ExamRecord.query.filter_by(id=record_id, user_id=current_user_id).first_or_404()
+        record = ExamRecord.query.filter_by(id=record_id, user_id=int(current_user_id)).first_or_404()
         
         # 获取考试信息
         exam = Exam.query.get(record.exam_id)
@@ -125,7 +125,7 @@ def get_exam_answers(record_id):
     """获取考试答案详情"""
     try:
         current_user_id = get_jwt_identity()
-        record = ExamRecord.query.filter_by(id=record_id, user_id=current_user_id).first_or_404()
+        record = ExamRecord.query.filter_by(id=record_id, user_id=int(current_user_id)).first_or_404()
         
         # 获取考试信息
         exam = Exam.query.get(record.exam_id)
@@ -173,14 +173,14 @@ def get_exam_record_stats():
         current_user_id = get_jwt_identity()
         
         # 基础统计
-        total_records = ExamRecord.query.filter_by(user_id=current_user_id).count()
-        submitted_records = ExamRecord.query.filter_by(user_id=current_user_id, status='submitted').count()
-        in_progress_records = ExamRecord.query.filter_by(user_id=current_user_id, status='in_progress').count()
-        timeout_records = ExamRecord.query.filter_by(user_id=current_user_id, status='timeout').count()
+        total_records = ExamRecord.query.filter_by(user_id=int(current_user_id)).count()
+        submitted_records = ExamRecord.query.filter_by(user_id=int(current_user_id), status='submitted').count()
+        in_progress_records = ExamRecord.query.filter_by(user_id=int(current_user_id), status='in_progress').count()
+        timeout_records = ExamRecord.query.filter_by(user_id=int(current_user_id), status='timeout').count()
         
         # 分数统计
         submitted_with_score = ExamRecord.query.filter_by(
-            user_id=current_user_id, 
+            user_id=int(current_user_id), 
             status='submitted'
         ).filter(ExamRecord.score.isnot(None)).all()
         
@@ -227,7 +227,7 @@ def get_wrong_answers():
         
         # 获取已提交的考试记录
         submitted_records = ExamRecord.query.filter_by(
-            user_id=current_user_id,
+            user_id=int(current_user_id),
             status='submitted'
         ).all()
         
@@ -347,3 +347,80 @@ def get_all_exam_records():
         
     except Exception as e:
         return jsonify(build_error_response(400, str(e))), 400
+
+@exam_records_bp.route('/<int:record_id>/delete', methods=['DELETE'])
+@jwt_required()
+def delete_exam_record(record_id):
+    """删除考试记录"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        current_user_id = get_jwt_identity()
+        logger.info(f'删除考试记录: record_id={record_id}, user_id={current_user_id}')
+        
+        # 查找记录
+        record = ExamRecord.query.filter_by(id=record_id, user_id=int(current_user_id)).first()
+        if not record:
+            logger.warning(f'考试记录不存在: record_id={record_id}, user_id={current_user_id}')
+            return jsonify(build_error_response(404, '考试记录不存在')), 404
+        
+        logger.info(f'找到考试记录: {record.to_dict()}')
+        
+        # 删除记录
+        db.session.delete(record)
+        db.session.commit()
+        
+        logger.info(f'删除成功: record_id={record_id}')
+        
+        # 记录操作日志
+        log_operation(
+            user_id=current_user_id,
+            operation='delete_exam_record',
+            details=f'删除考试记录ID: {record_id}',
+            ip=get_client_ip(request)
+        )
+        
+        return jsonify(build_response(message='删除成功'))
+        
+    except Exception as e:
+        logger.error(f'删除考试记录失败: record_id={record_id}, error={str(e)}', exc_info=True)
+        db.session.rollback()
+        return jsonify(build_error_response(500, f'删除失败: {str(e)}')), 500
+
+@exam_records_bp.route('/batch-delete', methods=['POST'])
+@jwt_required()
+def batch_delete_exam_records():
+    """批量删除考试记录"""
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        ids = data.get('ids', [])
+        if not ids:
+            return jsonify(build_error_response(400, '请选择要删除的记录')), 400
+        
+        # 删除记录（只能删除自己的记录）
+        deleted_count = ExamRecord.query.filter(
+            ExamRecord.id.in_(ids),
+            ExamRecord.user_id == int(current_user_id)
+        ).delete(synchronize_session=False)
+        
+        db.session.commit()
+        
+        # 记录操作日志
+        log_operation(
+            user_id=current_user_id,
+            operation='batch_delete_exam_records',
+            details=f'批量删除考试记录，数量: {deleted_count}',
+            ip=get_client_ip(request)
+        )
+        
+        return jsonify(build_response(
+            message=f'成功删除 {deleted_count} 条记录',
+            data={'deleted_count': deleted_count}
+        ))
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(build_error_response(500, f'批量删除失败: {str(e)}')), 500

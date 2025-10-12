@@ -11,8 +11,8 @@
       <div class="header-right">
         <div class="score-display">
           <div class="score-circle">
-            <div class="score-value">{{ examResult.total_score }}</div>
-            <div class="score-total">/ {{ examResult.total_points }}</div>
+            <div class="score-value">{{ Math.round(examResult.total_score || 0) }}</div>
+            <div class="score-total">/ {{ Math.round(examResult.total_points || 0) }}</div>
           </div>
           <div class="score-rate">{{ examResult.score_rate }}%</div>
         </div>
@@ -27,11 +27,11 @@
           <div class="overview-grid">
             <div class="overview-item">
               <div class="item-label">总分</div>
-              <div class="item-value">{{ examResult.total_score }} / {{ examResult.total_points }}</div>
+              <div class="item-value">{{ Math.round(examResult.total_score || 0) }} / {{ Math.round(examResult.total_points || 0) }}</div>
             </div>
             <div class="overview-item">
               <div class="item-label">正确题数</div>
-              <div class="item-value">{{ examResult.correct_count }} / {{ examResult.total_questions }}</div>
+              <div class="item-value">{{ examResult.correct_count || 0 }} / {{ examResult.total_questions || 0 }}</div>
             </div>
             <div class="overview-item">
               <div class="item-label">得分率</div>
@@ -151,14 +151,14 @@
               <div class="analysis-label">答题正确率</div>
               <div class="analysis-value">
                 <el-progress
-                  :percentage="Math.round(examResult.correct_count / examResult.total_questions * 100)"
-                  :color="getProgressColor(examResult.correct_count / examResult.total_questions)"
+                  :percentage="calculatePercentage(examResult.correct_count, examResult.total_questions)"
+                  :color="getProgressColor(calculatePercentage(examResult.correct_count, examResult.total_questions) / 100)"
                 />
               </div>
             </div>
             <div class="analysis-item">
               <div class="analysis-label">错题数量</div>
-              <div class="analysis-value">{{ examResult.total_questions - examResult.correct_count }}题</div>
+              <div class="analysis-value">{{ (examResult.total_questions || 0) - (examResult.correct_count || 0) }}题</div>
             </div>
           </div>
         </div>
@@ -212,6 +212,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { View, Refresh, ArrowLeft, Trophy, Medal, InfoFilled, Warning } from '@element-plus/icons-vue'
 import { examScoringApi } from '@/api/exam_scoring'
+import { examRecordsApi } from '@/api/exam_records'
 import { formatDate } from '@/utils/format'
 
 export default {
@@ -249,12 +250,42 @@ export default {
       try {
         loading.value = true
         const examRecordId = route.params.id
-        const response = await examScoringApi.getExamResult(examRecordId)
-        examResult.value = response.data
+        
+        // 首先获取考试记录详情
+        const recordResponse = await examRecordsApi.getExamRecord(examRecordId)
+        if (recordResponse.code === 200) {
+          examResult.value = {
+            ...recordResponse.data,
+            // 设置默认值，防止undefined
+            correct_count: recordResponse.data.correct_count || 0,
+            total_questions: recordResponse.data.total_count || 0,
+            total_score: recordResponse.data.score || 0,
+            total_points: recordResponse.data.total_points || 0,
+            score_rate: recordResponse.data.score_rate || 0
+          }
+        } else {
+          throw new Error(recordResponse.message || '获取考试记录失败')
+        }
+        
+        // 然后获取考试结果详情
+        try {
+          const resultResponse = await examScoringApi.getExamResult(examRecordId)
+          if (resultResponse.code === 200) {
+            console.log('考试结果详情:', resultResponse.data)
+            console.log('Duration from API:', resultResponse.data.duration)
+            console.log('Start time:', resultResponse.data.start_time)
+            console.log('Submit time:', resultResponse.data.submit_time)
+            examResult.value = { ...examResult.value, ...resultResponse.data }
+            console.log('Final examResult:', examResult.value)
+          }
+        } catch (resultError) {
+          console.warn('获取考试结果详情失败，使用基本信息:', resultError)
+          // 如果获取结果详情失败，使用基本信息
+        }
       } catch (error) {
         ElMessage.error('加载考试结果失败')
         console.error('Load exam result error:', error)
-        router.push('/user/exams')
+        router.push('/user/my-records')
       } finally {
         loading.value = false
       }
@@ -278,6 +309,13 @@ export default {
     }
     
     // 工具方法
+    const calculatePercentage = (correct, total) => {
+      if (!correct || !total || total === 0) {
+        return 0
+      }
+      return Math.round((correct / total) * 100)
+    }
+    
     const getTypeLabel = (type) => {
       const labels = {
         single: '单选题',
@@ -339,6 +377,7 @@ export default {
       reviewWrongAnswers,
       retakeExam,
       goBack,
+      calculatePercentage,
       getTypeLabel,
       getTypeTagType,
       getGradeLabel,

@@ -267,6 +267,7 @@ CREATE TABLE `exam_monitoring` (
     `ip_address` VARCHAR(45) COMMENT 'IP地址',
     `user_agent` TEXT COMMENT '用户代理',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX `idx_exam_record_id` (`exam_record_id`),
     INDEX `idx_event_type` (`event_type`),
     INDEX `idx_created_at` (`created_at`)

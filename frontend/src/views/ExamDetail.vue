@@ -209,10 +209,20 @@ export default {
 
         starting.value = true
         
-        // 跳转到考试页面
-        router.push(`/exam/${exam.value.id}`)
-      } catch {
-        // 用户取消
+        // 调用后端开始考试API，创建考试记录
+        const response = await examApi.startExam(exam.value.id)
+        if (response.code === 200) {
+          console.log('开始考试成功:', response.data)
+          // 跳转到考试页面
+          router.push(`/exam/${exam.value.id}`)
+        } else {
+          ElMessage.error(response.message || '开始考试失败')
+        }
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('开始考试失败:', error)
+          ElMessage.error('开始考试失败')
+        }
       } finally {
         starting.value = false
       }

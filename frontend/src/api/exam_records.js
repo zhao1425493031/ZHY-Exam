@@ -45,5 +45,31 @@ export const examRecordsApi = {
       url: `/exam-records/${id}`,
       method: 'delete'
     })
+  },
+
+  // 获取我的考试记录（当前用户）
+  getMyRecords(params = {}) {
+    return request({
+      url: '/exam-records',
+      method: 'get',
+      params
+    })
+  },
+
+  // 删除记录
+  deleteRecord(id) {
+    return request({
+      url: `/exam-records/${id}/delete`,
+      method: 'delete'
+    })
+  },
+
+  // 批量删除记录
+  batchDelete(ids) {
+    return request({
+      url: '/exam-records/batch-delete',
+      method: 'post',
+      data: { ids }
+    })
   }
 }

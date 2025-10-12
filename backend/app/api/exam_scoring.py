@@ -9,6 +9,66 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def format_answer_for_display(answer, question, is_user_answer=True):
+    """格式化答案显示，将选项字母转换为选项内容"""
+    if not answer or not question:
+        return answer or ''
+    
+    question_type = question.type
+    options = question.options
+    
+    if question_type in ['single', 'multiple']:
+        # 选择题：将选项字母转换为选项内容
+        if not options or not isinstance(options, list):
+            return answer
+        
+        # 创建选项映射 A->options[0], B->options[1], ...
+        option_map = {}
+        for i, option in enumerate(options):
+            option_map[chr(65 + i)] = option  # A, B, C, D...
+        
+        if question_type == 'single':
+            # 单选题：单个选项
+            if is_user_answer:
+                # 用户答案：将选项字母转换为内容
+                formatted = option_map.get(answer, answer)
+            else:
+                # 正确答案：已经是内容格式，直接返回
+                formatted = answer
+            print(f"[格式化答案] 单选题: 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
+            return formatted
+        else:
+            # 多选题：多个选项
+            if is_user_answer:
+                # 用户答案：将选项字母转换为内容
+                selected_options = []
+                for char in answer:
+                    if char in option_map:
+                        selected_options.append(option_map[char])
+                    else:
+                        selected_options.append(char)
+                formatted = ' | '.join(selected_options)
+            else:
+                # 正确答案：将|分隔的内容转换为更友好的格式
+                if '|' in answer:
+                    formatted = ' | '.join(answer.split('|'))
+                else:
+                    formatted = answer
+            print(f"[格式化答案] 多选题: 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
+            return formatted
+    
+    elif question_type == 'judge':
+        # 判断题：转换布尔值显示
+        if answer.lower() in ['true', '1', '正确', '是']:
+            return '正确'
+        elif answer.lower() in ['false', '0', '错误', '否']:
+            return '错误'
+        return answer
+    
+    else:
+        # 填空题和简答题：直接返回
+        return answer
+
 # 创建蓝图
 exam_scoring_bp = Blueprint('exam_scoring', __name__, url_prefix='/api/exam-scoring')
 
@@ -57,9 +117,14 @@ def get_exam_result(exam_record_id):
         # 验证考试记录权限
         exam_record = ExamRecord.query.get(exam_record_id)
         if not exam_record:
+            logger.warning(f'考试记录不存在: {exam_record_id}')
             return jsonify(build_error_response(404, '考试记录不存在')), 404
         
-        if exam_record.user_id != current_user_id:
+        logger.info(f'检查权限: 当前用户ID={current_user_id}(类型:{type(current_user_id)}), 记录用户ID={exam_record.user_id}(类型:{type(exam_record.user_id)}), 记录状态={exam_record.status}')
+        
+        # 确保类型一致进行比较
+        if int(exam_record.user_id) != int(current_user_id):
+            logger.warning(f'权限检查失败: 用户{current_user_id}尝试访问用户{exam_record.user_id}的记录')
             return jsonify(build_error_response(403, '无权限访问此考试记录')), 403
         
         if exam_record.status != 'submitted':
@@ -150,11 +215,17 @@ def get_wrong_answers():
         size = request.args.get('size', 10, type=int)
         subject_id = request.args.get('subject_id', type=int)
         
+        logger.info(f'获取错题记录: user_id={current_user_id}, page={page}, size={size}, subject_id={subject_id}')
+        
         from app.models.wrong_answer import WrongAnswer
         from app.models.question import Question
         
         # 构建查询
         query = WrongAnswer.query.filter_by(user_id=current_user_id)
+        
+        # 添加日志：检查错题总数
+        total_wrong_answers = query.count()
+        logger.info(f'用户{current_user_id}的错题总数: {total_wrong_answers}')
         
         if subject_id:
             query = query.join(Question).filter(Question.subject_id == subject_id)
@@ -169,13 +240,17 @@ def get_wrong_answers():
             exam_record = ExamRecord.query.get(wrong_answer.exam_record_id)
             exam = Exam.query.get(exam_record.exam_id) if exam_record else None
             
+            # 格式化用户答案和正确答案，使其更易理解
+            formatted_user_answer = format_answer_for_display(wrong_answer.user_answer, question, is_user_answer=True)
+            formatted_correct_answer = format_answer_for_display(wrong_answer.correct_answer, question, is_user_answer=False)
+            
             wrong_answers.append({
                 'id': wrong_answer.id,
                 'question_id': wrong_answer.question_id,
                 'question_title': question.title if question else '未知题目',
                 'question_type': question.type if question else 'unknown',
-                'user_answer': wrong_answer.user_answer,
-                'correct_answer': wrong_answer.correct_answer,
+                'user_answer': formatted_user_answer,
+                'correct_answer': formatted_correct_answer,
                 'explanation': question.explanation if question else '',
                 'exam_id': exam.id if exam else None,
                 'exam_title': exam.title if exam else '未知考试',

@@ -116,6 +116,14 @@ export const examApi = {
     })
   },
 
+  // 开始考试
+  startExam(examId) {
+    return request({
+      url: `/exams/${examId}/start`,
+      method: 'post'
+    })
+  },
+
   // 提交考试
   submitExam(examId, data) {
     return request({

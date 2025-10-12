@@ -232,8 +232,19 @@ class ExamScoringService:
             # 创建题目ID到题目的映射
             question_map = {q.id: q for q in questions}
             
-            # 解析用户答案
-            user_answers = json.loads(exam_record.answers) if exam_record.answers else []
+            # 获取用户答案
+            if isinstance(exam_record.answers, str):
+                # 如果是字符串，尝试解析JSON
+                try:
+                    user_answers = json.loads(exam_record.answers)
+                except (json.JSONDecodeError, TypeError):
+                    user_answers = []
+            elif isinstance(exam_record.answers, list):
+                # 如果已经是列表，直接使用
+                user_answers = exam_record.answers
+            else:
+                # 其他情况，设为空列表
+                user_answers = []
             
             # 构建结果详情
             result_details = []
@@ -248,20 +259,33 @@ class ExamScoringService:
                 # 判断答案是否正确
                 is_correct = ExamScoringService._check_answer(question, user_answer, correct_answer)
                 
+                # 格式化答案显示
+                from app.api.exam_scoring import format_answer_for_display
+                formatted_user_answer = format_answer_for_display(user_answer, question, is_user_answer=True)
+                formatted_correct_answer = format_answer_for_display(correct_answer, question, is_user_answer=False)
+                
                 result_details.append({
                     'question_id': question_id,
                     'question_title': question.title,
                     'question_type': question.type,
                     'question_points': question.points,
-                    'user_answer': user_answer,
-                    'correct_answer': correct_answer,
+                    'user_answer': formatted_user_answer,
+                    'correct_answer': formatted_correct_answer,
                     'is_correct': is_correct,
                     'explanation': question.explanation
                 })
             
+            # 计算考试时长
+            duration = 0
+            if exam_record.start_time and exam_record.submit_time:
+                duration = (exam_record.submit_time - exam_record.start_time).total_seconds() / 60
+                logger.info(f'计算考试时长: start_time={exam_record.start_time}, submit_time={exam_record.submit_time}, duration={duration}分钟')
+            else:
+                logger.warning(f'考试时间不完整: start_time={exam_record.start_time}, submit_time={exam_record.submit_time}')
+            
             return {
                 'exam_record_id': exam_record_id,
-                'exam_id': exam.exam_id,
+                'exam_id': exam.id,
                 'exam_title': exam.title,
                 'total_score': exam_record.score,
                 'total_points': exam.total_points,
@@ -270,7 +294,7 @@ class ExamScoringService:
                 'total_questions': len(result_details),
                 'start_time': exam_record.start_time.isoformat() if exam_record.start_time else None,
                 'submit_time': exam_record.submit_time.isoformat() if exam_record.submit_time else None,
-                'duration': (exam_record.submit_time - exam_record.start_time).total_seconds() / 60 if exam_record.start_time and exam_record.submit_time else 0,
+                'duration': duration,
                 'result_details': result_details
             }
             
