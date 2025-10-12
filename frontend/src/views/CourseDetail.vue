@@ -66,10 +66,10 @@
                   v-else 
                   type="success" 
                   size="large"
-                  @click="startLearning"
+                  disabled
                 >
-                  <el-icon><Play /></el-icon>
-                  开始学习
+                  <el-icon><Check /></el-icon>
+                  已添加
                 </el-button>
               </div>
             </div>
@@ -98,7 +98,7 @@
                     :disabled="!canTakeExam"
                   >
                     <el-icon><Play /></el-icon>
-                    {{ canTakeExam ? '开始考试' : '需要购买课程' }}
+                    {{ getExamButtonText() }}
                   </el-button>
                 </div>
               </div>
@@ -130,12 +130,12 @@ import {
   Clock, 
   Document, 
   Plus, 
-  Play, 
-  VideoPlay 
+  Play,
+  Check
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { subjectsApi } from '@/api/subjects'
-import { examsApi } from '@/api/exams'
+import { examApi } from '@/api/exams'
 import { userSubjectsApi } from '@/api/user_subjects'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
@@ -149,7 +149,7 @@ export default {
     Document,
     Plus,
     Play,
-    VideoPlay
+    Check
   },
   setup() {
     const route = useRoute()
@@ -266,7 +266,7 @@ export default {
     const fetchRelatedExams = async () => {
       try {
         examsLoading.value = true
-        const response = await examsApi.getExams({
+        const response = await examApi.getExams({
           subject_id: route.params.id,
           status: 'published',
           page: 1,
@@ -286,9 +286,7 @@ export default {
     // 检查是否可以参加考试
     const canTakeExam = computed(() => {
       if (!course.value) return false
-      // 免费课程可以直接参加考试
-      if (course.value.is_free) return true
-      // 付费课程需要已订阅
+      // 所有课程都需要先添加到我的课程才能参加考试
       return course.value.is_subscribed
     })
     
@@ -329,18 +327,48 @@ export default {
     }
     
     // 开始学习
-    const startLearning = () => {
-      ElMessage.info('学习功能开发中...')
-    }
     
+    
+    // 获取考试按钮文本
+    const getExamButtonText = () => {
+      if (!authStore.isLoggedIn) {
+        return '请先登录'
+      }
+      
+      if (!course.value) {
+        return '开始考试'
+      }
+      
+      if (course.value.is_subscribed) {
+        return '开始考试'
+      }
+      
+      if (course.value.is_free) {
+        return '请先添加课程'
+      } else {
+        return '请先购买课程'
+      }
+    }
     
     // 开始考试
     const startExam = (exam) => {
-      // 检查是否可以参加考试
-      if (!canTakeExam.value) {
-        ElMessage.warning('需要购买课程后才能参加考试')
+      // 检查是否已登录
+      if (!authStore.isLoggedIn) {
+        ElMessage.warning('请先登录')
+        authStore.showLoginDialog = true
         return
       }
+      
+      // 检查是否已添加课程
+      if (!canTakeExam.value) {
+        if (course.value.is_free) {
+          ElMessage.warning('请先将课程添加到我的课程后再参加考试')
+        } else {
+          ElMessage.warning('请先购买并添加课程后再参加考试')
+        }
+        return
+      }
+      
       router.push(`/exam/detail/${exam.id}`)
     }
     
@@ -358,8 +386,8 @@ export default {
       reviews,
       canTakeExam,
       addToMyCourses,
-      startLearning,
-      startExam
+      startExam,
+      getExamButtonText
     }
   }
 }
