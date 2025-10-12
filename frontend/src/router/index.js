@@ -19,7 +19,16 @@ const routes = [
     component: () => import('@/views/Courses.vue'),
     meta: { 
       title: '课程列表',
-      requiresAuth: false 
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/course/:id',
+    name: 'CourseDetail',
+    component: () => import('@/views/CourseDetail.vue'),
+    meta: { 
+      title: '课程详情',
+      requiresAuth: false
     }
   },
   {

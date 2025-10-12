@@ -46,6 +46,7 @@ class SubjectSchema(Schema):
     description = fields.Str(validate=validate.Length(max=500))
     category = fields.Str(validate=validate.Length(max=50))
     status = fields.Str(validate=validate.OneOf(['active', 'inactive']))
+    cover_image = fields.Str(validate=validate.Length(max=500), missing='')
     is_free = fields.Bool(missing=True)
     price = fields.Decimal(places=2, validate=validate.Range(min=0, max=99999.99), missing=0)
     original_price = fields.Decimal(places=2, validate=validate.Range(min=0, max=99999.99), missing=0)

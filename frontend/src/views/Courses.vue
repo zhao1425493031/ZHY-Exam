@@ -288,7 +288,7 @@ export default {
           instructor_name: '张老师',
           instructor_avatar: '',
           duration: `${Math.floor(Math.random() * 5) + 1}小时`,
-          image: course.image || '/default-course.svg',
+          image: course.cover_image || '/default-course.svg',
           created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
         }))
       } catch (error) {

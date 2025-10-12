@@ -16,6 +16,7 @@ class Subject(BaseModel):
     price = Column(DECIMAL(10, 2), default=0.00, nullable=False, comment='价格（元）')
     original_price = Column(DECIMAL(10, 2), default=0.00, nullable=False, comment='原价（元）')
     discount_rate = Column(DECIMAL(5, 2), default=100.00, nullable=False, comment='折扣率（%）')
+    cover_image = Column(String(500), comment='课程封面图片URL')
     created_by = Column(Integer, nullable=False, index=True)  # 用户ID，不设置外键
     
     def to_dict(self):
@@ -31,6 +32,7 @@ class Subject(BaseModel):
             'price': float(self.price) if self.price else 0.00,
             'original_price': float(self.original_price) if self.original_price else 0.00,
             'discount_rate': float(self.discount_rate) if self.discount_rate else 100.00,
+            'cover_image': self.cover_image,
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None

@@ -141,6 +141,27 @@
                     <el-icon><User /></el-icon>
                     立即学习
                   </el-button>
+                  <el-button 
+                    v-if="!course.is_subscribed" 
+                    type="success" 
+                    size="small" 
+                    @click.stop="addToMyCourses(course)" 
+                    class="overlay-btn"
+                    :loading="course.subscribing"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    添加到我的课程
+                  </el-button>
+                  <el-button 
+                    v-else 
+                    type="info" 
+                    size="small" 
+                    disabled
+                    class="overlay-btn"
+                  >
+                    <el-icon><Check /></el-icon>
+                    已订阅
+                  </el-button>
                 </div>
                 <div class="course-badge" v-if="course.is_free">
                   <el-icon><Star /></el-icon>
@@ -401,9 +422,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Document, Monitor, DataAnalysis, User, Upload, ChatDotRound, Star, Folder, Clock, InfoFilled, Play, Reading } from '@element-plus/icons-vue'
+import { Document, Monitor, DataAnalysis, User, Upload, ChatDotRound, Star, Folder, Clock, InfoFilled, Play, Reading, Plus, Check } from '@element-plus/icons-vue'
 import { subjectsApi } from '@/api/subjects'
 import { examApi as examsApi } from '@/api/exams'
+import { userSubjectsApi } from '@/api/user_subjects'
 import { useAuthStore } from '@/stores/auth'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
@@ -422,7 +444,9 @@ export default {
     Clock,
     InfoFilled,
     Play,
-    Reading
+    Reading,
+    Plus,
+    Check
   },
   setup() {
     const router = useRouter()
@@ -569,19 +593,30 @@ export default {
         })
         
         console.log('API响应:', response)
+        console.log('response.data:', response.data)
+        console.log('response.data.items:', response.data.items)
         
-        // 为课程添加模拟数据
-        courses.value = (response.data.items || []).map(course => ({
-          ...course,
-          student_count: Math.floor(Math.random() * 1000) + 100,
-          rating: (Math.random() * 1 + 4).toFixed(1),
-          instructor_name: '张老师',
-          instructor_avatar: '',
-          duration: `${Math.floor(Math.random() * 5) + 1}小时`,
-          image: course.image || '/default-course.svg'
-        }))
+        // 为课程添加模拟数据（保留真实数据）
+        courses.value = (response.data.items || []).map(course => {
+          const finalImage = course.cover_image || '/default-course.svg'
+          console.log(`[课程封面处理] ${course.name}:`, {
+            '原始cover_image': course.cover_image,
+            '最终image': finalImage,
+            '是否使用默认图片': finalImage === '/default-course.svg'
+          })
+          return {
+            ...course,
+            student_count: Math.floor(Math.random() * 1000) + 100,
+            rating: (Math.random() * 1 + 4).toFixed(1),
+            instructor_name: '张老师',
+            instructor_avatar: '',
+            duration: `${Math.floor(Math.random() * 5) + 1}小时`,
+            image: finalImage
+          }
+        })
         
         console.log('处理后的课程数据:', courses.value)
+        console.log('课程封面检查:', courses.value.map(c => ({ name: c.name, cover_image: c.cover_image, image: c.image })))
       } catch (error) {
         console.error('获取课程列表失败:', error)
         // 如果是401错误，不显示错误消息，使用模拟数据
@@ -639,6 +674,38 @@ export default {
       } finally {
         coursesLoading.value = false
         console.log('课程加载完成，最终数据:', courses.value)
+      }
+    }
+
+    // 添加课程到我的课程
+    const addToMyCourses = async (course) => {
+      try {
+        if (!authStore.isLoggedIn) {
+          ElMessage.warning('请先登录')
+          authStore.showLoginDialog = true
+          return
+        }
+
+        // 设置loading状态
+        course.subscribing = true
+
+        const response = await userSubjectsApi.subscribeSubject({
+          subject_id: course.id
+        })
+
+        if (response.code === 200) {
+          ElMessage.success('课程已添加到我的课程')
+          // 更新课程状态
+          course.is_subscribed = true
+          course.subscribing = false
+        } else {
+          ElMessage.error(response.message || '添加课程失败')
+        }
+      } catch (error) {
+        console.error('添加课程失败:', error)
+        ElMessage.error('添加课程失败')
+      } finally {
+        course.subscribing = false
       }
     }
 
@@ -763,6 +830,7 @@ export default {
       featuresSection,
       fetchCourses,
       fetchExams,
+      addToMyCourses,
       goToLogin,
       goToRegister,
       viewCourse,

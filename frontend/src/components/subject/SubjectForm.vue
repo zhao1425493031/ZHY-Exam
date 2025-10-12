@@ -65,6 +65,21 @@
         />
       </el-form-item>
 
+      <el-form-item label="课程封面" prop="cover_image">
+        <div class="image-upload-wrapper">
+          <ImageUpload
+            v-model="form.cover_image"
+            :preview-alt="form.name || '课程封面'"
+            @upload-success="handleImageUploadSuccess"
+            @upload-error="handleImageUploadError"
+          />
+        </div>
+        <div class="form-item-tip">
+          <el-icon><InfoFilled /></el-icon>
+          支持 JPG、PNG、GIF 格式，建议尺寸 300×200px，文件大小不超过 2MB
+        </div>
+      </el-form-item>
+
       <el-divider content-position="left">收费设置</el-divider>
 
       <el-row :gutter="20">
@@ -198,12 +213,16 @@
 <script>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { InfoFilled } from '@element-plus/icons-vue'
 import SubjectPreview from '@/components/subject/SubjectPreview.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 
 export default {
   name: 'SubjectForm',
   components: {
-    SubjectPreview
+    SubjectPreview,
+    ImageUpload,
+    InfoFilled
   },
   props: {
     subject: {
@@ -226,6 +245,7 @@ export default {
       code: '',
       category: '',
       description: '',
+      cover_image: '',
       status: 'active',
       is_free: true,
       price: 0.00,
@@ -421,6 +441,16 @@ export default {
     // 组件挂载时初始化
     initForm()
 
+    // 图片上传成功处理
+    const handleImageUploadSuccess = (imageUrl) => {
+      console.log('图片上传成功:', imageUrl)
+    }
+
+    // 图片上传失败处理
+    const handleImageUploadError = (error) => {
+      console.error('图片上传失败:', error)
+    }
+
     return {
       formRef,
       submitting,
@@ -434,7 +464,9 @@ export default {
       handleDiscountRateChange,
       handleSubmit,
       handleCancel,
-      handlePreview
+      handlePreview,
+      handleImageUploadSuccess,
+      handleImageUploadError
     }
   }
 }
@@ -579,6 +611,24 @@ export default {
       font-weight: 500;
       font-size: 15px;
     }
+  }
+}
+
+.image-upload-wrapper {
+  width: fit-content;
+  margin-bottom: 8px;
+}
+
+.form-item-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #909399;
+  
+  .el-icon {
+    font-size: 14px;
   }
 }
 </style>

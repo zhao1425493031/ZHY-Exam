@@ -50,6 +50,7 @@ CREATE TABLE `subjects` (
     `price` DECIMAL(10,2) DEFAULT 0.00 COMMENT '现价（元）',
     `original_price` DECIMAL(10,2) DEFAULT 0.00 COMMENT '原价（元）',
     `discount_rate` INT DEFAULT 100 COMMENT '折扣率（%，1-100的整数）',
+    `cover_image` VARCHAR(500) COMMENT '课程封面图片URL',
     `created_by` INT COMMENT '创建者ID',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -601,6 +602,29 @@ CREATE TABLE `log_configs` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='日志配置表';
+
+
+-- 创建用户科目关联表
+CREATE TABLE IF NOT EXISTS `user_subjects` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT,
+    `user_id` INT NOT NULL COMMENT '用户ID',
+    `subject_id` INT NOT NULL COMMENT '科目ID',
+    `is_free` BOOLEAN DEFAULT TRUE COMMENT '是否免费订阅',
+    `purchased_at` TIMESTAMP NULL COMMENT '购买时间（付费课程）',
+    `expires_at` TIMESTAMP NULL COMMENT '到期时间（付费课程）',
+    `status` ENUM('active', 'expired', 'cancelled') DEFAULT 'active' COMMENT '订阅状态',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    
+    -- 索引
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_subject_id` (`subject_id`),
+    INDEX `idx_status` (`status`),
+    INDEX `idx_expires_at` (`expires_at`),
+    
+    -- 唯一约束：一个用户只能订阅一个科目一次
+    UNIQUE KEY `unique_user_subject` (`user_id`, `subject_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户科目关联表';
 
 -- =============================================
 -- 初始化数据

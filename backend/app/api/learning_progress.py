@@ -48,28 +48,70 @@ def get_learning_progress():
         progress_items = []
         
         try:
-            # 获取所有活跃科目
-            logger.info(f'[学习进度] 用户ID: {current_user_id} 开始查询活跃科目')
-            subjects = Subject.query.filter_by(status='active').limit(size).all()
-            logger.info(f'[学习进度] 用户ID: {current_user_id} 查询到 {len(subjects)} 个活跃科目')
+            # 获取用户订阅的科目
+            logger.info(f'[学习进度] 用户ID: {current_user_id} 开始查询用户订阅科目')
+            from app.models.user_subject import UserSubject
             
-            # 为每个科目创建基础进度数据
-            for subject in subjects:
-                logger.info(f'[学习进度] 用户ID: {current_user_id} 处理科目: {subject.name} (ID: {subject.id})')
+            user_subjects = db.session.query(UserSubject).filter_by(
+                user_id=current_user_id,
+                status='active'
+            ).limit(size).all()
+            
+            logger.info(f'[学习进度] 用户ID: {current_user_id} 查询到 {len(user_subjects)} 个订阅科目')
+            
+            # 为每个订阅科目创建进度数据
+            for user_subject in user_subjects:
+                subject = user_subject.subject
+                logger.info(f'[学习进度] 用户ID: {current_user_id} 处理订阅科目: {subject.name} (ID: {subject.id})')
                 
-                # 简化的进度计算
-                progress_item = {
-                    'id': subject.id,
-                    'subject_name': subject.name,
-                    'completed_questions': 0,  # 暂时设为0，避免复杂查询
-                    'total_questions': 100,    # 默认值
-                    'percentage': 0.0          # 默认进度
-                }
-                progress_items.append(progress_item)
-                logger.info(f'[学习进度] 用户ID: {current_user_id} 科目 {subject.name} 基础进度数据创建完成')
+                try:
+                    # 获取该科目的试题总数
+                    total_questions = Question.query.filter_by(
+                        subject_id=subject.id, 
+                        status='published'
+                    ).count()
+                    
+                    # 获取用户在该科目的考试记录
+                    from app.models.exam_record import ExamRecord
+                    from app.models.exam import Exam
+                    user_exams = db.session.query(ExamRecord).join(Exam).filter(
+                        ExamRecord.user_id == current_user_id,
+                        Exam.subject_id == subject.id,
+                        ExamRecord.status == 'submitted'
+                    ).all()
+                    
+                    # 计算已完成的题目数（简化计算）
+                    completed_questions = len(user_exams) * 10  # 假设每次考试10题
+                    percentage = round((completed_questions / total_questions * 100) if total_questions > 0 else 0, 1)
+                    
+                    progress_item = {
+                        'id': subject.id,
+                        'subject_name': subject.name,
+                        'completed_questions': min(completed_questions, total_questions),
+                        'total_questions': total_questions,
+                        'percentage': percentage,
+                        'exam_count': len(user_exams),
+                        'is_free': user_subject.is_free
+                    }
+                    progress_items.append(progress_item)
+                    logger.info(f'[学习进度] 用户ID: {current_user_id} 科目 {subject.name} 进度: {percentage}% (考试{len(user_exams)}次)')
+                    
+                except Exception as subject_error:
+                    logger.error(f'[学习进度] 用户ID: {current_user_id} 处理科目 {subject.name} 失败: {str(subject_error)}', exc_info=True)
+                    # 即使单个科目处理失败，也添加基础数据
+                    progress_item = {
+                        'id': subject.id,
+                        'subject_name': subject.name,
+                        'completed_questions': 0,
+                        'total_questions': 0,
+                        'percentage': 0.0,
+                        'exam_count': 0,
+                        'is_free': user_subject.is_free
+                    }
+                    progress_items.append(progress_item)
                 
         except Exception as query_error:
-            logger.error(f'[学习进度] 用户ID: {current_user_id} 查询科目失败: {str(query_error)}', exc_info=True)
+            logger.error(f'[学习进度] 用户ID: {current_user_id} 查询用户订阅科目失败: {str(query_error)}', exc_info=True)
             # 如果查询失败，返回空数据
             progress_items = []
         

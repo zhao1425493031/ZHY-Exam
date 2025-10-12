@@ -77,6 +77,7 @@ def create_app(config_name=None):
     from app.api.files import file_bp
     from app.api.notifications import notification_bp
     from app.api.learning_progress import learning_progress_bp
+    from app.api.user_subjects import user_subjects_bp
     from app.api.exam_scoring import exam_scoring_bp
     from app.api.exam_monitoring import exam_monitoring_bp
     
@@ -93,6 +94,7 @@ def create_app(config_name=None):
     app.register_blueprint(file_bp)
     app.register_blueprint(notification_bp)
     app.register_blueprint(learning_progress_bp)
+    app.register_blueprint(user_subjects_bp)
     app.register_blueprint(exam_scoring_bp)
     app.register_blueprint(exam_monitoring_bp)
     
@@ -116,6 +118,28 @@ def create_app(config_name=None):
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_payload):
         return {'code': 401, 'message': 'Token已被撤销', 'data': None}, 401
+    
+    # 添加uploads静态文件服务
+    from flask import send_from_directory
+    
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        """提供上传文件的访问"""
+        # 使用当前工作目录的uploads文件夹
+        upload_dir = os.path.join(os.getcwd(), 'uploads')
+        file_path = os.path.join(upload_dir, filename)
+        
+        print(f"[静态文件] 请求文件: {filename}")
+        print(f"[静态文件] 当前工作目录: {os.getcwd()}")
+        print(f"[静态文件] 上传目录: {upload_dir}")
+        print(f"[静态文件] 完整路径: {file_path}")
+        print(f"[静态文件] 文件是否存在: {os.path.exists(file_path)}")
+        
+        if not os.path.exists(file_path):
+            print(f"[静态文件] 文件不存在，返回404")
+            return "File not found", 404
+            
+        return send_from_directory(upload_dir, filename)
     
     # 错误处理
     @app.errorhandler(404)

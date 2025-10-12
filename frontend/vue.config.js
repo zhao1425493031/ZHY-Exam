@@ -30,6 +30,10 @@ module.exports = defineConfig({
         pathRewrite: {
           '^/api': '/api'
         }
+      },
+      '/uploads': {
+        target: 'http://localhost:9999',
+        changeOrigin: true
       }
     }
   },

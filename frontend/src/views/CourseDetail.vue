@@ -1,80 +1,75 @@
 <template>
   <div class="course-detail">
-    <!-- 顶部导航栏 -->
+    <!-- 导航栏 -->
     <TopNavigation />
-
+    
     <!-- 课程详情内容 -->
-    <div class="course-content">
+    <div class="course-content" v-loading="loading">
       <div class="container">
         <!-- 面包屑导航 -->
         <el-breadcrumb separator="/" class="breadcrumb">
-          <el-breadcrumb-item>
-            <router-link to="/">首页</router-link>
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>
-            <router-link to="/courses">课程</router-link>
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>{{ course.name }}</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/courses' }">课程</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ course?.name || '课程详情' }}</el-breadcrumb-item>
         </el-breadcrumb>
 
         <!-- 课程基本信息 -->
-        <div class="course-header" v-loading="loading">
+        <div class="course-header" v-if="course">
           <div class="course-info">
             <div class="course-image">
               <img :src="course.image || '/default-course.svg'" :alt="course.name">
               <div class="course-badge" v-if="course.is_free">
+                <el-icon><Star /></el-icon>
                 <span>免费</span>
               </div>
               <div class="course-badge price" v-else>
+                <el-icon><Star /></el-icon>
                 <span>¥{{ course.price }}</span>
               </div>
             </div>
             
-            <div class="course-details">
-              <h1>{{ course.name }}</h1>
+            <div class="course-meta">
+              <h1 class="course-title">{{ course.name }}</h1>
               <p class="course-description">{{ course.description }}</p>
               
-              <div class="course-meta">
-                <div class="meta-item">
-                  <el-icon><Folder /></el-icon>
-                  <span>{{ course.category || '未分类' }}</span>
-                </div>
-                <div class="meta-item">
+              <div class="course-stats">
+                <div class="stat-item">
                   <el-icon><User /></el-icon>
-                  <span>{{ course.student_count || 0 }}人学习</span>
+                  <span>{{ course.student_count || 0 }} 人学习</span>
                 </div>
-                <div class="meta-item">
+                <div class="stat-item">
                   <el-icon><Star /></el-icon>
-                  <span>{{ course.rating || 4.8 }}分</span>
+                  <span>{{ course.rating || '4.5' }} 分</span>
                 </div>
-                <div class="meta-item">
+                <div class="stat-item">
                   <el-icon><Clock /></el-icon>
                   <span>{{ course.duration || '2小时' }}</span>
                 </div>
-              </div>
-
-              <div class="course-instructor">
-                <el-avatar :size="40" :src="course.instructor_avatar">
-                  {{ course.instructor_name?.charAt(0) || 'A' }}
-                </el-avatar>
-                <div class="instructor-info">
-                  <h4>{{ course.instructor_name || '讲师' }}</h4>
-                  <p>{{ course.instructor_title || '资深讲师' }}</p>
+                <div class="stat-item">
+                  <el-icon><Document /></el-icon>
+                  <span>{{ course.difficulty || '中级' }}</span>
                 </div>
               </div>
-
+              
               <div class="course-actions">
                 <el-button 
-                  type="primary" 
-                  size="large" 
-                  @click="enrollCourse"
-                  :loading="enrolling"
+                  v-if="!course.is_subscribed" 
+                  :type="course.is_free ? 'primary' : 'warning'"
+                  size="large"
+                  @click="addToMyCourses"
+                  :loading="subscribing"
                 >
-                  {{ course.is_free ? '免费学习' : `立即购买 ¥${course.price}` }}
+                  <el-icon><Plus /></el-icon>
+                  {{ course.is_free ? '添加到我的课程' : `购买课程 (¥${course.price})` }}
                 </el-button>
-                <el-button size="large" @click="toggleFavorite">
-                  <el-icon><Star /></el-icon>
-                  {{ isFavorited ? '已收藏' : '收藏' }}
+                <el-button 
+                  v-else 
+                  type="success" 
+                  size="large"
+                  @click="startLearning"
+                >
+                  <el-icon><Play /></el-icon>
+                  开始学习
                 </el-button>
               </div>
             </div>
@@ -82,110 +77,43 @@
         </div>
 
         <!-- 课程内容 -->
-        <div class="course-sections">
-          <el-tabs v-model="activeTab" class="course-tabs">
-            <el-tab-pane label="课程介绍" name="intro">
-              <div class="course-intro">
-                <h3>课程简介</h3>
-                <p>{{ course.description }}</p>
-                
-                <h3>学习目标</h3>
-                <ul>
-                  <li>掌握核心知识点</li>
-                  <li>提升实践能力</li>
-                  <li>获得认证证书</li>
-                </ul>
-
-                <h3>适合人群</h3>
-                <ul>
-                  <li>初学者</li>
-                  <li>有一定基础的学员</li>
-                  <li>希望提升技能的职场人士</li>
-                </ul>
-              </div>
-            </el-tab-pane>
-
-            <el-tab-pane label="课程大纲" name="outline">
-              <div class="course-outline">
-                <div v-for="(chapter, index) in courseOutline" :key="index" class="chapter">
-                  <div class="chapter-header">
-                    <h4>{{ chapter.title }}</h4>
-                    <span class="chapter-duration">{{ chapter.duration }}</span>
-                  </div>
-                  <div class="lessons">
-                    <div v-for="(lesson, lessonIndex) in chapter.lessons" :key="lessonIndex" class="lesson">
-                      <div class="lesson-info">
-                        <el-icon><VideoPlay /></el-icon>
-                        <span>{{ lesson.title }}</span>
-                      </div>
-                      <span class="lesson-duration">{{ lesson.duration }}</span>
-                    </div>
+        <div class="course-body" v-if="course">
+          <div class="exams-content">
+            <h3>相关考试</h3>
+            <div class="exams-list" v-loading="examsLoading">
+              <div class="exam-item" v-for="exam in relatedExams" :key="exam.id">
+                <div class="exam-info">
+                  <h4>{{ exam.title }}</h4>
+                  <p>{{ exam.description }}</p>
+                  <div class="exam-meta">
+                    <span class="exam-duration">{{ exam.duration }}分钟</span>
+                    <span class="exam-questions">{{ exam.question_count }}题</span>
+                    <span class="exam-points">{{ exam.total_points }}分</span>
                   </div>
                 </div>
-              </div>
-            </el-tab-pane>
-
-            <el-tab-pane label="学员评价" name="reviews">
-              <div class="course-reviews">
-                <div class="reviews-summary">
-                  <div class="rating-overview">
-                    <div class="rating-score">{{ course.rating || 4.8 }}</div>
-                    <div class="rating-stars">
-                      <el-rate v-model="course.rating" disabled show-score />
-                    </div>
-                    <p>基于{{ course.review_count || 128 }}条评价</p>
-                  </div>
-                </div>
-
-                <div class="reviews-list">
-                  <div v-for="review in reviews" :key="review.id" class="review-item">
-                    <div class="review-header">
-                      <el-avatar :size="32" :src="review.user_avatar">
-                        {{ review.username?.charAt(0) }}
-                      </el-avatar>
-                      <div class="review-user">
-                        <h5>{{ review.username }}</h5>
-                        <el-rate v-model="review.rating" disabled size="small" />
-                      </div>
-                      <span class="review-time">{{ formatTime(review.created_at) }}</span>
-                    </div>
-                    <p class="review-content">{{ review.content }}</p>
-                  </div>
+                <div class="exam-actions">
+                  <el-button 
+                    type="primary" 
+                    @click="startExam(exam)"
+                    :disabled="!canTakeExam"
+                  >
+                    <el-icon><Play /></el-icon>
+                    {{ canTakeExam ? '开始考试' : '需要购买课程' }}
+                  </el-button>
                 </div>
               </div>
-            </el-tab-pane>
-          </el-tabs>
-        </div>
-
-        <!-- 相关课程 -->
-        <div class="related-courses">
-          <h3>相关课程</h3>
-          <div class="courses-grid">
-            <div 
-              v-for="relatedCourse in relatedCourses" 
-              :key="relatedCourse.id"
-              class="course-card"
-              @click="viewCourse(relatedCourse)"
-            >
-              <div class="course-image">
-                <img :src="relatedCourse.image || '/default-course.svg'" :alt="relatedCourse.name">
-                <div class="course-badge" v-if="relatedCourse.is_free">
-                  <span>免费</span>
-                </div>
-                <div class="course-badge price" v-else>
-                  <span>¥{{ relatedCourse.price }}</span>
-                </div>
-              </div>
-              <div class="course-content">
-                <h4>{{ relatedCourse.name }}</h4>
-                <p>{{ relatedCourse.description }}</p>
-                <div class="course-meta">
-                  <span class="course-students">{{ relatedCourse.student_count }}人学习</span>
-                  <span class="course-rating">{{ relatedCourse.rating }}分</span>
-                </div>
+              <div v-if="!examsLoading && relatedExams.length === 0" class="no-exams">
+                <el-empty description="暂无相关考试" />
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 加载失败 -->
+        <div v-else-if="!loading && !course" class="error-state">
+          <el-empty description="课程不存在或已被删除">
+            <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
+          </el-empty>
         </div>
       </div>
     </div>
@@ -197,88 +125,134 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  Folder, User, Star, Clock, VideoPlay 
+  Star, 
+  User, 
+  Clock, 
+  Document, 
+  Plus, 
+  Play, 
+  VideoPlay 
 } from '@element-plus/icons-vue'
-import TopNavigation from '@/components/layout/TopNavigation.vue'
+import { useAuthStore } from '@/stores/auth'
 import { subjectsApi } from '@/api/subjects'
+import { examsApi } from '@/api/exams'
+import { userSubjectsApi } from '@/api/user_subjects'
+import TopNavigation from '@/components/layout/TopNavigation.vue'
 
 export default {
   name: 'CourseDetail',
   components: {
     TopNavigation,
-    Folder,
-    User,
     Star,
+    User,
     Clock,
+    Document,
+    Plus,
+    Play,
     VideoPlay
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const authStore = useAuthStore()
     
     const loading = ref(false)
-    const enrolling = ref(false)
-    const course = ref({})
-    const isFavorited = ref(false)
-    const activeTab = ref('intro')
-    const reviews = ref([])
-    const relatedCourses = ref([])
-
-    // 课程大纲
-    const courseOutline = ref([
+    const subscribing = ref(false)
+    const course = ref(null)
+    const relatedExams = ref([])
+    const examsLoading = ref(false)
+    
+    // 模拟课程大纲数据
+    const chapters = ref([
       {
-        title: '第一章：基础入门',
+        title: '基础概念',
         duration: '30分钟',
         lessons: [
-          { title: '课程介绍', duration: '5分钟' },
-          { title: '环境搭建', duration: '10分钟' },
-          { title: '第一个项目', duration: '15分钟' }
+          { title: '什么是Vue.js', duration: '10分钟' },
+          { title: 'Vue.js的特点', duration: '10分钟' },
+          { title: '开发环境搭建', duration: '10分钟' }
         ]
       },
       {
-        title: '第二章：核心概念',
+        title: '组件开发',
         duration: '45分钟',
         lessons: [
-          { title: '核心概念讲解', duration: '20分钟' },
-          { title: '实践练习', duration: '25分钟' }
+          { title: '组件基础', duration: '15分钟' },
+          { title: '组件通信', duration: '15分钟' },
+          { title: '插槽的使用', duration: '15分钟' }
         ]
       },
       {
-        title: '第三章：进阶应用',
-        duration: '60分钟',
+        title: '状态管理',
+        duration: '40分钟',
         lessons: [
-          { title: '高级特性', duration: '30分钟' },
-          { title: '项目实战', duration: '30分钟' }
+          { title: 'Vuex基础', duration: '20分钟' },
+          { title: 'Actions和Mutations', duration: '20分钟' }
         ]
       }
     ])
-
+    
+    // 模拟学员评价数据
+    const reviews = ref([
+      {
+        id: 1,
+        name: '张三',
+        avatar: '',
+        rating: 5,
+        date: '2024-01-15',
+        content: '课程内容很实用，老师讲解得很清楚，学到了很多东西！'
+      },
+      {
+        id: 2,
+        name: '李四',
+        avatar: '',
+        rating: 4,
+        date: '2024-01-10',
+        content: '整体不错，就是有些地方讲得有点快，需要多练习。'
+      },
+      {
+        id: 3,
+        name: '王五',
+        avatar: '',
+        rating: 5,
+        date: '2024-01-08',
+        content: '非常棒的课程，从基础到进阶都有涵盖，推荐！'
+      }
+    ])
+    
     // 获取课程详情
     const fetchCourseDetail = async () => {
       try {
         loading.value = true
         const courseId = route.params.id
         
-        // 这里应该调用API获取课程详情
-        // const response = await subjectsApi.getSubject(courseId)
-        // course.value = response.data
-        
-        // 暂时使用模拟数据
-        course.value = {
-          id: courseId,
-          name: 'Vue.js 3.0 实战开发',
-          description: '从零开始学习Vue.js 3.0，掌握现代前端开发技能，通过实际项目提升开发能力。',
-          category: 'programming',
-          is_free: false,
-          price: 299,
-          student_count: 1250,
-          rating: 4.8,
-          duration: '3小时',
-          instructor_name: '张老师',
-          instructor_title: '前端架构师',
-          instructor_avatar: '',
-          image: '/default-course.svg',
-          review_count: 128
+        // 获取课程基本信息
+        const response = await subjectsApi.getSubject(courseId)
+        if (response.code === 200) {
+          course.value = {
+            ...response.data,
+            student_count: Math.floor(Math.random() * 1000) + 100,
+            rating: (Math.random() * 1 + 4).toFixed(1),
+            duration: `${Math.floor(Math.random() * 5) + 1}小时`,
+            image: response.data.cover_image || '/default-course.svg'
+          }
+          
+          // 检查用户是否已订阅该课程
+          if (authStore.isLoggedIn) {
+            try {
+              const subscribeResponse = await userSubjectsApi.checkSubscription(courseId)
+              if (subscribeResponse.code === 200) {
+                course.value.is_subscribed = subscribeResponse.data.is_subscribed
+              }
+            } catch (error) {
+              console.error('检查订阅状态失败:', error)
+            }
+          }
+          
+          // 获取相关考试
+          await fetchRelatedExams()
+        } else {
+          ElMessage.error('获取课程详情失败')
         }
       } catch (error) {
         console.error('获取课程详情失败:', error)
@@ -287,112 +261,105 @@ export default {
         loading.value = false
       }
     }
-
-    // 获取相关课程
-    const fetchRelatedCourses = async () => {
+    
+    // 获取相关考试
+    const fetchRelatedExams = async () => {
       try {
-        const response = await subjectsApi.getSubjects({
-          category: course.value.category,
+        examsLoading.value = true
+        const response = await examsApi.getExams({
+          subject_id: route.params.id,
+          status: 'published',
           page: 1,
-          size: 4
+          size: 10
         })
         
-        relatedCourses.value = (response.data.items || []).map(item => ({
-          ...item,
-          student_count: Math.floor(Math.random() * 1000) + 100,
-          rating: (Math.random() * 1 + 4).toFixed(1),
-          image: item.image || '/default-course.svg'
-        }))
+        if (response.code === 200) {
+          relatedExams.value = response.data.items || []
+        }
       } catch (error) {
-        console.error('获取相关课程失败:', error)
-      }
-    }
-
-    // 获取评价
-    const fetchReviews = async () => {
-      try {
-        // 这里应该调用API获取评价
-        // const response = await reviewApi.getReviews(course.value.id)
-        // reviews.value = response.data.items || []
-        
-        // 暂时使用模拟数据
-        reviews.value = [
-          {
-            id: 1,
-            username: '学员A',
-            rating: 5,
-            content: '课程内容很实用，老师讲解得很清楚，推荐！',
-            created_at: '2024-01-10T10:30:00Z',
-            user_avatar: ''
-          },
-          {
-            id: 2,
-            username: '学员B',
-            rating: 4,
-            content: '整体不错，希望能有更多实战项目。',
-            created_at: '2024-01-08T15:20:00Z',
-            user_avatar: ''
-          }
-        ]
-      } catch (error) {
-        console.error('获取评价失败:', error)
-      }
-    }
-
-    // 报名课程
-    const enrollCourse = async () => {
-      try {
-        enrolling.value = true
-        
-        // 这里应该调用API报名课程
-        // await courseApi.enrollCourse(course.value.id)
-        
-        ElMessage.success('报名成功！')
-        router.push('/dashboard')
-      } catch (error) {
-        console.error('报名失败:', error)
-        ElMessage.error('报名失败')
+        console.error('获取相关考试失败:', error)
       } finally {
-        enrolling.value = false
+        examsLoading.value = false
       }
     }
-
-    // 切换收藏状态
-    const toggleFavorite = () => {
-      isFavorited.value = !isFavorited.value
-      ElMessage.success(isFavorited.value ? '已收藏' : '已取消收藏')
+    
+    // 检查是否可以参加考试
+    const canTakeExam = computed(() => {
+      if (!course.value) return false
+      // 免费课程可以直接参加考试
+      if (course.value.is_free) return true
+      // 付费课程需要已订阅
+      return course.value.is_subscribed
+    })
+    
+    // 添加到我的课程或购买课程
+    const addToMyCourses = async () => {
+      try {
+        if (!authStore.isLoggedIn) {
+          ElMessage.warning('请先登录')
+          authStore.showLoginDialog = true
+          return
+        }
+        
+        // 如果是付费课程且未购买，显示购买提示
+        if (!course.value.is_free && !course.value.is_subscribed) {
+          ElMessage.info('付费课程需要购买后才能使用')
+          // 这里可以跳转到支付页面或显示支付弹窗
+          return
+        }
+        
+        subscribing.value = true
+        
+        const response = await userSubjectsApi.subscribeSubject({
+          subject_id: course.value.id
+        })
+        
+        if (response.code === 200) {
+          ElMessage.success('课程已添加到我的课程')
+          course.value.is_subscribed = true
+        } else {
+          ElMessage.error(response.message || '添加课程失败')
+        }
+      } catch (error) {
+        console.error('添加课程失败:', error)
+        ElMessage.error('添加课程失败')
+      } finally {
+        subscribing.value = false
+      }
     }
-
-    // 查看课程
-    const viewCourse = (course) => {
-      router.push(`/course/${course.id}`)
+    
+    // 开始学习
+    const startLearning = () => {
+      ElMessage.info('学习功能开发中...')
     }
-
-    // 格式化时间
-    const formatTime = (timeStr) => {
-      const time = new Date(timeStr)
-      return time.toLocaleDateString('zh-CN')
+    
+    
+    // 开始考试
+    const startExam = (exam) => {
+      // 检查是否可以参加考试
+      if (!canTakeExam.value) {
+        ElMessage.warning('需要购买课程后才能参加考试')
+        return
+      }
+      router.push(`/exam/detail/${exam.id}`)
     }
-
+    
     onMounted(() => {
       fetchCourseDetail()
-      fetchRelatedCourses()
-      fetchReviews()
     })
-
+    
     return {
       loading,
-      enrolling,
+      subscribing,
       course,
-      isFavorited,
-      activeTab,
-      courseOutline,
+      relatedExams,
+      examsLoading,
+      chapters,
       reviews,
-      relatedCourses,
-      enrollCourse,
-      toggleFavorite,
-      viewCourse,
-      formatTime
+      canTakeExam,
+      addToMyCourses,
+      startLearning,
+      startExam
     }
   }
 }
@@ -401,35 +368,21 @@ export default {
 <style lang="scss" scoped>
 .course-detail {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: #f5f5f5;
+}
+
+.course-content {
+  padding-top: 2rem;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 1rem;
 }
 
 .breadcrumb {
-  padding: 20px 0;
-  
-  :deep(.el-breadcrumb__item) {
-    .el-breadcrumb__inner {
-      color: #666;
-      
-      &:hover {
-        color: #667eea;
-      }
-    }
-    
-    &:last-child .el-breadcrumb__inner {
-      color: #333;
-    }
-  }
-}
-
-.course-content {
-  padding-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .course-header {
@@ -437,386 +390,276 @@ export default {
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .course-info {
-  display: grid;
-  grid-template-columns: 300px 1fr;
+  display: flex;
   gap: 2rem;
-  align-items: start;
 }
 
 .course-image {
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-
+  flex-shrink: 0;
+  
   img {
-    width: 100%;
+    width: 300px;
     height: 200px;
     object-fit: cover;
+    border-radius: 8px;
   }
-
+  
   .course-badge {
     position: absolute;
     top: 1rem;
-    right: 1rem;
-    padding: 0.4rem 0.8rem;
+    left: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-
-    &.price {
-      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-      color: white;
-    }
-
-    &:not(.price) {
-      background: linear-gradient(135deg, #4ecdc4, #44a08d);
-      color: white;
-    }
-  }
-}
-
-.course-details {
-  h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    color: #333;
-  }
-
-  .course-description {
-    font-size: 1.1rem;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
-
-  .course-meta {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: #666;
-
-      .el-icon {
-        color: #667eea;
-      }
-    }
-  }
-
-  .course-instructor {
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-
-    .instructor-info {
-      h4 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1rem;
-        color: #333;
-      }
-
-      p {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #666;
-      }
+    gap: 0.5rem;
+    
+    &.price {
+      background: #ff6b6b;
     }
-  }
-
-  .course-actions {
-    display: flex;
-    gap: 1rem;
   }
 }
 
-.course-sections {
+.course-meta {
+  flex: 1;
+}
+
+.course-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.course-description {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.course-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+}
+
+.course-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.course-body {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
 
-  .course-tabs {
-    :deep(.el-tabs__header) {
-      margin-bottom: 2rem;
-    }
+.course-tabs {
+  :deep(.el-tabs__content) {
+    padding-top: 2rem;
   }
 }
 
-.course-intro {
+.intro-content {
   h3 {
-    font-size: 1.3rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
     color: #333;
+    margin-bottom: 1rem;
   }
-
-  p {
+  
+  p, ul {
     color: #666;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
-
+  
   ul {
-    margin-bottom: 2rem;
-    
-    li {
-      color: #666;
-      line-height: 1.6;
-      margin-bottom: 0.5rem;
-    }
+    padding-left: 1.5rem;
+  }
+  
+  li {
+    margin-bottom: 0.5rem;
   }
 }
 
-.course-outline {
-  .chapter {
-    margin-bottom: 2rem;
-    border: 1px solid #e4e7ed;
-    border-radius: 8px;
-    overflow: hidden;
-
+.outline-content {
+  .chapter-list {
+    .chapter-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    
     .chapter-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
       background: #f8f9fa;
-      border-bottom: 1px solid #e4e7ed;
-
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      
       h4 {
         margin: 0;
-        font-size: 1.1rem;
+        flex: 1;
         color: #333;
       }
-
+      
       .chapter-duration {
+        color: #666;
         font-size: 0.9rem;
-        color: #666;
       }
     }
-
-    .lessons {
-      .lesson {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #f0f0f0;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .lesson-info {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: #666;
-
-          .el-icon {
-            color: #667eea;
-          }
-        }
-
-        .lesson-duration {
-          font-size: 0.9rem;
-          color: #999;
-        }
-      }
-    }
-  }
-}
-
-.course-reviews {
-  .reviews-summary {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-
-    .rating-overview {
-      text-align: center;
-
-      .rating-score {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #667eea;
-        margin-bottom: 0.5rem;
-      }
-
-      .rating-stars {
-        margin-bottom: 0.5rem;
-      }
-
-      p {
-        margin: 0;
-        color: #666;
-      }
-    }
-  }
-
-  .reviews-list {
-    .review-item {
-      padding: 1.5rem;
-      border-bottom: 1px solid #f0f0f0;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .review-header {
+    
+    .lesson-list {
+      .lesson-item {
+        padding: 0.75rem 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin-bottom: 1rem;
-
-        .review-user {
-          flex: 1;
-
-          h5 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1rem;
-            color: #333;
-          }
+        border-bottom: 1px solid #f0f0f0;
+        
+        &:last-child {
+          border-bottom: none;
         }
-
-        .review-time {
+        
+        .lesson-duration {
+          margin-left: auto;
+          color: #666;
           font-size: 0.9rem;
-          color: #999;
         }
-      }
-
-      .review-content {
-        color: #666;
-        line-height: 1.6;
-        margin: 0;
       }
     }
   }
 }
 
-.related-courses {
-  h3 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    color: #333;
-  }
-
-  .courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .course-card {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-
-    &:hover {
-      transform: translateY(-4px);
-    }
-
-    .course-image {
-      position: relative;
-      height: 150px;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .course-badge {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        padding: 0.3rem 0.6rem;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        font-weight: bold;
-
-        &.price {
-          background: #ff6b6b;
-          color: white;
+.exams-content {
+  .exams-list {
+    .exam-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .exam-info {
+        flex: 1;
+        
+        h4 {
+          margin: 0 0 0.5rem 0;
+          color: #333;
         }
-
-        &:not(.price) {
-          background: #4ecdc4;
-          color: white;
+        
+        p {
+          color: #666;
+          margin: 0 0 1rem 0;
+          line-height: 1.5;
+        }
+        
+        .exam-meta {
+          display: flex;
+          gap: 1rem;
+          
+          span {
+            background: #f0f0f0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #666;
+          }
         }
       }
     }
+  }
+}
 
-    .course-content {
-      padding: 1rem;
-
-      h4 {
-        font-size: 1rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-        color: #333;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+.reviews-content {
+  .review-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5rem 0;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      
+      .review-info {
+        flex: 1;
+        
+        .review-name {
+          font-weight: 500;
+          color: #333;
+          margin-right: 1rem;
+        }
       }
-
-      p {
-        font-size: 0.9rem;
-        color: #666;
-        margin-bottom: 0.8rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .course-meta {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
+      
+      .review-date {
         color: #999;
+        font-size: 0.9rem;
       }
     }
+    
+    .review-content {
+      color: #666;
+      line-height: 1.6;
+      margin: 0;
+    }
   }
+}
+
+.error-state {
+  text-align: center;
+  padding: 4rem 0;
 }
 
 // 响应式设计
 @media (max-width: 768px) {
   .course-info {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+  
+  .course-image img {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .course-stats {
+    flex-wrap: wrap;
     gap: 1rem;
   }
-
-  .course-meta {
-    grid-template-columns: 1fr !important;
-  }
-
+  
   .course-actions {
     flex-direction: column;
   }
-
-  .courses-grid {
-    grid-template-columns: 1fr;
+  
+  .exam-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
   }
 }
 </style>

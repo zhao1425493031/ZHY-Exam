@@ -66,11 +66,14 @@ class FileService:
             if not file_type:
                 file_type = 'application/octet-stream'
             
+            # 生成Web访问路径
+            web_path = f"/uploads/{related_type}/{unique_filename}"
+            
             # 保存文件信息到数据库
             file_record = File(
                 filename=unique_filename,
                 original_name=original_filename,
-                file_path=file_path,
+                file_path=web_path,  # 使用Web访问路径而不是文件系统路径
                 file_size=file_size,
                 file_type=file_type,
                 uploader_id=user_id,

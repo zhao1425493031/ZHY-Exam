@@ -29,7 +29,7 @@ def upload_file():
             return jsonify(build_error_response(400, '没有选择文件')), 400
         
         # 获取其他参数
-        related_type = request.form.get('related_type', 'general')
+        related_type = request.form.get('type', request.form.get('related_type', 'general'))
         related_id = request.form.get('related_id')
         
         # 上传文件
