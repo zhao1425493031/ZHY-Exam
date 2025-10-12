@@ -32,6 +32,26 @@ const examScoringApi = {
   // 标记错题为已复习
   reviewWrongAnswer(wrongAnswerId) {
     return request.post(`/exam-scoring/wrong-answers/${wrongAnswerId}/review`)
+  },
+
+  // 删除错题记录
+  deleteWrongAnswer(wrongAnswerId) {
+    return request.delete(`/exam-scoring/wrong-answers/${wrongAnswerId}`)
+  },
+
+  // 收藏题目
+  favoriteQuestion(questionId) {
+    return request.post(`/exam-scoring/questions/${questionId}/favorite`)
+  },
+
+  // 取消收藏题目
+  unfavoriteQuestion(questionId) {
+    return request.delete(`/exam-scoring/questions/${questionId}/favorite`)
+  },
+
+  // 获取题目收藏状态
+  getFavoriteStatus(questionId) {
+    return request.get(`/exam-scoring/questions/${questionId}/favorite/status`)
   }
 }
 

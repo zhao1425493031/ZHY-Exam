@@ -104,10 +104,6 @@
           <el-icon><Check /></el-icon>
           标记复习
         </el-button>
-        <el-button type="success" @click="handleRetake" v-if="question.exam_id">
-          <el-icon><Refresh /></el-icon>
-          重新考试
-        </el-button>
       </div>
     </div>
   </div>
@@ -125,8 +121,7 @@ export default {
   name: 'QuestionDetail',
   components: {
     Check,
-    Close,
-    Refresh
+    Close
   },
   props: {
     question: {

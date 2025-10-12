@@ -1,9 +1,21 @@
 <template>
   <div class="wrong-answers">
     <div class="page-header">
-      <h1>错题管理</h1>
-      <div class="header-info">
-        <el-tag type="info">共 {{ wrongAnswers.length }} 道错题</el-tag>
+      <div class="header-left">
+        <el-button 
+          type="primary" 
+          :icon="ArrowLeft" 
+          @click="goBackToPersonalCenter"
+          class="back-button"
+        >
+          返回个人中心
+        </el-button>
+      </div>
+      <div class="header-right">
+        <h1>错题管理</h1>
+        <div class="header-info">
+          <el-tag type="info">共 {{ wrongAnswers.length }} 道错题</el-tag>
+        </div>
       </div>
     </div>
 
@@ -38,12 +50,14 @@
         </el-col>
         <el-col :span="6">
           <el-card class="stat-card">
-            <div class="stat-icon">
-              <el-icon color="#e6a23c"><Clock /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ statistics.pending_count }}</div>
-              <div class="stat-label">待复习</div>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <el-icon color="#e6a23c"><Clock /></el-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ statistics.pending_count }}</div>
+                <div class="stat-label">待复习</div>
+              </div>
             </div>
           </el-card>
         </el-col>
@@ -92,7 +106,7 @@
           </el-form-item>
           <el-form-item label="题型">
             <el-select
-              v-model="searchForm.question_type"
+              v-model="searchForm.type"
               placeholder="选择题型"
               clearable
               style="width: 120px"
@@ -106,13 +120,13 @@
           </el-form-item>
           <el-form-item label="复习状态">
             <el-select
-              v-model="searchForm.is_reviewed"
+              v-model="searchForm.status"
               placeholder="选择状态"
               clearable
               style="width: 120px"
             >
-              <el-option label="已复习" :value="true" />
-              <el-option label="待复习" :value="false" />
+              <el-option label="已复习" value="reviewed" />
+              <el-option label="待复习" value="pending" />
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -212,9 +226,9 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="retake" v-if="row.exam_id">重新考试</el-dropdown-item>
-                    <el-dropdown-item command="favorite">收藏题目</el-dropdown-item>
-                    <el-dropdown-item command="export">导出错题</el-dropdown-item>
+                    
+                    <el-dropdown-item command="favorite">{{ row.is_favorited ? '取消收藏' : '收藏题目' }}</el-dropdown-item>
+
                     <el-dropdown-item command="delete" divided>删除错题</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -276,7 +290,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Warning, Check, Clock, TrendCharts, Search, Refresh, Download, Delete, ArrowDown
+  Warning, Check, Clock, TrendCharts, Search, Refresh, Download, Delete, ArrowDown, ArrowLeft
 } from '@element-plus/icons-vue'
 import QuestionDetail from '@/components/question/QuestionDetail.vue'
 import ReviewMode from '@/components/question/ReviewMode.vue'
@@ -316,8 +330,8 @@ export default {
     const searchForm = reactive({
       keyword: '',
       subject_id: '',
-      question_type: '',
-      is_reviewed: ''
+      type: '',
+      status: ''
     })
     
     // 分页
@@ -342,6 +356,10 @@ export default {
         return subject ? subject.name : '未知科目'
       }
     })
+
+    const goBackToPersonalCenter = () => {
+      router.push('/user/dashboard')
+    }
     
     // 方法
     const loadWrongAnswers = async () => {
@@ -363,6 +381,9 @@ export default {
         const response = await examScoringApi.getWrongAnswers(params)
         wrongAnswers.value = response.data.items
         pagination.total = response.data.total
+        
+        // 为每个错题加载收藏状态
+        await loadFavoriteStatuses()
         
         // 计算统计数据
         calculateStatistics()
@@ -460,12 +481,42 @@ export default {
       }
     }
     
+    const loadFavoriteStatuses = async () => {
+      try {
+        // 为每个错题加载收藏状态
+        for (const wrongAnswer of wrongAnswers.value) {
+          try {
+            const statusResponse = await examScoringApi.getFavoriteStatus(wrongAnswer.question_id)
+            if (statusResponse.code === 200) {
+              wrongAnswer.is_favorited = statusResponse.data.is_favorited
+            }
+          } catch (error) {
+            // 如果获取收藏状态失败，默认为未收藏
+            wrongAnswer.is_favorited = false
+          }
+        }
+      } catch (error) {
+        console.error('Load favorite statuses error:', error)
+      }
+    }
+
     const favoriteQuestion = async (wrongAnswer) => {
       try {
-        // TODO: 实现收藏功能
-        ElMessage.success('收藏功能开发中')
+        if (wrongAnswer.is_favorited) {
+          // 取消收藏
+          await examScoringApi.unfavoriteQuestion(wrongAnswer.question_id)
+          ElMessage.success('取消收藏成功')
+          // 更新本地状态
+          wrongAnswer.is_favorited = false
+        } else {
+          // 收藏
+          await examScoringApi.favoriteQuestion(wrongAnswer.question_id)
+          ElMessage.success('收藏成功')
+          // 更新本地状态
+          wrongAnswer.is_favorited = true
+        }
       } catch (error) {
-        ElMessage.error('收藏失败')
+        ElMessage.error(wrongAnswer.is_favorited ? '取消收藏失败' : '收藏失败')
         console.error('Favorite question error:', error)
       }
     }
@@ -492,8 +543,8 @@ export default {
           }
         )
         
-        // TODO: 实现删除功能
-        ElMessage.success('删除功能开发中')
+        await examScoringApi.deleteWrongAnswer(wrongAnswer.id)
+        ElMessage.success('删除成功')
         loadWrongAnswers()
       } catch (error) {
         if (error !== 'cancel') {
@@ -614,6 +665,7 @@ export default {
       pagination,
       statistics,
       getSubjectName,
+      goBackToPersonalCenter,
       handleSearch,
       handleReset,
       handlePageChange,
@@ -629,7 +681,17 @@ export default {
       getTypeLabel,
       getTypeTagType,
       getSubjectTagType,
-      formatDate
+      formatDate,
+      ArrowLeft,
+      Warning,
+      Check,
+      Clock,
+      TrendCharts,
+      Search,
+      Refresh,
+      Download,
+      Delete,
+      ArrowDown
     }
   }
 }
@@ -645,6 +707,21 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  margin-right: 20px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .page-header h1 {

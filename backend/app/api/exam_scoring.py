@@ -5,6 +5,8 @@ from app.models.exam import Exam
 from app.utils.decorators import require_roles
 from app.utils.helpers import build_response, build_error_response
 from app.services.exam_scoring_service import ExamScoringService
+from app import db
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -215,8 +217,11 @@ def get_wrong_answers():
         page = request.args.get('page', 1, type=int)
         size = request.args.get('size', 10, type=int)
         subject_id = request.args.get('subject_id', type=int)
+        keyword = request.args.get('keyword', '').strip()
+        question_type = request.args.get('type', '').strip()
+        status = request.args.get('status', '').strip()
         
-        logger.info(f'获取错题记录: user_id={current_user_id}, page={page}, size={size}, subject_id={subject_id}')
+        logger.info(f'获取错题记录: user_id={current_user_id}, page={page}, size={size}, subject_id={subject_id}, keyword={keyword}, type={question_type}, status={status}')
         
         from app.models.wrong_answer import WrongAnswer
         from app.models.question import Question
@@ -228,8 +233,26 @@ def get_wrong_answers():
         total_wrong_answers = query.count()
         logger.info(f'用户{current_user_id}的错题总数: {total_wrong_answers}')
         
+        # 连接Question表进行筛选
+        query = query.join(Question)
+        
+        # 科目筛选
         if subject_id:
-            query = query.join(Question).filter(Question.subject_id == subject_id)
+            query = query.filter(Question.subject_id == subject_id)
+        
+        # 关键词搜索（题目标题）
+        if keyword:
+            query = query.filter(Question.title.contains(keyword))
+        
+        # 题型筛选
+        if question_type:
+            query = query.filter(Question.type == question_type)
+        
+        # 复习状态筛选
+        if status == 'reviewed':
+            query = query.filter(WrongAnswer.is_reviewed == True)
+        elif status == 'pending':
+            query = query.filter(WrongAnswer.is_reviewed == False)
         
         # 分页
         pagination = query.order_by(WrongAnswer.created_at.desc())\
@@ -241,6 +264,10 @@ def get_wrong_answers():
             exam_record = ExamRecord.query.get(wrong_answer.exam_record_id)
             exam = Exam.query.get(exam_record.exam_id) if exam_record else None
             
+            # 获取科目信息
+            from app.models.subject import Subject
+            subject = Subject.query.get(question.subject_id) if question else None
+            
             # 格式化用户答案和正确答案，使其更易理解
             formatted_user_answer = format_answer_for_display(wrong_answer.user_answer, question, is_user_answer=True)
             formatted_correct_answer = format_answer_for_display(wrong_answer.correct_answer, question, is_user_answer=False)
@@ -250,11 +277,15 @@ def get_wrong_answers():
                 'question_id': wrong_answer.question_id,
                 'question_title': question.title if question else '未知题目',
                 'question_type': question.type if question else 'unknown',
+                'subject_id': question.subject_id if question else None,
+                'subject_name': subject.name if subject else '未知科目',
                 'user_answer': formatted_user_answer,
                 'correct_answer': formatted_correct_answer,
                 'explanation': question.explanation if question else '',
                 'exam_id': exam.id if exam else None,
                 'exam_title': exam.title if exam else '未知考试',
+                'is_reviewed': wrong_answer.is_reviewed or False,
+                'reviewed_at': wrong_answer.reviewed_at.isoformat() if wrong_answer.reviewed_at else None,
                 'created_at': wrong_answer.created_at.isoformat()
             })
         
@@ -284,7 +315,8 @@ def review_wrong_answer(wrong_answer_id):
         if not wrong_answer:
             return jsonify(build_error_response(404, '错题记录不存在')), 404
         
-        if wrong_answer.user_id != current_user_id:
+        # 确保类型一致进行比较
+        if int(wrong_answer.user_id) != int(current_user_id):
             return jsonify(build_error_response(403, '无权限访问此错题记录')), 403
         
         # 标记为已复习
@@ -299,3 +331,125 @@ def review_wrong_answer(wrong_answer_id):
         db.session.rollback()
         logger.error(f'Review wrong answer error: {str(e)}')
         return jsonify(build_error_response(500, f'标记复习失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/wrong-answers/<int:wrong_answer_id>', methods=['DELETE'])
+@jwt_required()
+def delete_wrong_answer(wrong_answer_id):
+    """删除错题记录"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        from app.models.wrong_answer import WrongAnswer
+        
+        # 验证错题记录权限
+        wrong_answer = WrongAnswer.query.get(wrong_answer_id)
+        if not wrong_answer:
+            return jsonify(build_error_response(404, '错题记录不存在')), 404
+        
+        # 确保类型一致进行比较
+        if int(wrong_answer.user_id) != int(current_user_id):
+            return jsonify(build_error_response(403, '无权限删除此错题记录')), 403
+        
+        # 删除错题记录
+        db.session.delete(wrong_answer)
+        db.session.commit()
+        
+        return jsonify(build_response(data={'message': '删除成功'}))
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Delete wrong answer error: {str(e)}')
+        return jsonify(build_error_response(500, f'删除失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/questions/<int:question_id>/favorite', methods=['POST'])
+@jwt_required()
+def favorite_question(question_id):
+    """收藏题目"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        from app.models.user_favorite import UserFavorite
+        
+        # 检查题目是否存在
+        from app.models.question import Question
+        question = Question.query.get(question_id)
+        if not question:
+            return jsonify(build_error_response(404, '题目不存在')), 404
+        
+        # 检查是否已经收藏
+        existing_favorite = UserFavorite.query.filter_by(
+            user_id=current_user_id,
+            question_id=question_id
+        ).first()
+        
+        if existing_favorite:
+            return jsonify(build_error_response(400, '题目已经收藏')), 400
+        
+        # 创建收藏记录
+        favorite = UserFavorite(
+            user_id=current_user_id,
+            question_id=question_id
+        )
+        
+        db.session.add(favorite)
+        db.session.commit()
+        
+        return jsonify(build_response(data={'message': '收藏成功'}))
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Favorite question error: {str(e)}')
+        return jsonify(build_error_response(500, f'收藏失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/questions/<int:question_id>/favorite', methods=['DELETE'])
+@jwt_required()
+def unfavorite_question(question_id):
+    """取消收藏题目"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        from app.models.user_favorite import UserFavorite
+        
+        # 查找收藏记录
+        favorite = UserFavorite.query.filter_by(
+            user_id=current_user_id,
+            question_id=question_id
+        ).first()
+        
+        if not favorite:
+            return jsonify(build_error_response(404, '收藏记录不存在')), 404
+        
+        # 删除收藏记录
+        db.session.delete(favorite)
+        db.session.commit()
+        
+        return jsonify(build_response(data={'message': '取消收藏成功'}))
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Unfavorite question error: {str(e)}')
+        return jsonify(build_error_response(500, f'取消收藏失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/questions/<int:question_id>/favorite/status', methods=['GET'])
+@jwt_required()
+def get_favorite_status(question_id):
+    """获取题目收藏状态"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        from app.models.user_favorite import UserFavorite
+        
+        # 检查是否已经收藏
+        favorite = UserFavorite.query.filter_by(
+            user_id=current_user_id,
+            question_id=question_id
+        ).first()
+        
+        return jsonify(build_response(data={
+            'is_favorited': favorite is not None,
+            'favorite_id': favorite.id if favorite else None
+        }))
+        
+    except Exception as e:
+        logger.error(f'Get favorite status error: {str(e)}')
+        return jsonify(build_error_response(500, f'获取收藏状态失败: {str(e)}')), 500
