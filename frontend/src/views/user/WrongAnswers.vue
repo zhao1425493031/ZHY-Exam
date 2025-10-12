@@ -454,7 +454,7 @@ export default {
     
     const retakeExam = async (wrongAnswer) => {
       if (wrongAnswer.exam_id) {
-        router.push(`/user/exam-taking/${wrongAnswer.exam_id}`)
+        router.push(`/exam/detail/${wrongAnswer.exam_id}`)
       } else {
         ElMessage.warning('无法找到来源考试')
       }

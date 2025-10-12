@@ -541,7 +541,7 @@ export default {
     }
     
     const viewRecord = (record) => {
-      router.push(`/user/exam-taking/${record.exam_id}`)
+      router.push(`/exam/detail/${record.exam_id}`)
     }
     
     const viewResult = (record) => {
@@ -574,7 +574,7 @@ export default {
           }
         )
         
-        router.push(`/user/exam-taking/${record.exam_id}`)
+        router.push(`/exam/detail/${record.exam_id}`)
       } catch (error) {
         // 用户取消
       }

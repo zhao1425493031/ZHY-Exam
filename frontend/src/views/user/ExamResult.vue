@@ -270,7 +270,7 @@ export default {
     }
     
     const retakeExam = () => {
-      router.push(`/user/exam-taking/${examResult.value.exam_id}`)
+      router.push(`/exam/detail/${examResult.value.exam_id}`)
     }
     
     const goBack = () => {

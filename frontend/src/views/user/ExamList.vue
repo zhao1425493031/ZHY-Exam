@@ -429,8 +429,8 @@ export default {
           ElMessage.info(response.data.message)
         }
         
-        // 跳转到考试页面
-        router.push(`/user/exam-taking/${exam.id}`)
+        // 跳转到考试详情页面
+        router.push(`/exam/detail/${exam.id}`)
       } catch (error) {
         ElMessage.error('开始考试失败')
         console.error('Start exam error:', error)
