@@ -239,69 +239,12 @@
       </div>
     </el-dialog>
 
-    <!-- 编辑考试对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑考试"
-      width="70%"
-      class="modern-exam-dialog"
-    >
-      <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="120px">
-        <el-form-item label="考试标题" prop="title">
-          <el-input v-model="editForm.title" placeholder="请输入考试标题" />
-        </el-form-item>
-        <el-form-item label="考试描述" prop="description">
-          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入考试描述" />
-        </el-form-item>
-        <el-form-item label="科目" prop="subject_id">
-          <el-select v-model="editForm.subject_id" placeholder="请选择科目" style="width: 100%">
-            <el-option
-              v-for="subject in subjects"
-              :key="subject.id"
-              :label="subject.name"
-              :value="subject.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="考试时长" prop="duration">
-          <el-input-number v-model="editForm.duration" :min="1" :max="300" /> 分钟
-        </el-form-item>
-        <el-form-item label="开始时间" prop="start_time">
-          <el-date-picker
-            v-model="editForm.start_time"
-            type="datetime"
-            placeholder="选择开始时间"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="结束时间" prop="end_time">
-          <el-date-picker
-            v-model="editForm.end_time"
-            type="datetime"
-            placeholder="选择结束时间"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="考试状态" prop="status">
-          <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
-            <el-option label="草稿" value="draft" />
-            <el-option label="已发布" value="published" />
-            <el-option label="进行中" value="ongoing" />
-            <el-option label="已结束" value="finished" />
-            <el-option label="已取消" value="cancelled" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleEditSubmit">确定</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, Search, Refresh, Download, DocumentChecked, ArrowLeft,
@@ -326,6 +269,7 @@ export default {
     Switch
   },
   setup() {
+    const router = useRouter()
     const loading = ref(false)
     const exams = ref([])
     const subjects = ref([])
@@ -448,42 +392,16 @@ export default {
     }
     
     const editExam = (exam) => {
-      Object.assign(editForm, {
-        id: exam.id,
-        title: exam.title,
-        description: exam.description || '',
-        subject_id: exam.subject_id,
-        duration: exam.duration,
-        start_time: exam.start_time ? new Date(exam.start_time) : null,
-        end_time: exam.end_time ? new Date(exam.end_time) : null,
-        status: exam.status
+      // 跳转到考试创建页面进行完整编辑
+      router.push({
+        path: '/admin/exam-creation',
+        query: { 
+          mode: 'edit',
+          examId: exam.id 
+        }
       })
-      showEditDialog.value = true
     }
     
-    const handleEditSubmit = async () => {
-      try {
-        await editFormRef.value.validate()
-        
-        const submitData = {
-          title: editForm.title,
-          description: editForm.description,
-          subject_id: editForm.subject_id,
-          duration: editForm.duration,
-          start_time: editForm.start_time,
-          end_time: editForm.end_time,
-          status: editForm.status
-        }
-        
-        await examApi.updateExam(editForm.id, submitData)
-        ElMessage.success('考试更新成功')
-        showEditDialog.value = false
-        loadExams()
-      } catch (error) {
-        ElMessage.error('更新考试失败')
-        console.error('Update exam error:', error)
-      }
-    }
     
     const toggleExamStatus = async (exam) => {
       try {
@@ -657,12 +575,8 @@ export default {
       searchForm,
       pagination,
       showViewDialog,
-      showEditDialog,
       viewingExam,
       examQuestions,
-      editForm,
-      editRules,
-      editFormRef,
       loadExams,
       handleSearch,
       handleReset,
@@ -671,7 +585,6 @@ export default {
       handleSizeChange,
       viewExam,
       editExam,
-      handleEditSubmit,
       toggleExamStatus,
       deleteExam,
       batchUpdateStatus,
@@ -936,6 +849,10 @@ export default {
             color: #495057;
             font-weight: 600;
             border-bottom: 2px solid #e9ecef;
+            
+            .cell {
+              padding: 0 !important;
+            }
           }
         }
         
@@ -943,6 +860,12 @@ export default {
           tr {
             &:hover {
               background: rgba(102, 126, 234, 0.05);
+            }
+            
+            td {
+              .cell {
+                padding: 0 !important;
+              }
             }
           }
         }

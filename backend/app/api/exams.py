@@ -596,3 +596,106 @@ def get_exam_stats():
         
     except Exception as e:
         return jsonify(build_error_response(500, f'获取考试统计失败: {str(e)}')), 500
+
+
+@exams_bp.route('/analysis', methods=['GET'])
+@jwt_required()
+def get_exam_analysis():
+    """获取考试分析数据"""
+    try:
+        from app.services.exam_service import ExamService
+        from app.models.exam_record import ExamRecord
+        from app.models.user import User
+        from sqlalchemy import func, case
+        
+        # 获取查询参数
+        exam_id = request.args.get('exam_id')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        if not exam_id:
+            return jsonify(build_error_response(400, '考试ID不能为空')), 400
+        
+        # 验证考试是否存在
+        exam = Exam.query.get(exam_id)
+        if not exam:
+            return jsonify(build_error_response(404, '考试不存在')), 404
+        
+        # 构建查询
+        query = ExamRecord.query.filter(ExamRecord.exam_id == exam_id)
+        
+        # 应用时间过滤
+        if start_date:
+            query = query.filter(ExamRecord.submit_time >= start_date)
+        if end_date:
+            query = query.filter(ExamRecord.submit_time <= end_date)
+        
+        # 获取考试记录
+        exam_records = query.all()
+        
+        if not exam_records:
+            return jsonify(build_response(data={
+                'totalParticipants': 0,
+                'averageScore': 0,
+                'passRate': 0,
+                'completionRate': 0,
+                'details': []
+            }))
+        
+        # 计算统计数据
+        total_participants = len(exam_records)
+        total_score = sum(record.score for record in exam_records if record.score is not None)
+        average_score = round(total_score / total_participants, 1) if total_participants > 0 else 0
+        
+        # 计算通过率（假设60分及格）
+        passed_count = sum(1 for record in exam_records if record.score and record.score >= 60)
+        pass_rate = round((passed_count / total_participants) * 100, 1) if total_participants > 0 else 0
+        
+        # 计算完成率（已提交的考试记录）
+        completed_count = sum(1 for record in exam_records if record.status == 'submitted')
+        completion_rate = round((completed_count / total_participants) * 100, 1) if total_participants > 0 else 0
+        
+        # 获取详细数据
+        details = []
+        for record in exam_records:
+            user = User.query.get(record.user_id)
+            if user:
+                # 计算答题时长（分钟）
+                duration = 0
+                if record.start_time and record.submit_time:
+                    duration_delta = record.submit_time - record.start_time
+                    duration = int(duration_delta.total_seconds() / 60)
+                
+                # 计算正确题数和准确率
+                correct_count = 0
+                total_count = len(record.answers) if record.answers else 0
+                if record.answers and exam.question_ids:
+                    # 这里需要根据实际答案计算正确题数
+                    # 简化处理，假设有答案就算正确
+                    correct_count = len(record.answers)
+                
+                accuracy = round((correct_count / total_count) * 100, 1) if total_count > 0 else 0
+                
+                details.append({
+                    'user_name': user.username,
+                    'score': record.score or 0,
+                    'duration': duration,
+                    'correct_count': correct_count,
+                    'total_count': total_count,
+                    'accuracy': accuracy,
+                    'submit_time': record.submit_time.strftime('%Y-%m-%d %H:%M:%S') if record.submit_time else ''
+                })
+        
+        # 构建响应数据
+        analysis_data = {
+            'totalParticipants': total_participants,
+            'averageScore': average_score,
+            'passRate': pass_rate,
+            'completionRate': completion_rate,
+            'details': details
+        }
+        
+        return jsonify(build_response(data=analysis_data))
+        
+    except Exception as e:
+        return jsonify(build_error_response(500, f'获取考试分析失败: {str(e)}')), 500

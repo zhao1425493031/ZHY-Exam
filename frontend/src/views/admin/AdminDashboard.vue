@@ -70,6 +70,7 @@
       <div class="modules-grid">
         <div 
           class="module-card modern-card" 
+          :class="{ 'disabled': module.disabled }"
           v-for="(module, index) in modulesData" 
           :key="index"
           @click="goToModule(module.path)"
@@ -247,10 +248,11 @@ export default {
       },
       {
         icon: 'Lock',
-        iconClass: 'permissions',
+        iconClass: 'permissions disabled',
         title: '权限管理',
-        description: '管理系统权限和角色',
-        path: '/admin/permissions'
+        description: '即将推出 - 角色和权限配置功能',
+        path: null,
+        disabled: false
       },
       {
         icon: 'Upload',
@@ -298,6 +300,10 @@ export default {
 
     // 跳转到功能模块
     const goToModule = (path) => {
+      if (!path) {
+        ElMessage.info('该功能即将推出，敬请期待！')
+        return
+      }
       router.push(path)
     }
 
@@ -639,6 +645,42 @@ export default {
       transform: translateY(-8px);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
       background: white;
+    }
+    
+    &.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.7);
+      
+      &::before {
+        background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
+      }
+      
+      &:hover {
+        transform: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.7);
+      }
+      
+      .module-icon {
+        &.disabled {
+          background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+        }
+      }
+      
+      .module-content {
+        h3 {
+          color: #6b7280;
+        }
+        
+        p {
+          color: #9ca3af;
+        }
+      }
+      
+      .module-arrow {
+        opacity: 0.5;
+      }
     }
     
     .module-icon {

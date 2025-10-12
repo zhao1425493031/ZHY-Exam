@@ -454,6 +454,62 @@ class ImportExportService:
             raise Exception(f'导出试题数据失败: {str(e)}')
     
     @staticmethod
+    def export_exams(keyword: Optional[str] = None, subject_id: Optional[int] = None, 
+                    status: Optional[str] = None) -> pd.DataFrame:
+        """导出考试数据"""
+        try:
+            from app.models.exam import Exam
+            
+            query = Exam.query
+            
+            if keyword:
+                keyword_filter = f"%{keyword}%"
+                query = query.filter(
+                    Exam.title.like(keyword_filter) |
+                    Exam.description.like(keyword_filter)
+                )
+            
+            if subject_id:
+                query = query.filter(Exam.subject_id == subject_id)
+            
+            if status:
+                query = query.filter(Exam.status == status)
+            
+            exams = query.all()
+            
+            # 获取所有相关科目的映射
+            from app.models.subject import Subject
+            subject_ids = [exam.subject_id for exam in exams]
+            subjects = Subject.query.filter(Subject.id.in_(subject_ids)).all()
+            subject_map = {subject.id: subject.name for subject in subjects}
+            
+            # 构建DataFrame
+            data = []
+            for exam in exams:
+                # 获取科目名称
+                subject_name = subject_map.get(exam.subject_id, '未知科目')
+                
+                data.append({
+                    'ID': exam.id,
+                    '考试标题': exam.title,
+                    '科目': subject_name,
+                    '描述': exam.description or '',
+                    '总分': exam.total_points,
+                    '题目数量': exam.question_count,
+                    '考试时长': f"{exam.duration}分钟",
+                    '开始时间': exam.start_time.strftime('%Y-%m-%d %H:%M:%S') if exam.start_time else '',
+                    '结束时间': exam.end_time.strftime('%Y-%m-%d %H:%M:%S') if exam.end_time else '',
+                    '状态': exam.status,
+                    '创建时间': exam.created_at.strftime('%Y-%m-%d %H:%M:%S') if exam.created_at else ''
+                })
+            
+            return pd.DataFrame(data)
+            
+        except Exception as e:
+            logger.error(f'Export exams error: {str(e)}')
+            raise Exception(f'导出考试数据失败: {str(e)}')
+    
+    @staticmethod
     def export_exam_results(exam_id: Optional[int] = None, user_id: Optional[int] = None,
                           start_date: Optional[str] = None, end_date: Optional[str] = None) -> pd.DataFrame:
         """导出考试结果数据"""
@@ -720,3 +776,25 @@ class ImportExportService:
         except Exception as e:
             logger.error(f'Export exam results styled error: {str(e)}')
             raise Exception(f'导出考试结果失败: {str(e)}')
+    
+    @staticmethod
+    def export_exams_styled(keyword: Optional[str] = None, subject_id: Optional[int] = None, 
+                           status: Optional[str] = None):
+        """导出考试数据（美化版）"""
+        try:
+            # 获取原始数据
+            df = ImportExportService.export_exams(keyword=keyword, subject_id=subject_id, status=status)
+            
+            # 创建美化Excel
+            wb = ExcelStyleService.create_exam_export_excel(df)
+            
+            # 转换为字节流
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f'Export exams styled error: {str(e)}')
+            raise Exception(f'导出考试数据失败: {str(e)}')

@@ -368,3 +368,45 @@ class ExcelStyleService:
         )
         
         return wb
+    
+    @staticmethod
+    def create_exam_export_excel(df):
+        """创建考试导出Excel"""
+        # 列宽设置
+        column_widths = {
+            'A': 8,   # ID
+            'B': 25,  # 考试标题
+            'C': 20,  # 科目
+            'D': 30,  # 描述
+            'E': 10,  # 总分
+            'F': 12,  # 题目数量
+            'G': 12,  # 考试时长
+            'H': 20,  # 开始时间
+            'I': 20,  # 结束时间
+            'J': 10,  # 状态
+            'K': 20   # 创建时间
+        }
+        
+        # 汇总数据
+        total_exams = len(df)
+        published_count = len(df[df['状态'] == 'published']) if total_exams > 0 else 0
+        draft_count = len(df[df['状态'] == 'draft']) if total_exams > 0 else 0
+        finished_count = len(df[df['状态'] == 'finished']) if total_exams > 0 else 0
+        
+        summary_data = {
+            '总考试数': total_exams,
+            '已发布': published_count,
+            '草稿': draft_count,
+            '已完成': finished_count
+        }
+        
+        wb, ws = ExcelStyleService.create_styled_worksheet(
+            df=df,
+            sheet_name='考试数据',
+            title='ExamSphere 考试数据导出',
+            subtitle=f'导出时间: {pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")}',
+            column_widths=column_widths,
+            summary_data=summary_data
+        )
+        
+        return wb

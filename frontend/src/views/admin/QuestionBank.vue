@@ -7,7 +7,7 @@
           <div class="page-title">
             <div class="title-icon">
               <el-icon><Collection /></el-icon>
-            </div>
+        </div>
             <div class="title-text">
               <h1>题库管理</h1>
               <p>试题分类、标签和统计管理</p>
@@ -85,7 +85,7 @@
           <p>按分类、标签、难度筛选试题</p>
         </div>
         <div class="search-form">
-          <el-form :model="searchForm" inline>
+        <el-form :model="searchForm" inline>
             <el-form-item>
               <el-input
                 v-model="searchForm.keyword"
@@ -103,14 +103,14 @@
                 clearable
                 class="filter-select"
               >
-                <el-option
-                  v-for="subject in subjects"
-                  :key="subject.id"
-                  :label="subject.name"
-                  :value="subject.id"
-                />
-              </el-select>
-            </el-form-item>
+              <el-option
+                v-for="subject in subjects"
+                :key="subject.id"
+                :label="subject.name"
+                :value="subject.id"
+              />
+            </el-select>
+          </el-form-item>
             <el-form-item>
               <el-select
                 v-model="searchForm.type"
@@ -118,13 +118,13 @@
                 clearable
                 class="filter-select"
               >
-                <el-option label="单选题" value="single" />
-                <el-option label="多选题" value="multiple" />
-                <el-option label="判断题" value="judge" />
-                <el-option label="填空题" value="fill" />
-                <el-option label="简答题" value="essay" />
-              </el-select>
-            </el-form-item>
+              <el-option label="单选题" value="single" />
+              <el-option label="多选题" value="multiple" />
+              <el-option label="判断题" value="judge" />
+              <el-option label="填空题" value="fill" />
+              <el-option label="简答题" value="essay" />
+            </el-select>
+          </el-form-item>
             <el-form-item>
               <el-select
                 v-model="searchForm.difficulty"
@@ -132,11 +132,11 @@
                 clearable
                 class="filter-select"
               >
-                <el-option label="简单" value="easy" />
-                <el-option label="中等" value="medium" />
-                <el-option label="困难" value="hard" />
-              </el-select>
-            </el-form-item>
+              <el-option label="简单" value="easy" />
+              <el-option label="中等" value="medium" />
+              <el-option label="困难" value="hard" />
+            </el-select>
+          </el-form-item>
             <el-form-item>
               <el-select
                 v-model="searchForm.tag"
@@ -151,8 +151,8 @@
                   :value="tag"
                 />
               </el-select>
-            </el-form-item>
-            <el-form-item>
+          </el-form-item>
+          <el-form-item>
               <el-button type="primary" @click="handleSearch" class="search-btn">
                 <el-icon><Search /></el-icon>
                 <span>搜索</span>
@@ -161,12 +161,12 @@
                 <el-icon><Refresh /></el-icon>
                 <span>重置</span>
               </el-button>
-            </el-form-item>
-          </el-form>
+          </el-form-item>
+        </el-form>
         </div>
       </div>
-    </div>
-
+      </div>
+      
     <!-- 分类视图区域 -->
     <div class="category-section">
       <div class="category-card">
@@ -219,9 +219,9 @@
             class="modern-table"
           >
             <el-table-column type="selection" width="55" />
-            <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" />
             <el-table-column prop="title" label="题目" min-width="200" show-overflow-tooltip>
-              <template #default="{ row }">
+          <template #default="{ row }">
                 <div class="question-info">
                   <div class="question-avatar">{{ getTypeLabel(row.type).charAt(0) }}</div>
                   <div class="question-details">
@@ -229,22 +229,22 @@
                     <div class="question-meta">
                       <el-tag :type="getTypeTagType(row.type)" size="small" class="meta-tag">
                         {{ getTypeLabel(row.type) }}
-                      </el-tag>
+            </el-tag>
                       <el-tag :type="getDifficultyTagType(row.difficulty)" size="small" class="meta-tag">
                         {{ getDifficultyLabel(row.difficulty) }}
                       </el-tag>
                     </div>
                   </div>
                 </div>
-              </template>
-            </el-table-column>
+          </template>
+        </el-table-column>
             <el-table-column prop="subject_id" label="科目" width="150">
-              <template #default="{ row }">
+          <template #default="{ row }">
                 {{ getSubjectName(row.subject_id) }}
-              </template>
-            </el-table-column>
+          </template>
+        </el-table-column>
             <el-table-column prop="tags" label="标签" width="200">
-              <template #default="{ row }">
+          <template #default="{ row }">
                 <el-tag
                   v-for="(tag, index) in row.tags"
                   :key="index"
@@ -252,18 +252,18 @@
                   style="margin-right: 4px;"
                 >
                   {{ tag }}
-                </el-tag>
+            </el-tag>
                 <span v-if="!row.tags || row.tags.length === 0" style="color: #909399;">无标签</span>
-              </template>
-            </el-table-column>
+          </template>
+        </el-table-column>
             <el-table-column prop="points" label="分值" width="80" />
             <el-table-column prop="usage_count" label="使用次数" width="100">
-              <template #default="{ row }">
+          <template #default="{ row }">
                 {{ row.usage_count || 0 }}
-              </template>
-            </el-table-column>
+          </template>
+        </el-table-column>
             <el-table-column label="操作" width="150" fixed="right">
-              <template #default="{ row }">
+          <template #default="{ row }">
                 <div class="action-buttons">
                   <el-button size="small" type="primary" @click="editQuestionTags(row)" class="action-btn edit-btn">
                     <el-icon><Edit /></el-icon>
@@ -273,24 +273,24 @@
                     <el-icon><View /></el-icon>
                   </el-button>
                 </div>
-              </template>
-            </el-table-column>
-          </el-table>
+          </template>
+        </el-table-column>
+      </el-table>
         </div>
-        
-        <!-- 分页 -->
+      
+      <!-- 分页 -->
         <div class="pagination-wrapper">
-          <el-pagination
+      <el-pagination
             :current-page="pagination.page"
             :page-size="pagination.size"
-            :total="pagination.total"
-            :page-sizes="[10, 20, 50, 100]"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handlePageChange"
+        :total="pagination.total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
             class="modern-pagination"
-          />
-        </div>
+      />
+  </div>
       </div>
     </div>
 
@@ -565,12 +565,12 @@ export default {
     const removeTag = (tag) => {
       ElMessageBox.confirm(
         `确定要删除标签"${tag}"吗？`,
-        '确认删除',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
+          '确认删除',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
       ).then(() => {
         allTags.value = allTags.value.filter(t => t !== tag)
         stats.tags = allTags.value.length
@@ -623,7 +623,7 @@ export default {
         showBatchTagDialog.value = false
         batchTags.value = []
         selectedQuestions.value = []
-        loadQuestions()
+      loadQuestions()
         loadAllTags()
       } catch (error) {
         ElMessage.error('批量打标签失败')
@@ -1070,7 +1070,7 @@ export default {
       .category-item {
         background: white;
         border-radius: 12px;
-        padding: 20px;
+  padding: 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1128,9 +1128,9 @@ export default {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     
     .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
       margin-bottom: 24px;
       
       .table-title {
@@ -1297,7 +1297,7 @@ export default {
 .modern-dialog {
   :deep(.el-dialog__header) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
+  padding: 20px;
     
     .el-dialog__title {
       color: white;

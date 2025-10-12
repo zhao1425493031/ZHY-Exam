@@ -217,6 +217,43 @@ def export_questions():
         logger.error(f'Export questions error: {str(e)}')
         return jsonify(build_error_response(500, f'导出试题数据失败: {str(e)}')), 500
 
+@import_export_bp.route('/exams/export', methods=['GET'])
+@jwt_required()
+@require_roles('admin')
+def export_exams():
+    """导出考试数据（管理员）"""
+    try:
+        LogService.log_info("[EXPORT_EXAMS] 开始导出考试数据", 'IMPORT_EXPORT')
+        
+        # 获取查询参数
+        keyword = request.args.get('keyword')
+        subject_id = request.args.get('subject_id', type=int)
+        status = request.args.get('status')
+        
+        LogService.log_info(f"[EXPORT_EXAMS] 查询参数 - keyword: {keyword}, subject_id: {subject_id}, status: {status}", 'IMPORT_EXPORT')
+        
+        # 导出考试数据（美化版）
+        output = ImportExportService.export_exams_styled(
+            keyword=keyword,
+            subject_id=subject_id,
+            status=status
+        )
+        
+        LogService.log_info("[EXPORT_EXAMS] 考试数据导出成功", 'IMPORT_EXPORT')
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='考试数据.xlsx'
+        )
+        
+    except Exception as e:
+        LogService.log_error(f"[EXPORT_EXAMS] 导出考试数据失败: {str(e)}", 'IMPORT_EXPORT')
+        LogService.log_error(f"[EXPORT_EXAMS] 错误堆栈: {traceback.format_exc()}", 'IMPORT_EXPORT')
+        logger.error(f'Export exams error: {str(e)}')
+        return jsonify(build_error_response(500, f'导出考试数据失败: {str(e)}')), 500
+
 @import_export_bp.route('/exam-results/export', methods=['GET'])
 @jwt_required()
 @require_roles('admin')

@@ -136,10 +136,19 @@ export const examApi = {
   // 导出考试
   exportExams(params) {
     return request({
-      url: '/exams/export',
+      url: '/import-export/exams/export',
       method: 'get',
       params,
       responseType: 'blob'
+    })
+  },
+
+  // 获取考试分析数据
+  getExamAnalysis(params) {
+    return request({
+      url: '/exams/analysis',
+      method: 'get',
+      params
     })
   }
 }

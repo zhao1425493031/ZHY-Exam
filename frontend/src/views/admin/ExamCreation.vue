@@ -9,8 +9,8 @@
               <el-icon><EditPen /></el-icon>
             </div>
             <div class="title-text">
-              <h1>考试创建</h1>
-              <p>创建新考试并组卷配置</p>
+              <h1>{{ isEditMode ? '考试编辑' : '考试创建' }}</h1>
+              <p>{{ isEditMode ? '编辑考试并重新组卷配置' : '创建新考试并组卷配置' }}</p>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
           <el-step title="基本信息" description="配置考试基本信息" />
           <el-step title="选择试题" description="手动选题或随机组卷" />
           <el-step title="考试设置" description="配置考试规则" />
-          <el-step title="预览确认" description="预览并创建考试" />
+          <el-step title="预览确认" :description="isEditMode ? '预览并更新考试' : '预览并创建考试'" />
         </el-steps>
       </div>
     </div>
@@ -42,17 +42,17 @@
         <div v-show="currentStep === 0" class="step-content">
           <h3 class="step-title">考试基本信息</h3>
           <el-form :model="examForm" :rules="basicRules" ref="basicFormRef" label-width="120px">
-            <el-form-item label="考试标题" prop="title">
+        <el-form-item label="考试标题" prop="title">
               <el-input v-model="examForm.title" placeholder="请输入考试标题" />
-            </el-form-item>
-            <el-form-item label="考试描述" prop="description">
-              <el-input
+        </el-form-item>
+        <el-form-item label="考试描述" prop="description">
+          <el-input
                 v-model="examForm.description"
-                type="textarea"
+            type="textarea"
                 :rows="4"
-                placeholder="请输入考试描述"
-              />
-            </el-form-item>
+            placeholder="请输入考试描述"
+          />
+        </el-form-item>
             <el-form-item label="选择科目" prop="subject_id">
               <el-select
                 v-model="examForm.subject_id"
@@ -60,36 +60,36 @@
                 style="width: 100%"
                 @change="handleSubjectChange"
               >
-                <el-option
-                  v-for="subject in subjects"
-                  :key="subject.id"
-                  :label="subject.name"
-                  :value="subject.id"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="考试时长" prop="duration">
+            <el-option
+              v-for="subject in subjects"
+              :key="subject.id"
+              :label="subject.name"
+              :value="subject.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="考试时长" prop="duration">
               <el-input-number v-model="examForm.duration" :min="1" :max="300" /> 分钟
-            </el-form-item>
-            <el-form-item label="开始时间" prop="start_time">
-              <el-date-picker
+        </el-form-item>
+        <el-form-item label="开始时间" prop="start_time">
+          <el-date-picker
                 v-model="examForm.start_time"
-                type="datetime"
-                placeholder="选择开始时间"
+            type="datetime"
+            placeholder="选择开始时间"
                 style="width: 100%"
-              />
-            </el-form-item>
-            <el-form-item label="结束时间" prop="end_time">
-              <el-date-picker
+          />
+        </el-form-item>
+        <el-form-item label="结束时间" prop="end_time">
+          <el-date-picker
                 v-model="examForm.end_time"
-                type="datetime"
-                placeholder="选择结束时间"
+            type="datetime"
+            placeholder="选择结束时间"
                 style="width: 100%"
-              />
-            </el-form-item>
+          />
+        </el-form-item>
           </el-form>
         </div>
-
+        
         <!-- 步骤2: 选择试题 -->
         <div v-show="currentStep === 1" class="step-content">
           <h3 class="step-title">选择试题</h3>
@@ -160,10 +160,10 @@
                   </el-form-item>
                   <el-form-item label="填空题数量">
                     <el-input-number v-model="randomForm.fill" :min="0" :max="50" />
-                  </el-form-item>
+                </el-form-item>
                   <el-form-item label="简答题数量">
                     <el-input-number v-model="randomForm.essay" :min="0" :max="50" />
-                  </el-form-item>
+                </el-form-item>
                   <el-form-item label="难度分布">
                     <el-radio-group v-model="randomForm.difficulty_mode">
                       <el-radio value="random">随机</el-radio>
@@ -171,10 +171,10 @@
                       <el-radio value="medium">中等为主</el-radio>
                       <el-radio value="hard">困难为主</el-radio>
                     </el-radio-group>
-                  </el-form-item>
+                </el-form-item>
                   <el-form-item>
                     <el-button type="primary" @click="generateRandomQuestions">生成试题</el-button>
-                  </el-form-item>
+          </el-form-item>
                 </el-form>
               </div>
             </el-tab-pane>
@@ -195,7 +195,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- 步骤3: 考试设置 -->
         <div v-show="currentStep === 2" class="step-content">
           <h3 class="step-title">考试设置</h3>
@@ -220,10 +220,10 @@
                 <el-radio value="draft">保存为草稿</el-radio>
                 <el-radio value="published">直接发布</el-radio>
               </el-radio-group>
-            </el-form-item>
+          </el-form-item>
           </el-form>
         </div>
-
+        
         <!-- 步骤4: 预览确认 -->
         <div v-show="currentStep === 3" class="step-content">
           <h3 class="step-title">预览确认</h3>
@@ -272,7 +272,7 @@
           <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
           <el-button v-if="currentStep < 3" type="primary" @click="nextStep">下一步</el-button>
           <el-button v-if="currentStep === 3" type="success" @click="submitExam" :loading="submitting">
-            创建考试
+            {{ isEditMode ? '更新考试' : '创建考试' }}
           </el-button>
         </div>
       </div>
@@ -282,7 +282,7 @@
 
 <script>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
   ArrowLeft, EditPen
@@ -299,8 +299,13 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const currentStep = ref(0)
     const submitting = ref(false)
+    
+    // 检查是否为编辑模式
+    const isEditMode = computed(() => route.query.mode === 'edit')
+    const examId = computed(() => route.query.examId ? parseInt(route.query.examId) : null)
     const subjects = ref([])
     const availableQuestions = ref([])
     const selectedQuestions = ref([])
@@ -495,11 +500,20 @@ export default {
           settings: settingsForm
         }
         
-        await examApi.createExam(submitData)
+        if (isEditMode.value && examId.value) {
+          // 更新现有考试
+          await examApi.updateExam(examId.value, submitData)
+          ElMessage.success('考试更新成功')
+        } else {
+          // 创建新考试
+          await examApi.createExam(submitData)
         ElMessage.success('考试创建成功')
+        }
+        
         router.push('/admin/exams')
       } catch (error) {
-        ElMessage.error('创建考试失败')
+        const action = isEditMode.value ? '更新' : '创建'
+        ElMessage.error(`${action}考试失败`)
         console.error('Submit exam error:', error)
       } finally {
         submitting.value = false
@@ -544,13 +558,62 @@ export default {
       })
     }
     
-    onMounted(() => {
-      loadSubjects()
+    const loadExistingExam = async () => {
+      if (!isEditMode.value || !examId.value) return
+      
+      try {
+        const response = await examApi.getExam(examId.value)
+        const exam = response.data
+        
+        // 填充基本信息
+        Object.assign(examForm, {
+          title: exam.title,
+          description: exam.description || '',
+          subject_id: exam.subject_id,
+          duration: exam.duration,
+          start_time: exam.start_time ? new Date(exam.start_time) : null,
+          end_time: exam.end_time ? new Date(exam.end_time) : null,
+          status: exam.status
+        })
+        
+        // 填充考试设置
+        if (exam.settings) {
+          Object.assign(settingsForm, {
+            shuffle_questions: exam.settings.shuffle_questions || false,
+            shuffle_options: exam.settings.shuffle_options || false,
+            show_answer: exam.settings.show_answer || false,
+            show_explanation: exam.settings.show_explanation || false,
+            allow_retake: exam.settings.allow_retake || false
+          })
+        }
+        
+        // 加载已选择的试题
+        if (exam.question_ids && exam.question_ids.length > 0) {
+          const questionIds = exam.question_ids.join(',')
+          const questionsResponse = await questionApi.getQuestions({ ids: questionIds })
+          selectedQuestions.value = questionsResponse.data.items || questionsResponse.data || []
+        }
+        
+        ElMessage.success('考试数据加载成功')
+      } catch (error) {
+        ElMessage.error('加载考试数据失败')
+        console.error('Load existing exam error:', error)
+        router.push('/admin/exams')
+      }
+    }
+    
+    onMounted(async () => {
+      await loadSubjects()
+      if (isEditMode.value) {
+        await loadExistingExam()
+      }
     })
     
     return {
       currentStep,
       submitting,
+      isEditMode,
+      examId,
       subjects,
       availableQuestions,
       selectedQuestions,
@@ -603,9 +666,9 @@ export default {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
     
     .header-left {
       .page-title {
