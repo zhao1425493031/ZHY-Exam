@@ -404,6 +404,7 @@ import { ElMessage } from 'element-plus'
 import { Document, Monitor, DataAnalysis, User, Upload, ChatDotRound, Star, Folder, Clock, InfoFilled, Play, Reading } from '@element-plus/icons-vue'
 import { subjectsApi } from '@/api/subjects'
 import { examApi as examsApi } from '@/api/exams'
+import { useAuthStore } from '@/stores/auth'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
 export default {
@@ -425,6 +426,7 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const authStore = useAuthStore()
     const coursesLoading = ref(false)
     const examsLoading = ref(false)
     const courses = ref([])
@@ -702,17 +704,10 @@ export default {
       router.push(`/course/${course.id}`)
     }
 
-    // 开始考试
+    // 开始考试 - 跳转到考试详情页
     const startExam = (exam) => {
-      // 检查用户是否已登录
-      const authStore = useAuthStore()
-      if (!authStore.isLoggedIn) {
-        ElMessage.warning('请先登录后再参加考试')
-        return
-      }
-      
-      // 跳转到考试页面
-      router.push(`/exam/${exam.id}`)
+      // 跳转到考试详情页（不需要登录就可以查看详情）
+      router.push(`/exam/detail/${exam.id}`)
     }
 
     // 获取考试状态类型
@@ -1011,7 +1006,7 @@ export default {
 
   .courses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-bottom: 3rem;
   }
@@ -1353,7 +1348,7 @@ export default {
   
   .exam-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-bottom: 2rem;
   }
@@ -1499,6 +1494,16 @@ export default {
 }
 
 // 响应式设计
+@media (max-width: 1200px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .quick-exam-section .exam-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .hero-section .hero-content h2 {
     font-size: 2rem;

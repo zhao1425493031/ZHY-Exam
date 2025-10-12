@@ -281,7 +281,7 @@ import {
 import QuestionDetail from '@/components/question/QuestionDetail.vue'
 import ReviewMode from '@/components/question/ReviewMode.vue'
 import { examScoringApi } from '@/api/exam_scoring'
-import { subjectApi } from '@/api/subjects'
+import { subjectsApi } from '@/api/subjects'
 import { formatDate } from '@/utils/format'
 
 export default {
@@ -376,7 +376,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)

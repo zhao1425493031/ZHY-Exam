@@ -35,12 +35,13 @@ export const useAuthStore = defineStore('auth', () => {
       
       // 根据角色进行跳转（除非明确跳过）
       if (!skipRedirect) {
-        // 如果在首页，根据角色跳转到对应的仪表盘
+        // 如果在首页，根据角色跳转
         if (router.currentRoute.value.path === '/' || router.currentRoute.value.path === '/courses') {
           if (user.value.role === 'admin') {
             router.push('/admin')
           } else {
-            router.push('/user/dashboard')
+            // 普通用户登录后停留在首页
+            console.log('普通用户登录成功，停留在首页')
           }
         } else {
           // 如果在其他页面，不刷新页面，让用户手动刷新或重新请求

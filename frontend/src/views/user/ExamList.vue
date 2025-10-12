@@ -212,7 +212,7 @@ import { ElMessage } from 'element-plus'
 import { Search, Refresh, QuestionFilled, Medal, Timer, PlayArrow, ShoppingCart, View } from '@element-plus/icons-vue'
 import ExamPurchase from '@/components/exam/ExamPurchase.vue'
 import { examApi } from '@/api/exams'
-import { subjectApi } from '@/api/subjects'
+import { subjectsApi } from '@/api/subjects'
 import { formatDate, formatDuration } from '@/utils/format'
 
 export default {
@@ -293,7 +293,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)

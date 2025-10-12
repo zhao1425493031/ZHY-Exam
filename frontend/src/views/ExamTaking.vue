@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Clock, Check, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
@@ -173,6 +173,9 @@ export default {
     })
 
     const progressPercentage = computed(() => {
+      if (!exam.value.question_count || exam.value.question_count === 0) {
+        return 0
+      }
       return Math.round(((currentQuestionIndex.value + 1) / exam.value.question_count) * 100)
     })
 
@@ -322,12 +325,11 @@ export default {
 
         // 提交答案
         const submitData = {
-          exam_id: exam.value.id,
           answers: userAnswers.value,
           submit_time: new Date().toISOString()
         }
 
-        const response = await examApi.submitExam(submitData)
+        const response = await examApi.submitExam(exam.value.id, submitData)
         
         if (response.code === 200) {
           ElMessage.success('考试提交成功！')
@@ -354,6 +356,10 @@ export default {
       }
     }
 
+    onBeforeUnmount(() => {
+      cleanup()
+    })
+
     return {
       exam,
       questions,
@@ -374,9 +380,6 @@ export default {
       submitExam,
       cleanup
     }
-  },
-  beforeUnmount() {
-    this.cleanup()
   }
 }
 </script>

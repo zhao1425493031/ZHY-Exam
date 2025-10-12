@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title=""
-    width="480px"
+    width="680px"
     :before-close="handleClose"
     center
     class="register-dialog"
@@ -74,27 +74,15 @@
         </el-form-item>
       </div>
       
-      <div class="form-row">
-        <el-form-item prop="real_name" class="form-item-half">
-          <el-input
-            v-model="registerForm.real_name"
-            placeholder="真实姓名"
-            clearable
-            size="large"
-            prefix-icon="User"
-          />
-        </el-form-item>
-        
-        <el-form-item prop="phone" class="form-item-half">
-          <el-input
-            v-model="registerForm.phone"
-            placeholder="手机号"
-            clearable
-            size="large"
-            prefix-icon="Phone"
-          />
-        </el-form-item>
-      </div>
+      <el-form-item prop="real_name">
+        <el-input
+          v-model="registerForm.real_name"
+          placeholder="真实姓名"
+          clearable
+          size="large"
+          prefix-icon="User"
+        />
+      </el-form-item>
       
       <el-form-item prop="agree">
         <div class="agreement-section">
@@ -158,7 +146,6 @@ export default {
       password: '',
       confirmPassword: '',
       real_name: '',
-      phone: '',
       agree: false
     })
     
@@ -199,9 +186,6 @@ export default {
       real_name: [
         { max: 50, message: '真实姓名长度不能超过 50 个字符', trigger: 'blur' }
       ],
-      phone: [
-        { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
-      ],
       agree: [
         { validator: validateAgree, trigger: 'change' }
       ]
@@ -228,8 +212,7 @@ export default {
           username: registerForm.username,
           email: registerForm.email,
           password: registerForm.password,
-          real_name: registerForm.real_name,
-          phone: registerForm.phone
+          real_name: registerForm.real_name
         })
         
         ElMessage.success('注册成功')

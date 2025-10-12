@@ -269,7 +269,7 @@ import {
   Document, Trophy, Medal, Warning, Search, Refresh, Download, Delete, ArrowDown
 } from '@element-plus/icons-vue'
 import { examScoringApi } from '@/api/exam_scoring'
-import { subjectApi } from '@/api/subjects'
+import { subjectsApi } from '@/api/subjects'
 import { formatDate, formatDuration } from '@/utils/format'
 import * as echarts from 'echarts'
 
@@ -372,7 +372,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)

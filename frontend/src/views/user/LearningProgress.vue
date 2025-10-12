@@ -340,7 +340,7 @@ import {
   Refresh, Plus
 } from '@element-plus/icons-vue'
 import { learningProgressApi } from '@/api/learning_progress'
-import { subjectApi } from '@/api/subjects'
+import { subjectsApi } from '@/api/subjects'
 import * as echarts from 'echarts'
 
 export default {
@@ -459,7 +459,7 @@ export default {
     
     const loadSubjects = async () => {
       try {
-        const response = await subjectApi.getSubjects()
+        const response = await subjectsApi.getSubjects()
         subjects.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subjects error:', error)

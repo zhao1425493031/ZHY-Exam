@@ -32,11 +32,29 @@ const routes = [
     }
   },
   {
+    path: '/exam/detail/:id',
+    name: 'ExamDetail',
+    component: () => import('@/views/ExamDetail.vue'),
+    meta: { 
+      title: '考试详情',
+      requiresAuth: false 
+    }
+  },
+  {
     path: '/exam/:id',
-    name: 'ExamTaking',
+    name: 'PublicExamTaking',
     component: () => import('@/views/ExamTaking.vue'),
     meta: { 
       title: '在线考试',
+      requiresAuth: false 
+    }
+  },
+  {
+    path: '/exam/result/:id',
+    name: 'PublicExamResult',
+    component: () => import('@/views/ExamResult.vue'),
+    meta: { 
+      title: '考试结果',
       requiresAuth: true 
     }
   },

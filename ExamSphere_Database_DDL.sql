@@ -127,6 +127,8 @@ CREATE TABLE `exam_records` (
     `submit_time` TIMESTAMP COMMENT '提交时间',
     `answers` JSON COMMENT '用户答案（JSON格式）',
     `score` DECIMAL(5,2) COMMENT '得分',
+    `correct_count` INT DEFAULT 0 COMMENT '正确题数',
+    `total_count` INT DEFAULT 0 COMMENT '总题数',
     `status` ENUM('in_progress', 'submitted', 'timeout', 'cancelled') DEFAULT 'in_progress' COMMENT '状态',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -134,9 +136,8 @@ CREATE TABLE `exam_records` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_status` (`status`),
     INDEX `idx_start_time` (`start_time`),
-    INDEX `idx_submit_time` (`submit_time`),
-    UNIQUE KEY `unique_exam_user` (`exam_id`, `user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试记录表';
+    INDEX `idx_submit_time` (`submit_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='考试记录表 - 允许用户重复考试';
 
 -- =============================================
 -- 6. 用户收藏表 (user_favorites)

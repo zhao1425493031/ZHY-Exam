@@ -1028,9 +1028,9 @@ export default {
     max-width: 1800px;
     margin: 0 auto;
     padding: 0 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
     
     .header-left {
       .page-title {
@@ -1063,14 +1063,14 @@ export default {
           p {
             color: rgba(255, 255, 255, 0.8);
             font-size: 14px;
-            margin: 0;
+  margin: 0;
           }
         }
       }
-    }
-    
+}
+
     .header-right {
-      display: flex;
+  display: flex;
       gap: 12px;
       
       .export-btn, .refresh-btn, .back-btn {
@@ -1176,13 +1176,13 @@ export default {
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
       margin-bottom: 40px;
-      
-      .stat-card {
+
+.stat-card {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
         border-radius: 20px;
         padding: 28px;
-        display: flex;
-        align-items: center;
+  display: flex;
+  align-items: center;
         gap: 20px;
         border: 2px solid rgba(102, 126, 234, 0.1);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1209,9 +1209,9 @@ export default {
           
           &::before {
             opacity: 1;
-          }
-          
-          .stat-icon {
+}
+
+.stat-icon {
             transform: scale(1.15) rotate(8deg);
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.15);
           }
@@ -1228,7 +1228,7 @@ export default {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 32px;
+  font-size: 32px;
           flex-shrink: 0;
           box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1313,8 +1313,8 @@ export default {
         
         .stat-content {
           flex: 1;
-          
-          .stat-value {
+
+.stat-value {
             font-size: 36px;
             font-weight: 800;
             color: #1a1a1a;
@@ -1325,25 +1325,25 @@ export default {
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-          }
-          
-          .stat-label {
-            font-size: 14px;
+}
+
+.stat-label {
+  font-size: 14px;
             color: #666;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-          }
+}
         }
       }
-    }
+}
     
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 24px;
-      
-      .chart-card {
+
+.chart-card {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
         border-radius: 20px;
         padding: 28px;
@@ -1375,7 +1375,7 @@ export default {
         }
         
         .chart-header {
-          text-align: center;
+  text-align: center;
           margin-bottom: 24px;
           
           h4 {
@@ -1395,9 +1395,9 @@ export default {
             margin: 0;
             font-weight: 500;
           }
-        }
-        
-        .chart-container {
+}
+
+.chart-container {
           height: 320px;
           border-radius: 16px;
           background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
@@ -1513,7 +1513,7 @@ export default {
       }
       
       .tab-content {
-        .filter-section {
+.filter-section {
           margin-bottom: 28px;
           
           .filter-card {
@@ -1585,7 +1585,7 @@ export default {
               .search-btn, .reset-btn {
                 padding: 11px 24px;
                 border-radius: 12px;
-                font-weight: 600;
+  font-weight: 600;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -1741,9 +1741,9 @@ export default {
                   -webkit-background-clip: text;
                   -webkit-text-fill-color: transparent;
                   background-clip: text;
-                }
-                
-                .summary-label {
+}
+
+.summary-label {
                   font-size: 13px;
                   color: #666;
                   font-weight: 600;
@@ -1776,7 +1776,7 @@ export default {
               
               p {
                 color: #666;
-                font-size: 14px;
+  font-size: 14px;
                 margin: 0;
                 font-weight: 500;
               }

@@ -12,6 +12,8 @@ class ExamRecord(BaseModel):
     submit_time = Column(DateTime)
     answers = Column(JSON)  # 用户答案
     score = Column(DECIMAL(5, 2))
+    correct_count = Column(Integer, default=0)  # 正确题数
+    total_count = Column(Integer, default=0)  # 总题数
     status = Column(Enum('in_progress', 'submitted', 'timeout', 'cancelled', 
                          name='exam_record_status'), default='in_progress')
     
@@ -25,6 +27,8 @@ class ExamRecord(BaseModel):
             'submit_time': self.submit_time.isoformat() if self.submit_time else None,
             'answers': self.answers,
             'score': float(self.score) if self.score else None,
+            'correct_count': self.correct_count,
+            'total_count': self.total_count,
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None

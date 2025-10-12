@@ -117,18 +117,18 @@ export const examApi = {
   },
 
   // 提交考试
-  submitExam(data) {
+  submitExam(examId, data) {
     return request({
-      url: '/exams/submit',
+      url: `/exams/${examId}/submit`,
       method: 'post',
       data
     })
   },
 
-  // 检查考试可用性
+  // 检查考试是否可以参加
   checkExamAvailability(id) {
     return request({
-      url: `/exams/${id}/availability`,
+      url: `/exams/${id}/check-availability`,
       method: 'get'
     })
   },
@@ -149,6 +149,14 @@ export const examApi = {
       url: '/exams/analysis',
       method: 'get',
       params
+    })
+  },
+
+  // 获取考试结果
+  getExamResult(examId) {
+    return request({
+      url: `/exams/${examId}/result`,
+      method: 'get'
     })
   }
 }

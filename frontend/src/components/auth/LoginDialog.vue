@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title=""
-    width="420px"
+    width="680px"
     :before-close="handleClose"
     center
     class="login-dialog"

@@ -144,12 +144,29 @@ def create_exam():
         return jsonify(build_error_response(500, f'创建考试失败: {str(e)}')), 500
 
 @exams_bp.route('/<int:exam_id>', methods=['GET'])
-@jwt_required()
 def get_exam(exam_id):
     """获取考试详情"""
     try:
+        from app.models.subject import Subject
+        
         exam = Exam.query.get_or_404(exam_id)
-        return jsonify(build_response(data=exam.to_dict()))
+        
+        # 获取科目信息
+        subject = Subject.query.get(exam.subject_id)
+        subject_name = subject.name if subject else '未知科目'
+        
+        # 获取题目数据
+        questions = []
+        if exam.question_ids:
+            questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
+            questions = [q.to_dict() for q in questions]
+        
+        # 构建响应数据
+        exam_data = exam.to_dict()
+        exam_data['questions'] = questions
+        exam_data['subject_name'] = subject_name
+        
+        return jsonify(build_response(data=exam_data))
     except Exception as e:
         return jsonify(build_error_response(404, str(e))), 404
 
@@ -352,32 +369,232 @@ def start_exam(exam_id):
 def submit_exam(exam_id):
     """提交考试"""
     try:
+        from app.models.exam_record import ExamRecord
+        from app.models.user import User
+        
         exam = Exam.query.get_or_404(exam_id)
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
         answers = data.get('answers', {})
         
-        # TODO: 实现考试提交逻辑
-        # 1. 创建考试记录
-        # 2. 计算分数
-        # 3. 记录错题
+        # 检查考试设置是否允许重复考试
+        settings = exam.settings or {}
+        allow_retake = settings.get('allow_retake', True)  # 默认允许重复考试
+        
+        # 检查是否已有考试记录
+        existing_record = ExamRecord.query.filter_by(
+            exam_id=exam_id,
+            user_id=current_user_id
+        ).first()
+        
+        if existing_record and not allow_retake:
+            return jsonify(build_error_response(400, '该考试不允许重复参加')), 400
+        
+        # 创建新的考试记录
+        exam_record = ExamRecord(
+            exam_id=exam_id,
+            user_id=current_user_id,
+            start_time=datetime.utcnow(),
+            submit_time=datetime.utcnow(),
+            answers=answers,
+            status='submitted'
+        )
+        
+        # 计算分数和统计
+        correct_count = 0
+        total_count = 0
+        question_details = []
+        
+        # 获取考试题目
+        questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
+        
+        for i, question in enumerate(questions):
+            total_count += 1
+            user_answer = answers.get(str(i), '')
+            is_correct = False
+            
+            # 根据题型判断答案是否正确
+            if question.type in ['single', 'multiple']:
+                # 选择题：比较答案字符串
+                is_correct = user_answer == question.answer
+            elif question.type == 'judge':
+                # 判断题：比较布尔值字符串
+                is_correct = user_answer == question.answer
+            elif question.type in ['fill', 'essay']:
+                # 填空题和简答题：简单比较（实际项目中可能需要更复杂的判断）
+                is_correct = user_answer.strip().lower() == question.answer.strip().lower()
+            
+            if is_correct:
+                correct_count += 1
+            
+            question_details.append({
+                'question_title': question.title,
+                'user_answer': user_answer,
+                'correct_answer': question.answer,
+                'is_correct': is_correct,
+                'points': question.points
+            })
+        
+        # 计算总分
+        score = round((correct_count / total_count) * exam.total_points) if total_count > 0 else 0
+        accuracy = round((correct_count / total_count) * 100) if total_count > 0 else 0
+        
+        exam_record.score = score
+        exam_record.correct_count = correct_count
+        exam_record.total_count = total_count
+        
+        db.session.add(exam_record)
+        db.session.commit()
         
         # 记录操作日志
         log_operation(
             user_id=current_user_id,
             operation='submit_exam',
-            details=f'提交考试: {exam.title}',
+            details=f'提交考试: {exam.title}, 得分: {score}',
             ip=get_client_ip(request)
         )
         
         return jsonify(build_response(
             message='考试提交成功',
-            data={'exam_id': exam.id}
+            data={
+                'exam_id': exam.id,
+                'score': score,
+                'correct_count': correct_count,
+                'total_count': total_count,
+                'accuracy': accuracy,
+                'question_details': question_details
+            }
         ))
         
     except Exception as e:
+        db.session.rollback()
         return jsonify(build_error_response(500, f'提交考试失败: {str(e)}')), 500
+
+@exams_bp.route('/<int:exam_id>/check-availability', methods=['GET'])
+@jwt_required()
+def check_exam_availability(exam_id):
+    """检查考试是否可以参加"""
+    try:
+        from app.models.exam_record import ExamRecord
+        
+        exam = Exam.query.get_or_404(exam_id)
+        current_user_id = get_jwt_identity()
+        
+        # 检查考试设置
+        settings = exam.settings or {}
+        allow_retake = settings.get('allow_retake', True)
+        
+        # 检查是否已有考试记录
+        existing_records = ExamRecord.query.filter_by(
+            exam_id=exam_id,
+            user_id=current_user_id
+        ).all()
+        
+        has_taken = len(existing_records) > 0
+        can_take = True
+        message = ''
+        
+        if has_taken and not allow_retake:
+            can_take = False
+            message = '该考试不允许重复参加'
+        elif has_taken and allow_retake:
+            message = f'您已参加过该考试 {len(existing_records)} 次'
+        
+        return jsonify(build_response(
+            message='检查成功',
+            data={
+                'can_take': can_take,
+                'has_taken': has_taken,
+                'attempt_count': len(existing_records),
+                'allow_retake': allow_retake,
+                'message': message
+            }
+        ))
+    except Exception as e:
+        logger.error(f"检查考试可用性失败: {e}")
+        return jsonify(build_error_response(500, f'检查失败: {str(e)}')), 500
+
+@exams_bp.route('/<int:exam_id>/result', methods=['GET'])
+@jwt_required()
+def get_exam_result(exam_id):
+    """获取考试结果"""
+    try:
+        from app.models.exam_record import ExamRecord
+        from app.models.user import User
+        from app.models.subject import Subject
+        
+        current_user_id = get_jwt_identity()
+        
+        # 获取考试记录
+        exam_record = ExamRecord.query.filter_by(
+            exam_id=exam_id,
+            user_id=current_user_id
+        ).first()
+        
+        if not exam_record:
+            return jsonify(build_error_response(404, '考试记录不存在')), 404
+        
+        # 获取考试信息
+        exam = Exam.query.get(exam_id)
+        if not exam:
+            return jsonify(build_error_response(404, '考试不存在')), 404
+        
+        # 获取科目信息
+        subject = Subject.query.get(exam.subject_id)
+        
+        # 计算答题时长
+        duration = 0
+        if exam_record.start_time and exam_record.submit_time:
+            duration_delta = exam_record.submit_time - exam_record.start_time
+            duration = int(duration_delta.total_seconds() / 60)
+        
+        # 构建题目详情
+        question_details = []
+        if exam_record.answers and exam.question_ids:
+            questions = Question.query.filter(Question.id.in_(exam.question_ids)).all()
+            for i, question in enumerate(questions):
+                user_answer = exam_record.answers.get(str(i), '')
+                is_correct = False
+                
+                # 根据题型判断答案是否正确
+                if question.type in ['single', 'multiple']:
+                    is_correct = user_answer == question.answer
+                elif question.type == 'judge':
+                    is_correct = user_answer == question.answer
+                elif question.type in ['fill', 'essay']:
+                    is_correct = user_answer.strip().lower() == question.answer.strip().lower()
+                
+                question_details.append({
+                    'question_title': question.title,
+                    'user_answer': user_answer,
+                    'correct_answer': question.answer,
+                    'is_correct': is_correct,
+                    'points': question.points
+                })
+        
+        # 构建结果数据
+        result_data = {
+            'exam': {
+                'id': exam.id,
+                'title': exam.title,
+                'subject_name': subject.name if subject else '未知科目',
+                'duration': exam.duration,
+                'total_points': exam.total_points
+            },
+            'score': exam_record.score or 0,
+            'correct_count': exam_record.correct_count or 0,
+            'total_count': exam_record.total_count or 0,
+            'accuracy': round((exam_record.correct_count / exam_record.total_count) * 100) if exam_record.total_count > 0 else 0,
+            'duration': duration,
+            'submit_time': exam_record.submit_time.isoformat() if exam_record.submit_time else None,
+            'question_details': question_details
+        }
+        
+        return jsonify(build_response(data=result_data))
+        
+    except Exception as e:
+        return jsonify(build_error_response(500, f'获取考试结果失败: {str(e)}')), 500
 
 @exams_bp.route('/random-generate', methods=['POST'])
 @jwt_required()
@@ -552,23 +769,6 @@ def regenerate_exam_questions(exam_id):
     except Exception as e:
         db.session.rollback()
         return jsonify(build_error_response(500, f'重新生成考试题目失败: {str(e)}')), 500
-
-@exams_bp.route('/<int:exam_id>/check-availability', methods=['GET'])
-@jwt_required()
-def check_exam_availability(exam_id):
-    """检查考试可用性"""
-    try:
-        current_user_id = get_jwt_identity()
-        
-        available, message = ExamService.check_exam_availability(exam_id, current_user_id)
-        
-        return jsonify(build_response(
-            message=message,
-            data={'available': available}
-        ))
-        
-    except Exception as e:
-        return jsonify(build_error_response(500, f'检查考试可用性失败: {str(e)}')), 500
 
 @exams_bp.route('/stats', methods=['GET'])
 @jwt_required()
