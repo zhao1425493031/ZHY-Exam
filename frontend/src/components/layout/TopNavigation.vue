@@ -90,10 +90,6 @@
                   <el-icon><User /></el-icon>
                   个人中心
                 </el-dropdown-item>
-                <el-dropdown-item command="dashboard">
-                  <el-icon><Monitor /></el-icon>
-                  我的仪表盘
-                </el-dropdown-item>
                 <el-dropdown-item divided command="logout">
                   <el-icon><SwitchButton /></el-icon>
                   退出登录
@@ -170,7 +166,6 @@ export default {
     Bell,
     ArrowDown,
     User,
-    Monitor,
     SwitchButton,
     Document,
     LoginDialog,
@@ -325,7 +320,12 @@ export default {
       switch (command) {
         case 'profile':
         case 'dashboard':
-          router.push('/user/dashboard')
+          // 根据用户角色跳转到不同页面
+          if (authStore.user?.role === 'admin') {
+            router.push('/admin')
+          } else {
+            router.push('/user/dashboard')
+          }
           break
         case 'logout':
           handleLogout()
