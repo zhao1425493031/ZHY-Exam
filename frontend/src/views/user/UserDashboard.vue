@@ -25,6 +25,10 @@
             </div>
           </div>
           <div class="header-actions">
+            <el-button type="info" @click="goHome">
+              <el-icon><ArrowLeft /></el-icon>
+              返回首页
+            </el-button>
             <el-button type="primary" @click="editProfile">
               <el-icon><Edit /></el-icon>
               编辑资料
@@ -226,6 +230,173 @@
         </div>
       </div>
     </div>
+
+    <!-- 现代化编辑资料弹窗 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      width="680px"
+      :close-on-click-modal="false"
+      class="modern-edit-dialog"
+      :show-close="false"
+    >
+      <div class="modern-dialog-header">
+        <div class="header-content">
+          <div class="header-icon">
+            <el-icon size="24"><User /></el-icon>
+          </div>
+          <div class="header-text">
+            <h3>编辑个人资料</h3>
+            <p>更新您的个人信息和账户设置</p>
+          </div>
+        </div>
+        <el-button 
+          circle 
+          size="small" 
+          @click="editDialogVisible = false"
+          class="close-btn"
+        >
+          <el-icon><Close /></el-icon>
+        </el-button>
+      </div>
+
+      <div class="modern-dialog-body">
+        <!-- 基本信息卡片 -->
+        <div class="info-card">
+          <div class="card-header">
+            <el-icon><Edit /></el-icon>
+            <span>基本信息</span>
+          </div>
+          <div class="card-content">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="modern-label">
+                  <el-icon><User /></el-icon>
+                  真实姓名
+                </label>
+                <el-input
+                  v-model="editForm.real_name"
+                  placeholder="请输入真实姓名"
+                  maxlength="50"
+                  class="modern-input"
+                  size="large"
+                />
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="modern-label">
+                  <el-icon><Message /></el-icon>
+                  邮箱地址
+                </label>
+                <el-input
+                  v-model="editForm.email"
+                  placeholder="请输入邮箱地址"
+                  type="email"
+                  class="modern-input"
+                  size="large"
+                />
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="modern-label">
+                  <el-icon><Phone /></el-icon>
+                  手机号码
+                </label>
+                <el-input
+                  v-model="editForm.phone"
+                  placeholder="请输入手机号码"
+                  maxlength="11"
+                  class="modern-input"
+                  size="large"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 密码设置卡片 -->
+        <div class="info-card password-card">
+          <div class="card-header">
+            <el-icon><Lock /></el-icon>
+            <span>密码设置</span>
+          </div>
+          <div class="card-content">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="modern-label">
+                  <el-icon><Key /></el-icon>
+                  新密码
+                </label>
+                <el-input
+                  v-model="editForm.password"
+                  type="password"
+                  placeholder="请输入新密码（留空则不修改）"
+                  show-password
+                  maxlength="50"
+                  clearable
+                  class="modern-input"
+                  size="large"
+                />
+                <div class="modern-tip">
+                  <el-icon><InfoFilled /></el-icon>
+                  密码长度至少6位，留空则不修改密码
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="modern-label">
+                  <el-icon><Key /></el-icon>
+                  确认密码
+                </label>
+                <el-input
+                  v-model="editForm.confirmPassword"
+                  type="password"
+                  placeholder="请再次输入新密码"
+                  show-password
+                  maxlength="50"
+                  clearable
+                  :disabled="!editForm.password"
+                  class="modern-input"
+                  size="large"
+                />
+                <div 
+                  class="modern-tip error" 
+                  v-if="editForm.password && editForm.password !== editForm.confirmPassword"
+                >
+                  <el-icon><WarningFilled /></el-icon>
+                  两次输入的密码不一致
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modern-dialog-footer">
+        <el-button 
+          size="large"
+          @click="editDialogVisible = false"
+          class="cancel-btn"
+        >
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          size="large"
+          @click="saveProfile"
+          :loading="editLoading"
+          class="save-btn"
+        >
+          <el-icon><Check /></el-icon>
+          保存更改
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -234,9 +405,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  Star, Calendar, Edit, Document, ArrowRight, TrendCharts, 
+  Star, Calendar, Edit, Document, ArrowRight, ArrowLeft, TrendCharts, 
   Lightning, List, Clock, Warning, Bell, Trophy, 
-  CheckCircle, InfoFilled, WarningFilled, CircleCloseFilled
+  CheckCircle, InfoFilled, WarningFilled, CircleCloseFilled,
+  User, Close, Message, Phone, Lock, Key, Check
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { examRecordsApi } from '@/api/exam_records'
@@ -244,6 +416,7 @@ import { subjectsApi } from '@/api/subjects'
 import { notificationApi } from '@/api/notifications'
 import { statisticsApi } from '@/api/statistics'
 import { learningProgressApi } from '@/api/learning_progress'
+import { usersApi } from '@/api/users'
 import dayjs from 'dayjs'
 
 export default {
@@ -254,6 +427,7 @@ export default {
     Edit,
     Document,
     ArrowRight,
+    ArrowLeft,
     TrendCharts,
     Lightning,
     List,
@@ -264,7 +438,14 @@ export default {
     CheckCircle,
     InfoFilled,
     WarningFilled,
-    CircleCloseFilled
+    CircleCloseFilled,
+    User,
+    Close,
+    Message,
+    Phone,
+    Lock,
+    Key,
+    Check
   },
   setup() {
     const router = useRouter()
@@ -474,15 +655,27 @@ export default {
 
     // 基于现有数据更新统计（备选方案）
     const updateStatsFromData = () => {
-      const completedExams = recentExams.value.length
-      const averageScore = recentExams.value.length > 0 
-        ? Math.round(recentExams.value.reduce((sum, exam) => sum + (exam.score || 0), 0) / recentExams.value.length)
+      const completedExams = recentExams.value.filter(exam => exam.score !== null && exam.score !== undefined).length
+      const scores = recentExams.value.filter(exam => exam.score !== null && exam.score !== undefined).map(exam => exam.score)
+      const averageScore = scores.length > 0 
+        ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
         : 0
+
+      // 计算学习时长（假设每次考试平均20分钟）
+      const studyHours = Math.round((completedExams * 20) / 60 * 10) / 10 // 保留一位小数
+
+      // 计算学习排名（基于平均成绩，简单算法）
+      const rank = averageScore >= 90 ? 1 : averageScore >= 80 ? 2 : averageScore >= 70 ? 3 : 4
 
       statsData.value[0].value = completedExams.toString()
       statsData.value[1].value = averageScore.toString()
-      statsData.value[0].change = `+${completedExams} 本周`
-      statsData.value[1].change = `+${averageScore} 本月`
+      statsData.value[2].value = `${studyHours}小时`
+      statsData.value[3].value = rank.toString()
+
+      statsData.value[0].change = `+${completedExams} 总计`
+      statsData.value[1].change = averageScore >= 80 ? '优秀' : averageScore >= 60 ? '良好' : '需努力'
+      statsData.value[2].change = `+${studyHours}小时 总计`
+      statsData.value[3].change = rank === 1 ? '第1名' : `前${rank}名`
     }
 
     // 格式化日期
@@ -523,9 +716,92 @@ export default {
       return iconMap[type] || 'InfoFilled'
     }
 
+    // 编辑资料弹窗状态
+    const editDialogVisible = ref(false)
+    const editForm = ref({
+      real_name: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+    })
+    const editLoading = ref(false)
+
     // 编辑资料
     const editProfile = () => {
-      ElMessage.info('编辑资料功能开发中...')
+      editForm.value = {
+        real_name: userInfo.value.real_name || '',
+        email: userInfo.value.email || '',
+        phone: userInfo.value.phone || '',
+        password: '',
+        confirmPassword: ''
+      }
+      editDialogVisible.value = true
+    }
+
+    // 保存编辑
+    const saveProfile = async () => {
+      try {
+        // 验证密码
+        if (editForm.value.password || editForm.value.confirmPassword) {
+          if (!editForm.value.password) {
+            ElMessage.error('请输入新密码')
+            return
+          }
+          if (editForm.value.password !== editForm.value.confirmPassword) {
+            ElMessage.error('两次输入的密码不一致')
+            return
+          }
+          if (editForm.value.password.length < 6) {
+            ElMessage.error('密码长度不能少于6位')
+            return
+          }
+        }
+
+        editLoading.value = true
+        
+        // 准备提交数据，只包含非空字段
+        const submitData = {
+          real_name: editForm.value.real_name,
+          email: editForm.value.email,
+          phone: editForm.value.phone
+        }
+        
+        // 只有在输入密码时才包含密码字段
+        if (editForm.value.password) {
+          submitData.password = editForm.value.password
+        }
+        
+        const response = await usersApi.updateProfile(submitData)
+        if (response.code === 200) {
+          ElMessage.success('资料更新成功')
+          editDialogVisible.value = false
+          // 更新用户信息（不包含密码）
+          Object.assign(userInfo.value, {
+            real_name: submitData.real_name,
+            email: submitData.email,
+            phone: submitData.phone
+          })
+          // 更新认证存储中的用户信息
+          authStore.updateUser({
+            real_name: submitData.real_name,
+            email: submitData.email,
+            phone: submitData.phone
+          })
+        } else {
+          ElMessage.error(response.message || '更新失败')
+        }
+      } catch (error) {
+        console.error('更新资料失败:', error)
+        ElMessage.error('更新资料失败')
+      } finally {
+        editLoading.value = false
+      }
+    }
+
+    // 返回首页
+    const goHome = () => {
+      router.push('/')
     }
 
     onMounted(async () => {
@@ -544,12 +820,17 @@ export default {
       notifications,
       achievements,
       statsData,
+      editDialogVisible,
+      editForm,
+      editLoading,
       formatDate,
       formatTime,
       formatJoinDate,
       getScoreClass,
       getNotificationIcon,
-      editProfile
+      editProfile,
+      saveProfile,
+      goHome
     }
   }
 }
@@ -1130,6 +1411,229 @@ export default {
 
     .card-content {
       padding: 1rem 1.5rem 1.5rem;
+    }
+  }
+}
+
+// 现代化编辑资料弹窗样式
+.modern-edit-dialog {
+  :deep(.el-dialog) {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    border: none;
+    
+    .el-dialog__header {
+      display: none;
+    }
+    
+    .el-dialog__body {
+      padding: 0;
+    }
+  }
+}
+
+.modern-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .header-text {
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: white;
+      }
+      
+      p {
+        margin: 4px 0 0 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+  
+  .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    backdrop-filter: blur(10px);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.modern-dialog-body {
+  padding: 32px;
+  background: #f8fafc;
+}
+
+.info-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  
+  .card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    
+    .el-icon {
+      color: #667eea;
+      font-size: 18px;
+    }
+    
+    span {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 16px;
+    }
+  }
+  
+  .card-content {
+    padding: 24px;
+  }
+  
+  &.password-card {
+    .card-header {
+      background: linear-gradient(135deg, #fef5e7 0%, #fed7aa 100%);
+      
+      .el-icon {
+        color: #f59e0b;
+      }
+    }
+  }
+}
+
+.form-row {
+  margin-bottom: 20px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-group {
+  .modern-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+    
+    .el-icon {
+      color: #667eea;
+      font-size: 16px;
+    }
+  }
+  
+  .modern-input {
+    :deep(.el-input__wrapper) {
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      box-shadow: none;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: #667eea;
+      }
+      
+      &.is-focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+    }
+    
+    :deep(.el-input__inner) {
+      font-size: 15px;
+      padding: 12px 16px;
+    }
+  }
+  
+  .modern-tip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 8px;
+    
+    .el-icon {
+      font-size: 14px;
+    }
+    
+    &.error {
+      color: #ef4444;
+    }
+  }
+}
+
+.modern-dialog-footer {
+  padding: 24px 32px;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  
+  .cancel-btn {
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    
+    &:hover {
+      border-color: #d1d5db;
+      background: #f9fafb;
+    }
+  }
+  
+  .save-btn {
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .el-icon {
+      margin-right: 6px;
     }
   }
 }

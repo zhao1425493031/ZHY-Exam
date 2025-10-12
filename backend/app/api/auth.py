@@ -5,7 +5,7 @@ from app.api import auth_bp
 from app.models.user import User
 from app.models import db
 from app.utils.decorators import validate_json
-from app.utils.validators import UserSchema, LoginSchema, ChangePasswordSchema
+from app.utils.validators import UserSchema, LoginSchema, ChangePasswordSchema, ProfileUpdateSchema
 from app.utils.helpers import build_response, build_error_response, get_client_ip, log_operation
 
 @auth_bp.route('/register', methods=['POST'])
@@ -146,7 +146,7 @@ def get_profile():
 
 @auth_bp.route('/profile', methods=['PUT'])
 @jwt_required()
-@validate_json(UserSchema)
+@validate_json(ProfileUpdateSchema)
 def update_profile():
     """更新用户信息"""
     try:
@@ -166,7 +166,11 @@ def update_profile():
         
         # 更新用户信息
         for key, value in data.items():
-            if key != 'password' and hasattr(user, key):
+            if key == 'password':
+                # 特殊处理密码字段
+                if value:  # 只有当密码不为空时才更新
+                    user.set_password(value)
+            elif hasattr(user, key):
                 setattr(user, key, value)
         
         db.session.commit()

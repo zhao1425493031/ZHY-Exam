@@ -131,6 +131,8 @@ export const useAuthStore = defineStore('auth', () => {
   // 更新用户信息
   const updateUser = (userData) => {
     user.value = { ...user.value, ...userData }
+    // 同步更新本地存储
+    localStorage.setItem('user', JSON.stringify(user.value))
   }
 
   // 显示登录弹窗

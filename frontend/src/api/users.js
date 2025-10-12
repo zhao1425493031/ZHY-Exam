@@ -71,5 +71,14 @@ export const usersApi = {
       params,
       responseType: 'blob'
     })
+  },
+
+  // 更新个人资料
+  updateProfile(data) {
+    return request({
+      url: '/auth/profile',
+      method: 'put',
+      data
+    })
   }
 }

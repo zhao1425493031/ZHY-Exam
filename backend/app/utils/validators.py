@@ -26,6 +26,17 @@ class UserUpdateSchema(Schema):
     phone = fields.Str(validate=validate.Length(max=20))
     status = fields.Str(validate=validate.OneOf(['active', 'inactive', 'banned']))
 
+class ProfileUpdateSchema(Schema):
+    """个人资料更新数据验证器"""
+    username = fields.Str(validate=[
+        validate.Length(min=3, max=20),
+        validate.Regexp(r'^[a-zA-Z0-9_]+$', error='用户名只能包含字母、数字、下划线')
+    ])
+    email = fields.Email()
+    real_name = fields.Str(validate=validate.Length(max=50))
+    phone = fields.Str(validate=validate.Length(max=20))
+    password = fields.Str(validate=validate.Length(min=6))
+
 class LoginSchema(Schema):
     """登录数据验证器"""
     username = fields.Str(required=True)
