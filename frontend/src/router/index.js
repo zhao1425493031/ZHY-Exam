@@ -186,6 +186,17 @@ const routes = [
       requiresRole: ['admin']
     }
   },
+  // 用户仪表盘 - 独立路由，不包含旧的导航栏
+  {
+    path: '/user/dashboard',
+    name: 'UserDashboard',
+    component: () => import('@/views/user/UserDashboard.vue'),
+    meta: { 
+      title: '我的仪表盘',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
   {
     path: '/user',
     name: 'User',
@@ -196,12 +207,6 @@ const routes = [
       requiresRole: ['admin', 'user']
     },
     children: [
-      {
-        path: 'dashboard',
-        name: 'UserDashboard',
-        component: () => import('@/views/user/Dashboard.vue'),
-        meta: { title: '我的仪表盘' }
-      },
       {
         path: 'exam-list',
         name: 'ExamList',

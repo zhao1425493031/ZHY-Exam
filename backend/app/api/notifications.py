@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 # 创建蓝图
 notification_bp = Blueprint('notifications', __name__, url_prefix='/api/notifications')
 
+@notification_bp.route('', methods=['GET'])
 @notification_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_notifications():

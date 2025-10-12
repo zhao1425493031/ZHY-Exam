@@ -565,7 +565,7 @@ export default {
         const response = await subjectsApi.getSubjects({
           status: 'active',
           page: 1,
-          size: 12
+          size: 3
         })
         
         console.log('API响应:', response)
@@ -668,7 +668,7 @@ export default {
         const response = await examsApi.getExams({
           status: 'published',
           page: 1,
-          size: 6
+          size: 3
         })
         console.log('考试数据响应:', response)
         
@@ -801,7 +801,7 @@ export default {
   text-align: center;
   position: relative;
   overflow: hidden;
-  min-height: 80vh;
+
   display: flex;
   align-items: center;
 
