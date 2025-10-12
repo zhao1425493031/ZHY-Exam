@@ -103,8 +103,9 @@ class LearningProgressService:
                 ExamRecord.created_at >= start_date
             )
             
-            if subject_id:
-                query = query.join(Question).filter(Question.subject_id == subject_id)
+            # 暂时注释掉subject_id过滤，避免join问题
+            # if subject_id:
+            #     query = query.join(Question).filter(Question.subject_id == subject_id)
             
             exam_records = query.all()
             
@@ -131,8 +132,9 @@ class LearningProgressService:
                 WrongAnswer.created_at >= start_date
             )
             
-            if subject_id:
-                wrong_query = wrong_query.join(Question).filter(Question.subject_id == subject_id)
+            # 暂时注释掉subject_id过滤，避免join问题
+            # if subject_id:
+            #     wrong_query = wrong_query.join(Question).filter(Question.subject_id == subject_id)
             
             wrong_answers = wrong_query.all()
             

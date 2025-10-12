@@ -242,6 +242,8 @@ import { useAuthStore } from '@/stores/auth'
 import { examRecordsApi } from '@/api/exam_records'
 import { subjectsApi } from '@/api/subjects'
 import { notificationApi } from '@/api/notifications'
+import { statisticsApi } from '@/api/statistics'
+import { learningProgressApi } from '@/api/learning_progress'
 import dayjs from 'dayjs'
 
 export default {
@@ -341,21 +343,34 @@ export default {
     // 获取学习进度
     const fetchLearningProgress = async () => {
       try {
-        const response = await subjectsApi.getSubjects({
-          status: 'active',
+        const response = await learningProgressApi.getProgress({
           page: 1,
           size: 5
         })
         if (response.code === 200) {
-          // 模拟学习进度数据
-          learningProgress.value = (response.data.items || []).map(subject => ({
-            id: subject.id,
-            subject_name: subject.name,
-            percentage: Math.floor(Math.random() * 100)
-          }))
+          learningProgress.value = response.data.items || []
         }
       } catch (error) {
         console.error('获取学习进度失败:', error)
+        // 如果学习进度API失败，尝试获取科目数据作为备选
+        try {
+          const subjectsResponse = await subjectsApi.getSubjects({
+            status: 'active',
+            page: 1,
+            size: 5
+          })
+          if (subjectsResponse.code === 200) {
+            learningProgress.value = (subjectsResponse.data.items || []).map(subject => ({
+              id: subject.id,
+              subject_name: subject.name,
+              completed_questions: 0,
+              total_questions: 0,
+              percentage: 0
+            }))
+          }
+        } catch (fallbackError) {
+          console.error('获取科目数据失败:', fallbackError)
+        }
       }
     }
 
@@ -374,23 +389,42 @@ export default {
       }
     }
 
-    // 初始化成就数据
-    const initAchievements = () => {
+    // 获取学习成就
+    const fetchAchievements = async () => {
+      try {
+        const response = await learningProgressApi.getAchievements()
+        if (response.code === 200) {
+          achievements.value = response.data.items || []
+        }
+      } catch (error) {
+        console.error('获取学习成就失败:', error)
+        // 如果API失败，基于实际数据生成基础成就
+        initBasicAchievements()
+      }
+    }
+
+    // 初始化基础成就数据（基于实际数据）
+    const initBasicAchievements = () => {
+      const completedExams = recentExams.value.length
+      const hasHighScore = recentExams.value.some(exam => exam.score >= 90)
+      const totalScore = recentExams.value.reduce((sum, exam) => sum + (exam.score || 0), 0)
+      const averageScore = completedExams > 0 ? totalScore / completedExams : 0
+
       achievements.value = [
         {
           id: 1,
           name: '初试牛刀',
           description: '完成第一次考试',
           icon: 'Trophy',
-          unlocked: recentExams.value.length > 0,
-          progress: Math.min(100, recentExams.value.length * 100)
+          unlocked: completedExams > 0,
+          progress: Math.min(100, completedExams * 100)
         },
         {
           id: 2,
           name: '学习达人',
           description: '学习时长达到10小时',
           icon: 'Clock',
-          unlocked: false,
+          unlocked: false, // 需要后端提供学习时长数据
           progress: 0
         },
         {
@@ -398,14 +432,48 @@ export default {
           name: '高分王者',
           description: '单次考试得分90分以上',
           icon: 'Star',
-          unlocked: recentExams.value.some(exam => exam.score >= 90),
-          progress: 0
+          unlocked: hasHighScore,
+          progress: hasHighScore ? 100 : 0
+        },
+        {
+          id: 4,
+          name: '成绩优异',
+          description: '平均成绩达到80分以上',
+          icon: 'Star',
+          unlocked: averageScore >= 80,
+          progress: Math.min(100, averageScore)
         }
       ]
     }
 
-    // 更新统计数据
-    const updateStats = () => {
+    // 获取统计数据
+    const fetchStatistics = async () => {
+      try {
+        const response = await statisticsApi.getDashboardStatistics()
+        if (response.code === 200) {
+          const stats = response.data
+          
+          // 更新统计数据
+          statsData.value[0].value = stats.completed_exams?.toString() || '0'
+          statsData.value[1].value = stats.average_score?.toString() || '0'
+          statsData.value[2].value = stats.study_hours ? `${stats.study_hours}小时` : '0小时'
+          statsData.value[3].value = stats.learning_rank?.toString() || '--'
+          
+          // 更新趋势数据
+          statsData.value[0].change = stats.exams_this_week ? `+${stats.exams_this_week} 本周` : '+0 本周'
+          statsData.value[1].change = stats.score_this_month ? `+${stats.score_this_month} 本月` : '+0 本月'
+          statsData.value[2].change = stats.hours_this_week ? `+${stats.hours_this_week} 本周` : '+0 本周'
+          statsData.value[3].change = stats.rank_change ? `${stats.rank_change} 本月` : '--'
+        }
+      } catch (error) {
+        console.error('获取统计数据失败:', error)
+        // 如果API失败，基于现有数据计算
+        updateStatsFromData()
+      }
+    }
+
+    // 基于现有数据更新统计（备选方案）
+    const updateStatsFromData = () => {
       const completedExams = recentExams.value.length
       const averageScore = recentExams.value.length > 0 
         ? Math.round(recentExams.value.reduce((sum, exam) => sum + (exam.score || 0), 0) / recentExams.value.length)
@@ -465,8 +533,8 @@ export default {
       await fetchRecentExams()
       await fetchLearningProgress()
       await fetchNotifications()
-      initAchievements()
-      updateStats()
+      await fetchStatistics()
+      await fetchAchievements()
     })
 
     return {

@@ -197,71 +197,96 @@ const routes = [
       requiresRole: ['admin', 'user']
     }
   },
+  // 用户相关页面 - 全部独立路由，不包含旧的导航栏
   {
-    path: '/user',
-    name: 'User',
-    component: () => import('@/components/layout/AppLayout.vue'),
+    path: '/user/exam-list',
+    name: 'ExamList',
+    component: () => import('@/views/user/ExamList.vue'),
     meta: { 
-      title: '用户中心',
+      title: '考试列表',
       requiresAuth: true,
       requiresRole: ['admin', 'user']
-    },
-    children: [
-      {
-        path: 'exam-list',
-        name: 'ExamList',
-        component: () => import('@/views/user/ExamList.vue'),
-        meta: { title: '考试列表' }
-      },
-      {
-        path: 'exam-taking/:id',
-        name: 'ExamTaking',
-        component: () => import('@/views/user/ExamTaking.vue'),
-        meta: { title: '在线考试' }
-      },
-      {
-        path: 'exam-result/:id',
-        name: 'ExamResult',
-        component: () => import('@/views/user/ExamResult.vue'),
-        meta: { title: '考试结果' }
-      },
-      {
-        path: 'my-records',
-        name: 'MyRecords',
-        component: () => import('@/views/user/MyRecords.vue'),
-        meta: { title: '我的记录' }
-      },
-      {
-        path: 'wrong-answers',
-        name: 'WrongAnswers',
-        component: () => import('@/views/user/WrongAnswers.vue'),
-        meta: { title: '错题管理' }
-      },
-      {
-        path: 'learning-progress',
-        name: 'LearningProgress',
-        component: () => import('@/views/user/LearningProgress.vue'),
-        meta: { title: '学习进度' }
-      },
-      {
-        path: 'notifications',
-        name: 'Notifications',
-        component: () => import('@/views/user/Notifications.vue'),
-        meta: { title: '消息通知' }
-      },
-      {
-        path: 'file-management',
-        name: 'FileManagement',
-        component: () => import('@/views/user/FileManagement.vue'),
-        meta: { title: '文件管理' }
-      },
-      {
-        path: 'announcements',
-        name: 'AnnouncementManagement',
-        component: () => import('@/views/user/AnnouncementManagement.vue'),
-        meta: { title: '系统公告' }
-      }
-    ]
+    }
+  },
+  {
+    path: '/user/exam-taking/:id',
+    name: 'ExamTaking',
+    component: () => import('@/views/user/ExamTaking.vue'),
+    meta: { 
+      title: '在线考试',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/exam-result/:id',
+    name: 'ExamResult',
+    component: () => import('@/views/user/ExamResult.vue'),
+    meta: { 
+      title: '考试结果',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/my-records',
+    name: 'MyRecords',
+    component: () => import('@/views/user/MyRecords.vue'),
+    meta: { 
+      title: '我的记录',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/wrong-answers',
+    name: 'WrongAnswers',
+    component: () => import('@/views/user/WrongAnswers.vue'),
+    meta: { 
+      title: '错题管理',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/learning-progress',
+    name: 'LearningProgress',
+    component: () => import('@/views/user/LearningProgress.vue'),
+    meta: { 
+      title: '学习进度',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/notifications',
+    name: 'Notifications',
+    component: () => import('@/views/user/Notifications.vue'),
+    meta: { 
+      title: '消息通知',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/file-management',
+    name: 'FileManagement',
+    component: () => import('@/views/user/FileManagement.vue'),
+    meta: { 
+      title: '文件管理',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
+    path: '/user/announcements',
+    name: 'AnnouncementManagement',
+    component: () => import('@/views/user/AnnouncementManagement.vue'),
+    meta: { 
+      title: '系统公告',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
   },
   {
     path: '/:pathMatch(.*)*',
