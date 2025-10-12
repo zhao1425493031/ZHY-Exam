@@ -1,183 +1,219 @@
 <template>
-  <div class="exam-list">
-    <div class="page-header">
-      <h1>考试列表</h1>
-      <div class="header-info">
-        <el-tag type="info">共 {{ exams.length }} 场考试</el-tag>
+  <div class="modern-exam-list">
+    <!-- 现代化头部 -->
+    <div class="modern-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="page-title">
+            <div class="title-icon">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="title-text">
+              <h1>考试列表</h1>
+              <p>选择并参加您感兴趣的考试</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <el-button @click="goToDashboard" class="back-btn">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回个人中心</span>
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <!-- 搜索和筛选 -->
+    <!-- 搜索和筛选区域 -->
     <div class="search-section">
-      <el-card>
-        <el-form :model="searchForm" inline>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="searchForm.keyword"
-              placeholder="搜索考试标题"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
-          <el-form-item label="科目">
-            <el-select
-              v-model="searchForm.subject_id"
-              placeholder="选择科目"
-              clearable
-              style="width: 200px"
-            >
-              <el-option
-                v-for="subject in subjects"
-                :key="subject.id"
-                :label="subject.name"
-                :value="subject.id"
+      <div class="search-card">
+        <div class="search-header">
+          <h3>搜索和筛选</h3>
+          <p>快速查找考试信息</p>
+        </div>
+        <div class="search-form">
+          <el-form :model="searchForm" inline>
+            <el-form-item>
+              <el-input
+                v-model="searchForm.keyword"
+                placeholder="请输入考试标题"
+                prefix-icon="Search"
+                class="search-input"
               />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select
-              v-model="searchForm.status"
-              placeholder="选择状态"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="可参加" value="available" />
-              <el-option label="进行中" value="ongoing" />
-              <el-option label="已结束" value="finished" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="收费类型">
-            <el-select
-              v-model="searchForm.is_free"
-              placeholder="选择收费类型"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="免费" :value="true" />
-              <el-option label="收费" :value="false" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.subject_id"
+                placeholder="选择科目"
+                class="filter-select"
+              >
+                <el-option
+                  v-for="subject in subjects"
+                  :key="subject.id"
+                  :label="subject.name"
+                  :value="subject.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.status"
+                placeholder="选择状态"
+                class="filter-select"
+              >
+                <el-option label="全部状态" value="" />
+                <el-option label="可参加" value="available" />
+                <el-option label="进行中" value="ongoing" />
+                <el-option label="已结束" value="finished" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select
+                v-model="searchForm.is_free"
+                placeholder="选择收费类型"
+                class="filter-select"
+              >
+                <el-option label="全部类型" value="" />
+                <el-option label="免费" :value="true" />
+                <el-option label="收费" :value="false" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch" class="search-btn">
+                <el-icon><Search /></el-icon>
+                <span>搜索</span>
+              </el-button>
+              <el-button @click="handleReset" class="reset-btn">
+                <el-icon><Refresh /></el-icon>
+                <span>重置</span>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
     </div>
 
     <!-- 考试列表 -->
-    <div class="exam-grid">
-      <div
-        v-for="exam in exams"
-        :key="exam.id"
-        class="exam-card"
-        :class="{ 'exam-disabled': !canTakeExam(exam) }"
-      >
-        <div class="card-header">
-          <div class="exam-title">
-            <h3>{{ exam.title }}</h3>
-            <div class="exam-meta">
-              <el-tag :type="getStatusTagType(exam)" size="small">
-                {{ getStatusLabel(exam) }}
-              </el-tag>
-              <el-tag :type="getSubjectTagType(exam)" size="small">
-                {{ getSubjectName(exam.subject_id) }}
-              </el-tag>
-            </div>
-          </div>
-          <div class="exam-price" v-if="!isFreeExam(exam)">
-            <div class="price-current">¥{{ getExamPrice(exam) }}</div>
-            <div v-if="getOriginalPrice(exam) > getExamPrice(exam)" class="price-original">
-              ¥{{ getOriginalPrice(exam) }}
-            </div>
+    <div class="table-section">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">
+            <h3>考试列表</h3>
+            <p>共 {{ pagination.total }} 场考试</p>
           </div>
         </div>
-
-        <div class="card-content">
-          <div v-if="exam.description" class="exam-description">
-            <p>{{ exam.description }}</p>
-          </div>
-
-          <div class="exam-info">
-            <div class="info-item">
-              <el-icon><QuestionFilled /></el-icon>
-              <span>{{ exam.question_count }}题</span>
-            </div>
-            <div class="info-item">
-              <el-icon><Medal /></el-icon>
-              <span>{{ exam.total_points }}分</span>
-            </div>
-            <div class="info-item">
-              <el-icon><Timer /></el-icon>
-              <span>{{ formatDuration(exam.duration) }}</span>
-            </div>
-          </div>
-
-          <div v-if="exam.start_time || exam.end_time" class="exam-time">
-            <div v-if="exam.start_time" class="time-item">
-              <span class="time-label">开始时间：</span>
-              <span class="time-value">{{ formatDate(exam.start_time) }}</span>
-            </div>
-            <div v-if="exam.end_time" class="time-item">
-              <span class="time-label">结束时间：</span>
-              <span class="time-value">{{ formatDate(exam.end_time) }}</span>
-            </div>
-          </div>
-
-          <div v-if="!isFreeExam(exam)" class="exam-purchase">
-            <div class="purchase-info">
-              <span class="purchase-label">需要购买</span>
-              <span class="purchase-price">¥{{ getExamPrice(exam) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-footer">
-          <div class="exam-actions">
-            <el-button
-              v-if="canTakeExam(exam)"
-              type="primary"
-              @click="startExam(exam)"
-              :loading="startingExam === exam.id"
-            >
-              <el-icon><PlayArrow /></el-icon>
-              开始考试
-            </el-button>
-            <el-button
-              v-else-if="!isFreeExam(exam) && !hasPurchased(exam)"
-              type="warning"
-              @click="purchaseExam(exam)"
-            >
-              <el-icon><ShoppingCart /></el-icon>
-              购买考试
-            </el-button>
-            <el-button
-              v-else-if="hasTakenExam(exam)"
-              type="success"
-              @click="viewResult(exam)"
-            >
-              <el-icon><View /></el-icon>
-              查看结果
-            </el-button>
-            <el-button
-              v-else
-              disabled
-            >
-              {{ getDisabledReason(exam) }}
-            </el-button>
-          </div>
+        
+        <div class="table-container">
+          <el-table 
+            :data="exams" 
+            stripe 
+            class="modern-table"
+            :loading="loading"
+          >
+            <el-table-column label="考试标题" prop="title" min-width="200">
+              <template #default="{ row }">
+                <div class="exam-title-cell">
+                  <h4>{{ row.title }}</h4>
+                  <div class="exam-meta">
+                    <el-tag :type="getStatusTagType(row)" size="small">
+                      {{ getStatusLabel(row) }}
+                    </el-tag>
+                    <el-tag :type="getSubjectTagType(row)" size="small">
+                      {{ getSubjectName(row.subject_id) }}
+                    </el-tag>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="科目" width="300">
+              <template #default="{ row }">
+                <span>{{ getSubjectName(row.subject_id) }}</span>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="题目数" width="120">
+              <template #default="{ row }">
+                <span>{{ row.question_count }}题</span>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="总分" width="120">
+              <template #default="{ row }">
+                <span>{{ row.total_points }}分</span>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="时长" width="120">
+              <template #default="{ row }">
+                <span>{{ formatDuration(row.duration) }}</span>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="状态" width="150">
+              <template #default="{ row }">
+                <el-tag :type="getStatusTagType(row)" size="small">
+                  {{ getStatusLabel(row) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="价格" width="150">
+              <template #default="{ row }">
+                <div v-if="!isFreeExam(row)" class="price-cell">
+                  <div class="price-current">¥{{ getExamPrice(row) }}</div>
+                  <div v-if="getOriginalPrice(row) > getExamPrice(row)" class="price-original">
+                    ¥{{ getOriginalPrice(row) }}
+                  </div>
+                </div>
+                <span v-else class="free-tag">免费</span>
+              </template>
+            </el-table-column>
+            
+            <el-table-column label="操作" width="140" fixed="right">
+              <template #default="{ row }">
+                <div class="action-buttons">
+                  <el-button
+                    v-if="canTakeExam(row)"
+                    type="primary"
+                    size="small"
+                    @click="startExam(row)"
+                    :loading="startingExam === row.id"
+                  >
+                    开始考试
+                  </el-button>
+                  <el-button
+                    v-else-if="!isFreeExam(row) && !hasPurchased(row)"
+                    type="warning"
+                    size="small"
+                    @click="purchaseExam(row)"
+                  >
+                    购买考试
+                  </el-button>
+                  <el-button
+                    v-else-if="hasTakenExam(row)"
+                    type="success"
+                    size="small"
+                    @click="viewResult(row)"
+                  >
+                    查看结果
+                  </el-button>
+                  <el-button
+                    v-else
+                    size="small"
+                    disabled
+                  >
+                    {{ getDisabledReason(row) }}
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
       </div>
     </div>
 
     <!-- 分页 -->
-    <div class="pagination">
+    <div class="pagination-section">
       <el-pagination
         :current-page="pagination.page"
         :page-size="pagination.size"
@@ -186,6 +222,7 @@
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
         @current-change="handlePageChange"
+        class="modern-pagination"
       />
     </div>
 
@@ -209,7 +246,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search, Refresh, QuestionFilled, Medal, Timer, PlayArrow, ShoppingCart, View } from '@element-plus/icons-vue'
+import { Search, Refresh, Document, ArrowLeft } from '@element-plus/icons-vue'
 import ExamPurchase from '@/components/exam/ExamPurchase.vue'
 import { examApi } from '@/api/exams'
 import { subjectsApi } from '@/api/subjects'
@@ -221,12 +258,8 @@ export default {
     ExamPurchase,
     Search,
     Refresh,
-    QuestionFilled,
-    Medal,
-    Timer,
-    PlayArrow,
-    ShoppingCart,
-    View
+    Document,
+    ArrowLeft
   },
   setup() {
     const router = useRouter()
@@ -353,7 +386,9 @@ export default {
     }
     
     const hasTakenExam = (exam) => {
-      // TODO: 检查用户是否已参加过此考试
+      // 检查用户是否已参加过此考试
+      // 这里可以调用API获取用户的考试记录，但为了性能考虑，
+      // 我们依赖后端的checkExamAvailability API来检查
       return false
     }
     
@@ -382,9 +417,16 @@ export default {
         
         // 检查考试可用性
         const response = await examApi.checkExamAvailability(exam.id)
-        if (!response.data.available) {
-          ElMessage.error(response.data.message)
+        
+        // 检查是否可以参加考试
+        if (!response.data.can_take) {
+          ElMessage.error(response.data.message || '无法参加该考试')
           return
+        }
+        
+        // 如果有提示信息（比如已参加次数），显示提示但不阻止继续
+        if (response.data.message && response.data.can_take) {
+          ElMessage.info(response.data.message)
         }
         
         // 跳转到考试页面
@@ -410,6 +452,10 @@ export default {
       showPurchaseDialog.value = false
       purchasingExam.value = null
       loadExams()
+    }
+    
+    const goToDashboard = () => {
+      router.push('/user/dashboard')
     }
     
     // 工具方法
@@ -469,216 +515,350 @@ export default {
       getStatusTagType,
       getSubjectTagType,
       formatDate,
-      formatDuration
+      formatDuration,
+      goToDashboard
     }
   }
 }
 </script>
 
 <style scoped>
-.exam-list {
-  padding: 20px;
+.modern-exam-list {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.page-header {
+.modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
-.page-header h1 {
+.header-left .page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.title-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.title-text h1 {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.title-text p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
   margin: 0;
-  color: #303133;
+  font-weight: 500;
 }
 
-.header-info {
+.header-right {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
 }
 
-.search-section {
-  margin-bottom: 20px;
-}
-
-.exam-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.exam-card {
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  background-color: #fff;
-  transition: all 0.3s;
-  overflow: hidden;
-}
-
-.exam-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.exam-disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.exam-disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 20px 20px 0 20px;
-}
-
-.exam-title h3 {
-  margin: 0 0 10px 0;
-  color: #303133;
-  font-size: 18px;
+.back-btn {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
   font-weight: 600;
-  line-height: 1.4;
-}
-
-.exam-meta {
+  padding: 12px 20px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.exam-price {
-  text-align: right;
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-section {
+  padding: 32px 32px 0 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.search-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.search-header {
+  margin-bottom: 20px;
+}
+
+.search-header h3 {
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.search-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.search-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+.search-input,
+.filter-select {
+  width: 200px;
+}
+
+.search-btn,
+.reset-btn {
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.reset-btn {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+  border: 1px solid rgba(108, 117, 125, 0.2);
+}
+
+.reset-btn:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.table-section {
+  padding: 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.table-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table-title h3 {
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.table-title p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.table-container {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modern-table {
+  --el-table-bg-color: transparent;
+  --el-table-header-bg-color: #f8f9fa;
+  --el-table-row-hover-bg-color: rgba(102, 126, 234, 0.05);
+  --el-table-border-color: #e9ecef;
+}
+
+.exam-title-cell h4 {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.exam-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.price-cell {
+  text-align: center;
 }
 
 .price-current {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #e6a23c;
 }
 
 .price-original {
-  font-size: 14px;
+  font-size: 12px;
   color: #909399;
   text-decoration: line-through;
-  margin-top: 2px;
 }
 
-.card-content {
-  padding: 20px;
-}
-
-.exam-description {
-  margin-bottom: 15px;
-}
-
-.exam-description p {
-  margin: 0;
-  color: #606266;
-  font-size: 14px;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.exam-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #606266;
-  font-size: 14px;
-}
-
-.exam-time {
-  margin-bottom: 15px;
-}
-
-.time-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.time-item:last-child {
-  margin-bottom: 0;
-}
-
-.time-label {
-  color: #909399;
-}
-
-.time-value {
-  color: #606266;
-}
-
-.exam-purchase {
-  padding: 10px;
-  background-color: #fef0e6;
-  border-radius: 6px;
-  border-left: 4px solid #e6a23c;
-}
-
-.purchase-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.purchase-label {
-  color: #e6a23c;
-  font-weight: 500;
-}
-
-.purchase-price {
-  color: #e6a23c;
+.free-tag {
+  color: #67c23a;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
-.card-footer {
-  padding: 0 20px 20px 20px;
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: left;
 }
 
-.exam-actions {
+.pagination-section {
+  padding: 0 32px 32px 32px;
+  max-width: 1800px;
+  margin: 0 auto;
   display: flex;
   justify-content: center;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
+.modern-pagination {
+  --el-pagination-bg-color: rgba(255, 255, 255, 0.95);
+  --el-pagination-button-bg-color: transparent;
+  --el-pagination-button-disabled-bg-color: transparent;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .header-content,
+  .search-section,
+  .table-section,
+  .pagination-section {
+    max-width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 @media (max-width: 768px) {
-  .exam-grid {
-    grid-template-columns: 1fr;
+  .modern-header {
+    padding: 16px 0;
   }
   
-  .exam-info {
+  .header-content {
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
+    align-items: flex-start;
   }
   
-  .info-item {
-    justify-content: center;
+  .header-right {
+    align-self: flex-end;
+  }
+  
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-form .el-form-item {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .search-input,
+  .filter-select {
+    width: 100%;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .modern-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-section,
+  .table-section,
+  .pagination-section {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .search-card,
+  .table-card {
+    padding: 16px;
   }
 }
 </style>

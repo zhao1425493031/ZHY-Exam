@@ -74,7 +74,9 @@ def get_learning_progress():
                     # 获取用户在该科目的考试记录
                     from app.models.exam_record import ExamRecord
                     from app.models.exam import Exam
-                    user_exams = db.session.query(ExamRecord).join(Exam).filter(
+                    user_exams = db.session.query(ExamRecord).join(
+                        Exam, ExamRecord.exam_id == Exam.id
+                    ).filter(
                         ExamRecord.user_id == current_user_id,
                         Exam.subject_id == subject.id,
                         ExamRecord.status == 'submitted'

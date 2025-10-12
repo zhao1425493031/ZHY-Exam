@@ -100,6 +100,9 @@ class StatisticsService:
                 ExamRecord.user_id == user_id,
                 ExamRecord.status == 'submitted'
             ).count()
+
+            logger.info(f'用户ID: {user_id} 的考试记录总数: {total_exams}')
+            logger.info(f'用户ID: {user_id} 的考试合格记录总数: {completed_exams}')
             
             # 平均分统计
             avg_score_result = db.session.query(func.avg(ExamRecord.score)).filter(
@@ -108,22 +111,47 @@ class StatisticsService:
                 ExamRecord.score.isnot(None)
             ).scalar()
             avg_score = round(float(avg_score_result), 2) if avg_score_result else 0
-            
+
+            logger.info(f'用户ID: {user_id} 的平均分: {avg_score}')
+
             # 最高分统计
             max_score_result = db.session.query(func.max(ExamRecord.score)).filter(
                 ExamRecord.user_id == user_id,
                 ExamRecord.status == 'submitted'
             ).scalar()
             max_score = round(float(max_score_result), 2) if max_score_result else 0
-            
+            logger.info(f'用户ID: {user_id} 的最高分: {max_score}')
+
+            # 本周考试数量统计
+            seven_days_ago = datetime.utcnow() - timedelta(days=7)
+            exams_this_week = ExamRecord.query.filter(
+                ExamRecord.user_id == user_id,
+                ExamRecord.status == 'submitted',
+                ExamRecord.created_at >= seven_days_ago
+            ).count()
+            logger.info(f'用户ID: {user_id} 本周考试数量: {exams_this_week}')
+
+            # 本月平均成绩统计
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            monthly_avg_result = db.session.query(func.avg(ExamRecord.score)).filter(
+                ExamRecord.user_id == user_id,
+                ExamRecord.status == 'submitted',
+                ExamRecord.created_at >= thirty_days_ago,
+                ExamRecord.score.isnot(None)
+            ).scalar()
+            monthly_avg_score = round(float(monthly_avg_result), 2) if monthly_avg_result else 0
+            logger.info(f'用户ID: {user_id} 本月平均成绩: {monthly_avg_score}')
+
             # 错题统计
             wrong_answers_count = WrongAnswer.query.filter_by(user_id=user_id).count()
-            
+            logger.info(f'用户ID: {user_id} 的错题总数: {wrong_answers_count}')
+
             # 最近考试记录
             recent_exams = ExamRecord.query.filter_by(user_id=user_id)\
                 .order_by(desc(ExamRecord.created_at))\
                 .limit(5).all()
-            
+            logger.info(f'用户ID: {user_id} 的最近考试记录: {recent_exams}')
+
             recent_exam_list = []
             for exam_record in recent_exams:
                 exam = Exam.query.get(exam_record.exam_id)
@@ -159,17 +187,22 @@ class StatisticsService:
                     'max_score': round(float(perf.max_score), 2) if perf.max_score else 0
                 })
             
-            return {
+            result = {
                 'overview': {
                     'total_exams': total_exams,
                     'completed_exams': completed_exams,
                     'avg_score': avg_score,
                     'max_score': max_score,
-                    'wrong_answers_count': wrong_answers_count
+                    'wrong_answers_count': wrong_answers_count,
+                    'exams_this_week': exams_this_week,
+                    'monthly_avg_score': monthly_avg_score
                 },
                 'recent_exams': recent_exam_list,
                 'subject_performance': subject_performance_list
             }
+            
+            logger.info(f'用户ID: {user_id} 返回的统计数据: {result}')
+            return result
             
         except Exception as e:
             logger.error(f'Get user dashboard statistics error: {str(e)}')

@@ -77,8 +77,8 @@
                 <div class="exam-list" v-if="recentExams.length > 0">
                   <div class="exam-item" v-for="exam in recentExams" :key="exam.id">
                     <div class="exam-info">
-                      <h4>{{ exam.title }}</h4>
-                      <p>{{ exam.subject_name }}</p>
+                      <h4>{{ exam.exam_title || '未知考试' }}</h4>
+                      <p>{{ exam.subject_name || '未知科目' }}</p>
                       <span class="exam-date">{{ formatDate(exam.created_at) }}</span>
                     </div>
                     <div class="exam-score" :class="getScoreClass(exam.score)">
@@ -515,6 +515,10 @@ export default {
         })
         if (response.code === 200) {
           recentExams.value = response.data.items || []
+          console.log('前端接收到的考试记录数据:', recentExams.value)
+          console.log('API响应结构:', response)
+          // 获取考试记录后，立即更新统计数据
+          updateStatsFromData()
         }
       } catch (error) {
         console.error('获取最近考试失败:', error)
@@ -633,18 +637,22 @@ export default {
         const response = await statisticsApi.getDashboardStatistics()
         if (response.code === 200) {
           const stats = response.data
+          console.log('后台返回的统计数据:', stats)
           
-          // 更新统计数据
-          statsData.value[0].value = stats.completed_exams?.toString() || '0'
-          statsData.value[1].value = stats.average_score?.toString() || '0'
-          statsData.value[2].value = stats.study_hours ? `${stats.study_hours}小时` : '0小时'
-          statsData.value[3].value = stats.learning_rank?.toString() || '--'
+          // 更新统计数据 - 修复数据访问路径
+          statsData.value[0].value = stats.overview?.completed_exams?.toString() || '0'
+          statsData.value[1].value = stats.overview?.avg_score?.toString() || '0'
+          statsData.value[2].value = '0小时' // 学习时长暂时设为0
+          statsData.value[3].value = '--' // 学习排名暂时设为--
           
-          // 更新趋势数据
-          statsData.value[0].change = stats.exams_this_week ? `+${stats.exams_this_week} 本周` : '+0 本周'
-          statsData.value[1].change = stats.score_this_month ? `+${stats.score_this_month} 本月` : '+0 本月'
-          statsData.value[2].change = stats.hours_this_week ? `+${stats.hours_this_week} 本周` : '+0 本周'
-          statsData.value[3].change = stats.rank_change ? `${stats.rank_change} 本月` : '--'
+          // 更新趋势数据 - 使用真实数据
+          const examsThisWeek = stats.overview?.exams_this_week || 0
+          const monthlyAvgScore = stats.overview?.monthly_avg_score || 0
+          
+          statsData.value[0].change = `+${examsThisWeek} 本周`
+          statsData.value[1].change = `+${monthlyAvgScore} 本月`
+          statsData.value[2].change = '+0 本周'
+          statsData.value[3].change = '--'
         }
       } catch (error) {
         console.error('获取统计数据失败:', error)
@@ -655,33 +663,47 @@ export default {
 
     // 基于现有数据更新统计（备选方案）
     const updateStatsFromData = () => {
-      const completedExams = recentExams.value.filter(exam => exam.score !== null && exam.score !== undefined).length
-      const scores = recentExams.value.filter(exam => exam.score !== null && exam.score !== undefined).map(exam => exam.score)
+      console.log('开始计算统计数据，考试记录数量:', recentExams.value.length)
+      console.log('考试记录详情:', recentExams.value)
+      
+      // 只统计已提交的考试记录
+      const completedExams = recentExams.value.filter(exam => exam.status === 'submitted')
+      console.log(`已提交考试记录数: ${completedExams.length}`)
+      
+      console.log('已完成考试数量:', completedExams.length)
+      
+      const scores = completedExams.map(exam => Number(exam.score) || 0)
+      console.log('分数列表:', scores)
+      
       const averageScore = scores.length > 0 
         ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
         : 0
 
+      console.log('平均分数:', averageScore)
+
       // 计算学习时长（假设每次考试平均20分钟）
-      const studyHours = Math.round((completedExams * 20) / 60 * 10) / 10 // 保留一位小数
+      const studyHours = Math.round((completedExams.length * 20) / 60 * 10) / 10 // 保留一位小数
 
       // 计算学习排名（基于平均成绩，简单算法）
       const rank = averageScore >= 90 ? 1 : averageScore >= 80 ? 2 : averageScore >= 70 ? 3 : 4
 
-      statsData.value[0].value = completedExams.toString()
+      statsData.value[0].value = completedExams.length.toString()
       statsData.value[1].value = averageScore.toString()
       statsData.value[2].value = `${studyHours}小时`
       statsData.value[3].value = rank.toString()
 
-      statsData.value[0].change = `+${completedExams} 总计`
+      statsData.value[0].change = `+${completedExams.length} 总计`
       statsData.value[1].change = averageScore >= 80 ? '优秀' : averageScore >= 60 ? '良好' : '需努力'
       statsData.value[2].change = `+${studyHours}小时 总计`
       statsData.value[3].change = rank === 1 ? '第1名' : `前${rank}名`
+      
+      console.log('统计数据更新完成:', statsData.value)
     }
 
     // 格式化日期
     const formatDate = (date) => {
       if (!date) return ''
-      return dayjs(date).format('MM/DD')
+      return dayjs(date).format('YYYY-MM-DD HH:mm')
     }
 
     // 格式化时间

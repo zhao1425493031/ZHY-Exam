@@ -62,8 +62,31 @@ def get_exam_records():
             per_page=pagination_data.get('size', 10)
         )
         
+        # 构建包含考试和科目信息的记录列表
+        items = []
+        for record in pagination.items:
+            record_dict = record.to_dict()
+            
+            # 获取考试信息
+            exam = Exam.query.get(record.exam_id)
+            if exam:
+                record_dict['exam_title'] = exam.title
+                
+                # 获取科目信息
+                from app.models.subject import Subject
+                subject = Subject.query.get(exam.subject_id)
+                if subject:
+                    record_dict['subject_name'] = subject.name
+                else:
+                    record_dict['subject_name'] = ''
+            else:
+                record_dict['exam_title'] = ''
+                record_dict['subject_name'] = ''
+            
+            items.append(record_dict)
+        
         result = {
-            'items': [record.to_dict() for record in pagination.items],
+            'items': items,
             'total': pagination.total,
             'page': pagination.page,
             'pages': pagination.pages,
