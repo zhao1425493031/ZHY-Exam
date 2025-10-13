@@ -502,6 +502,77 @@ def get_user_favorites():
                 # 获取科目信息
                 subject = Subject.query.get(question.subject_id) if question else None
                 
+                # 获取用户的答案信息（从错题记录中查找）
+                from app.models.wrong_answer import WrongAnswer
+                wrong_answer = WrongAnswer.query.filter_by(
+                    user_id=current_user_id,
+                    question_id=favorite.question_id
+                ).first()
+                
+                # 调试：查看是否有错题记录
+                logger.info(f'Question {favorite.question_id}: wrong_answer found = {wrong_answer is not None}')
+                if wrong_answer:
+                    logger.info(f'Wrong answer: user_answer="{wrong_answer.user_answer}", exam_record_id={wrong_answer.exam_record_id}')
+                else:
+                    # 如果没有找到错题记录，尝试查找是否有其他类型的答题记录
+                    from app.models.exam_record import ExamRecord
+                    exam_records = ExamRecord.query.filter_by(user_id=current_user_id).all()
+                    for record in exam_records:
+                        if record.answers:
+                            logger.info(f'Checking exam record {record.id} with answers: {record.answers}')
+                            # 从exam_record的answers中提取用户答案
+                            answers_dict = record.answers if isinstance(record.answers, dict) else {}
+                            
+                            # 尝试不同的键格式查找答案
+                            user_answer_from_record = None
+                            question_id_str = str(favorite.question_id)
+                            question_id_int = favorite.question_id
+                            
+                            # 尝试字符串键
+                            if question_id_str in answers_dict:
+                                user_answer_from_record = answers_dict[question_id_str]
+                                logger.info(f'Found answer with string key: {user_answer_from_record}')
+                            # 尝试数字键
+                            elif question_id_int in answers_dict:
+                                user_answer_from_record = answers_dict[question_id_int]
+                                logger.info(f'Found answer with int key: {user_answer_from_record}')
+                            # 尝试通过题目在考试中的索引查找
+                            else:
+                                # 获取考试中的题目列表
+                                from app.models.exam import Exam
+                                exam = Exam.query.get(record.exam_id)
+                                if exam and exam.question_ids:
+                                    question_ids_list = exam.question_ids if isinstance(exam.question_ids, list) else []
+                                    try:
+                                        question_index = question_ids_list.index(favorite.question_id)
+                                        if str(question_index) in answers_dict:
+                                            user_answer_from_record = answers_dict[str(question_index)]
+                                            logger.info(f'Found answer by index {question_index}: {user_answer_from_record}')
+                                    except ValueError:
+                                        logger.info(f'Question {favorite.question_id} not found in exam {record.exam_id} question list')
+                            
+                            if user_answer_from_record:
+                                # 创建一个临时的wrong_answer对象
+                                class TempWrongAnswer:
+                                    def __init__(self, user_answer, exam_record_id):
+                                        self.user_answer = user_answer
+                                        self.exam_record_id = exam_record_id
+                                        self.is_reviewed = False
+                                wrong_answer = TempWrongAnswer(user_answer_from_record, record.id)
+                                logger.info(f'Created temp wrong answer: user_answer={user_answer_from_record}, exam_record_id={record.id}')
+                                break
+                
+                # 获取考试信息（如果有错题记录）
+                exam_name = '直接收藏'  # 直接收藏的题目显示为"直接收藏"
+                if wrong_answer and wrong_answer.exam_record_id:
+                    from app.models.exam_record import ExamRecord
+                    from app.models.exam import Exam
+                    exam_record = ExamRecord.query.get(wrong_answer.exam_record_id)
+                    if exam_record:
+                        exam = Exam.query.get(exam_record.exam_id)
+                        if exam:
+                            exam_name = exam.title
+                
                 favorites.append({
                     'id': favorite.id,
                     'question_id': favorite.question_id,
@@ -513,6 +584,11 @@ def get_user_favorites():
                     'subject_id': question.subject_id,
                     'subject_name': subject.name if subject else '未知科目',
                     'explanation': question.explanation,
+                    'options': question.options,  # 题目选项
+                    'answer': question.answer,  # 正确答案
+                    'user_answer': wrong_answer.user_answer if wrong_answer else None,  # 用户答案
+                    'exam_name': exam_name,  # 来源考试
+                    'is_reviewed': wrong_answer.is_reviewed if wrong_answer else False,
                     'created_at': favorite.created_at.isoformat()
                 })
         

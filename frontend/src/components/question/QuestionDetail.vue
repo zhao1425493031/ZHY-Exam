@@ -46,7 +46,7 @@
               我的答案
             </div>
             <div class="answer-value user-answer">
-              {{ userAnswer || '未作答' }}
+              {{ formatUserAnswer }}
             </div>
           </div>
           <div class="answer-item">
@@ -55,7 +55,7 @@
               正确答案
             </div>
             <div class="answer-value correct-answer">
-              {{ correctAnswer }}
+              {{ formatCorrectAnswer }}
             </div>
           </div>
         </div>
@@ -83,7 +83,7 @@
           </div>
           <div class="stat-item">
             <span class="stat-label">来源考试：</span>
-            <span class="stat-value">{{ question.exam_title || '未知考试' }}</span>
+            <span class="stat-value">{{ question.exam_name || question.exam_title || '未知考试' }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">复习状态：</span>
@@ -100,7 +100,7 @@
     <div class="detail-footer">
       <div class="footer-actions">
         <el-button @click="handleClose">关闭</el-button>
-        <el-button type="primary" @click="handleReview" v-if="!question.is_reviewed">
+        <el-button type="primary" @click="handleReview" v-if="showReviewButton && !question.is_reviewed">
           <el-icon><Check /></el-icon>
           标记复习
         </el-button>
@@ -115,7 +115,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Check, Close, Refresh } from '@element-plus/icons-vue'
 import { examScoringApi } from '@/api/exam_scoring'
-import { formatDate } from '@/utils/format'
+import { formatDate, formatAnswerContent } from '@/utils/format'
 
 export default {
   name: 'QuestionDetail',
@@ -139,6 +139,10 @@ export default {
     explanation: {
       type: String,
       default: ''
+    },
+    showReviewButton: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['close'],
@@ -148,6 +152,24 @@ export default {
     // 计算属性
     const isChoiceQuestion = computed(() => {
       return ['single', 'multiple'].includes(props.question.question_type)
+    })
+    
+    // 格式化用户答案
+    const formatUserAnswer = computed(() => {
+      return formatAnswerContent(
+        props.userAnswer,
+        props.question.options || [],
+        props.question.question_type
+      )
+    })
+    
+    // 格式化正确答案
+    const formatCorrectAnswer = computed(() => {
+      return formatAnswerContent(
+        props.correctAnswer,
+        props.question.options || [],
+        props.question.question_type
+      )
     })
     
     // 方法
@@ -212,6 +234,8 @@ export default {
     
     return {
       isChoiceQuestion,
+      formatUserAnswer,
+      formatCorrectAnswer,
       getOptionClass,
       handleClose,
       handleReview,

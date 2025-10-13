@@ -129,13 +129,13 @@
                 <div class="question-content">
                   <div class="question-title" v-html="row.question_title"></div>
                   <div class="question-meta">
-                    <el-tag :type="getDifficultyType(row.difficulty)" size="small">
-                      {{ getDifficultyText(row.difficulty) }}
+                    <el-tag :type="getDifficultyType(row.question_difficulty)" size="small">
+                      {{ getDifficultyText(row.question_difficulty) }}
                     </el-tag>
-                    <el-tag :type="getTypeType(row.type)" size="small">
-                      {{ getTypeText(row.type) }}
+                    <el-tag :type="getTypeType(row.question_type)" size="small">
+                      {{ getTypeText(row.question_type) }}
                     </el-tag>
-                    <span class="question-points">{{ row.points || 1 }}分</span>
+                    <span class="question-points">{{ row.question_points || 1 }}分</span>
                   </div>
                 </div>
               </template>
@@ -196,7 +196,11 @@
       <QuestionDetail
         v-if="selectedQuestion"
         :question="selectedQuestion"
-        :show-answer="true"
+        :user-answer="selectedQuestion.user_answer"
+        :correct-answer="selectedQuestion.answer"
+        :explanation="selectedQuestion.explanation"
+        :show-review-button="false"
+        @close="showQuestionDialog = false"
       />
     </el-dialog>
   </div>
