@@ -305,7 +305,7 @@ export default {
     }
     
     const goBack = () => {
-      router.push('/user/exams')
+      router.push('/user/my-records')
     }
     
     // 工具方法

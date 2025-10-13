@@ -1,22 +1,28 @@
 <template>
   <div class="modern-my-records">
-    <!-- 顶部导航栏 -->
-    <TopNavigation />
-    
     <!-- 页面内容 -->
     <div class="page-content">
       <div class="content-container">
         <!-- 页面标题 -->
         <div class="modern-header">
-          <div class="page-title">
-            <el-icon class="title-icon"><Notebook /></el-icon>
-            <h1 class="title-text">我的考试记录</h1>
-          </div>
-          <div class="header-right">
-            <el-button type="info" @click="goToDashboard">
-              <el-icon><ArrowLeft /></el-icon>
-              返回个人中心
-            </el-button>
+          <div class="header-content">
+            <div class="header-left">
+              <div class="page-title">
+                <div class="title-icon">
+                  <el-icon><Notebook /></el-icon>
+                </div>
+                <div class="title-text">
+                  <h1>我的考试记录</h1>
+                  <p>查看您的考试历史和成绩统计</p>
+                </div>
+              </div>
+            </div>
+            <div class="header-right">
+              <el-button @click="goToDashboard" class="back-btn">
+                <el-icon><ArrowLeft /></el-icon>
+                <span>返回个人中心</span>
+              </el-button>
+            </div>
           </div>
         </div>
 
@@ -293,7 +299,6 @@ import {
   Notebook,
   ArrowLeft
 } from '@element-plus/icons-vue'
-import TopNavigation from '@/components/layout/TopNavigation.vue'
 import { examRecordsApi } from '@/api/exam_records'
 import { subjectsApi } from '@/api/subjects'
 import { examScoringApi } from '@/api/exam_scoring'
@@ -302,7 +307,6 @@ import dayjs from 'dayjs'
 export default {
   name: 'MyRecords',
   components: {
-    TopNavigation,
     Document,
     Trophy,
     Medal,
@@ -648,89 +652,130 @@ export default {
 <style scoped>
 .modern-my-records {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
 }
 
 .page-content {
-  padding-top: 80px;
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
 .content-container {
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
 }
 
 /* 页面标题 */
 .modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 1.5rem 2rem;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.page-title {
+.header-left .page-title {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .title-icon {
-  font-size: 2rem;
-  color: #667eea;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  backdrop-filter: blur(10px);
 }
 
-.title-text {
+.title-text h1 {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.title-text p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 500;
 }
 
 .header-right {
   display: flex;
-  gap: 1rem;
+  gap: 12px;
+  align-items: center;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* 统计卡片 */
 .statistics-section {
+  margin-top: 2rem;
   margin-bottom: 2rem;
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   margin-bottom: 1rem;
+  border: 2px solid transparent;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
 .stat-icon-wrapper {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
 }
 
 .stat-icon-wrapper.blue {
@@ -739,7 +784,7 @@ export default {
 }
 
 .stat-icon-wrapper.green {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
   color: white;
 }
 
@@ -749,7 +794,7 @@ export default {
 }
 
 .stat-icon-wrapper.red {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
   color: white;
 }
 
@@ -758,15 +803,16 @@ export default {
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #2c3e50;
   margin-bottom: 0.25rem;
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: #7f8c8d;
+  font-weight: 500;
 }
 
 /* 搜索区域 */
@@ -775,11 +821,10 @@ export default {
 }
 
 .search-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   padding: 1.5rem 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .search-header {
@@ -787,7 +832,7 @@ export default {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
 }
@@ -806,25 +851,23 @@ export default {
 }
 
 .search-input :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
   transition: all 0.3s ease;
 }
 
 .search-input :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
 }
 
 .filter-select :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
 .search-btn,
 .reset-btn {
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0.6rem 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .search-btn {
@@ -833,17 +876,21 @@ export default {
   color: white;
 }
 
+.search-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 /* 表格区域 */
 .table-section {
   margin-bottom: 2rem;
 }
 
 .table-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   padding: 1.5rem 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .table-header {
@@ -857,7 +904,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
 }
@@ -868,37 +915,37 @@ export default {
 }
 
 .table-container {
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .table-container :deep(.el-table) {
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .table-container :deep(.el-table th) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f5f7fa;
+  color: #606266;
   font-weight: 600;
   border: none;
 }
 
 .table-container :deep(.el-table td) {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .table-container :deep(.el-table__body tr:hover) {
-  background-color: rgba(102, 126, 234, 0.08);
+  background-color: rgba(102, 126, 234, 0.05);
 }
 
 .table-container :deep(.el-table__body tr) {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .table-container :deep(.el-table) {
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  border: none;
+  border: 1px solid #ebeef5;
 }
 
 .exam-title-cell {
@@ -941,30 +988,39 @@ export default {
 }
 
 .modern-pagination {
-  background: rgba(255, 255, 255, 0.5);
-  padding: 1rem;
-  border-radius: 12px;
+  padding: 0.5rem;
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .header-content {
+    max-width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 @media (max-width: 768px) {
-  .content-container {
+  .modern-my-records {
     padding: 1rem;
   }
 
   .modern-header {
+    padding: 16px 0;
+  }
+  
+  .header-content {
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .header-right {
+    align-self: flex-end;
   }
 
-  .page-title {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .title-text {
-    font-size: 1.5rem;
+  .title-text h1 {
+    font-size: 24px;
   }
 
   .stat-card {
@@ -985,6 +1041,11 @@ export default {
 
   .action-buttons {
     flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .action-buttons .el-button {
+    width: 100%;
   }
 }
 </style>

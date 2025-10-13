@@ -191,9 +191,9 @@ export default {
       return date.toLocaleString('zh-CN')
     }
 
-    // 跳转到考试列表
+    // 跳转到我的记录
     const goToExamList = () => {
-      router.push('/')
+      router.push('/user/my-records')
     }
 
     // 跳转到错题管理
@@ -230,7 +230,7 @@ export default {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 0 20px;
 }
