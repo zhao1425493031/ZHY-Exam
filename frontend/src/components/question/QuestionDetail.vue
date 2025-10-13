@@ -8,7 +8,7 @@
       </div>
       <div class="question-points">
         <span class="points-label">分值：</span>
-        <span class="points-value">{{ question.question_points }}分</span>
+        <span class="points-value">{{ question.question_points || question.points || 1 }}分</span>
       </div>
     </div>
 

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || '/api',
+  baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:9999/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -98,5 +98,6 @@ export { permissionApi } from './permissions'
 export { importExportApi } from './import_export'
 export { statisticsApi } from './statistics'
 export { usersApi } from './users'
+export { favoritesApi } from './favorites'
 
 export default request

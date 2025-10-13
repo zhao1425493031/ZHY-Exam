@@ -298,6 +298,16 @@ const routes = [
     }
   },
   {
+    path: '/user/favorites',
+    name: 'Favorites',
+    component: () => import('@/views/user/Favorites.vue'),
+    meta: { 
+      title: '我的收藏',
+      requiresAuth: true,
+      requiresRole: ['admin', 'user']
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

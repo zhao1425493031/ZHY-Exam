@@ -704,6 +704,7 @@ SELECT id, TRUE, TRUE, TRUE, TRUE, TRUE
 FROM users
 WHERE id NOT IN (SELECT user_id FROM user_settings);
 
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 显示创建结果

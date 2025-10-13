@@ -32,7 +32,7 @@
               <el-tag :type="getTypeTagType(currentQuestion.question_type)" size="small">
                 {{ getTypeLabel(currentQuestion.question_type) }}
               </el-tag>
-              <span class="question-points">{{ currentQuestion.question_points }}分</span>
+              <span class="question-points">{{ currentQuestion.question_points || currentQuestion.points || 1 }}分</span>
             </div>
           </div>
           

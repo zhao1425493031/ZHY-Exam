@@ -277,6 +277,7 @@ def get_wrong_answers():
                 'question_id': wrong_answer.question_id,
                 'question_title': question.title if question else '未知题目',
                 'question_type': question.type if question else 'unknown',
+                'question_points': question.points if question else 1,
                 'subject_id': question.subject_id if question else None,
                 'subject_name': subject.name if subject else '未知科目',
                 'user_answer': formatted_user_answer,
@@ -453,3 +454,143 @@ def get_favorite_status(question_id):
     except Exception as e:
         logger.error(f'Get favorite status error: {str(e)}')
         return jsonify(build_error_response(500, f'获取收藏状态失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/favorites', methods=['GET'])
+@jwt_required()
+def get_user_favorites():
+    """获取用户的收藏列表"""
+    try:
+        current_user_id = get_jwt_identity()
+        page = request.args.get('page', 1, type=int)
+        size = request.args.get('size', 20, type=int)
+        subject_id = request.args.get('subject_id', type=int)
+        keyword = request.args.get('keyword', '').strip()
+        difficulty = request.args.get('difficulty', '').strip()
+        
+        logger.info(f'获取收藏列表: user_id={current_user_id}, page={page}, size={size}, subject_id={subject_id}, keyword={keyword}, difficulty={difficulty}')
+        
+        from app.models.user_favorite import UserFavorite
+        from app.models.question import Question
+        from app.models.subject import Subject
+        
+        # 构建查询
+        query = UserFavorite.query.filter_by(user_id=current_user_id)
+        
+        # 连接Question表进行筛选
+        query = query.join(Question, UserFavorite.question_id == Question.id)
+        
+        # 科目筛选
+        if subject_id:
+            query = query.filter(Question.subject_id == subject_id)
+        
+        # 关键词搜索（题目标题）
+        if keyword:
+            query = query.filter(Question.title.contains(keyword))
+        
+        # 难度筛选
+        if difficulty:
+            query = query.filter(Question.difficulty == difficulty)
+        
+        # 分页
+        pagination = query.order_by(UserFavorite.created_at.desc())\
+            .paginate(page=page, per_page=size, error_out=False)
+        
+        favorites = []
+        for favorite in pagination.items:
+            question = Question.query.get(favorite.question_id)
+            if question:
+                # 获取科目信息
+                subject = Subject.query.get(question.subject_id) if question else None
+                
+                favorites.append({
+                    'id': favorite.id,
+                    'question_id': favorite.question_id,
+                    'question_title': question.title,
+                    'question_content': question.content,
+                    'question_type': question.type,
+                    'question_difficulty': question.difficulty,
+                    'question_points': question.points,
+                    'subject_id': question.subject_id,
+                    'subject_name': subject.name if subject else '未知科目',
+                    'explanation': question.explanation,
+                    'created_at': favorite.created_at.isoformat()
+                })
+        
+        return jsonify(build_response(data={
+            'items': favorites,
+            'total': pagination.total,
+            'page': page,
+            'size': size,
+            'pages': pagination.pages
+        }))
+        
+    except Exception as e:
+        logger.error(f'Get user favorites error: {str(e)}')
+        return jsonify(build_error_response(500, f'获取收藏列表失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/favorites/statistics', methods=['GET'])
+@jwt_required()
+def get_favorite_statistics():
+    """获取收藏统计"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        from app.models.user_favorite import UserFavorite
+        from datetime import datetime, timedelta
+        
+        total_favorites = UserFavorite.query.filter_by(user_id=current_user_id).count()
+        
+        # 本周新增收藏
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        weekly_new = UserFavorite.query.filter(
+            UserFavorite.user_id == current_user_id,
+            UserFavorite.created_at >= week_ago
+        ).count()
+        
+        # 这里可以添加更多统计逻辑，比如复习次数、掌握率等
+        # 目前先返回基础数据
+        
+        statistics = {
+            'total_favorites': total_favorites,
+            'weekly_new': weekly_new,
+            'review_count': 0,  # 暂时设为0，后续可以实现
+            'mastery_rate': 0   # 暂时设为0，后续可以实现
+        }
+        
+        return jsonify(build_response(data=statistics))
+        
+    except Exception as e:
+        logger.error(f'Get favorite statistics error: {str(e)}')
+        return jsonify(build_error_response(500, f'获取收藏统计失败: {str(e)}')), 500
+
+@exam_scoring_bp.route('/favorites/batch', methods=['DELETE'])
+@jwt_required()
+def batch_remove_favorites():
+    """批量取消收藏"""
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        question_ids = data.get('question_ids', [])
+        if not question_ids:
+            return jsonify(build_error_response(400, '请选择要取消收藏的题目')), 400
+        
+        from app.models.user_favorite import UserFavorite
+        
+        # 批量取消收藏
+        count = UserFavorite.query.filter(
+            UserFavorite.user_id == current_user_id,
+            UserFavorite.question_id.in_(question_ids)
+        ).delete(synchronize_session=False)
+        
+        db.session.commit()
+        
+        return jsonify(build_response(
+            message=f'批量取消收藏成功，共取消 {count} 个收藏',
+            data={'removed_count': count}
+        ))
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Batch remove favorites error: {str(e)}')
+        return jsonify(build_error_response(500, f'批量取消收藏失败: {str(e)}')), 500

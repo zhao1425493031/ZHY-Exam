@@ -139,11 +139,11 @@
               </div>
               <div class="card-content">
                 <div class="action-grid">
-                  <div class="action-item" @click="$router.push('/')">
-                    <div class="action-icon exam">
-                      <el-icon><Document /></el-icon>
+                  <div class="action-item" @click="$router.push('/user/favorites')">
+                    <div class="action-icon favorites">
+                      <el-icon><Star /></el-icon>
                     </div>
-                    <span>开始考试</span>
+                    <span>我的收藏</span>
                   </div>
                   <div class="action-item" @click="$router.push('/user/exam-list')">
                     <div class="action-icon list">
@@ -865,7 +865,7 @@ export default {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -1205,8 +1205,8 @@ export default {
       font-size: 20px;
       color: white;
 
-      &.exam {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      &.favorites {
+        background: linear-gradient(135deg, #ff9500 0%, #ffcc02 100%);
       }
 
       &.list {

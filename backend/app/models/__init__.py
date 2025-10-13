@@ -38,3 +38,4 @@ from .log_config import LogConfig
 from .exam_monitoring import ExamMonitoring
 from .user_subject import UserSubject
 from .user_setting import UserSetting
+from .user_favorite import UserFavorite
