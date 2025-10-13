@@ -138,7 +138,7 @@
               </div>
               <div class="contact-content">
                 <h4>邮箱</h4>
-                <p>contact@examsphere.com</p>
+                <p>zcoctopus@163.com</p>
                 <span class="contact-desc">24小时内回复</span>
               </div>
             </div>
@@ -147,9 +147,12 @@
                 <el-icon size="28"><Phone /></el-icon>
               </div>
               <div class="contact-content">
-                <h4>电话</h4>
-                <p>400-123-4567</p>
-                <span class="contact-desc">工作日 9:00-18:00</span>
+                <h4>Line</h4>
+                <!-- 添加二维码 -->
+                <div class="qr-code-container">
+                  <img src="/images/contact-line.jpg" alt="Line二维码" class="qr-code" />
+                  <span class="qr-desc">扫码添加好友</span>
+                </div>
               </div>
             </div>
             <div class="contact-item">
@@ -157,9 +160,11 @@
                 <el-icon size="28"><Location /></el-icon>
               </div>
               <div class="contact-content">
-                <h4>地址</h4>
-                <p>北京市海淀区中关村软件园</p>
-                <span class="contact-desc">欢迎预约参观</span>
+                <h4>微信</h4>
+                <div class="qr-code-container">
+                  <img src="/images/contact-wechat.jpg" alt="WeChat二维码" class="qr-code" />
+                  <span class="qr-desc">扫码添加好友</span>
+                </div>
               </div>
             </div>
           </div>
@@ -614,6 +619,33 @@ export default {
           font-size: 0.9rem;
           font-style: italic;
         }
+        
+        /* 二维码样式 */
+        .qr-code-container {
+          margin-top: 1rem;
+          text-align: center;
+          
+          .qr-code {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            border: 2px solid #e6e6e6;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+          
+          .qr-desc {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+          }
+        }
       }
     }
   }
@@ -665,6 +697,18 @@ export default {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
+  }
+  
+  /* 移动端二维码样式 */
+  .qr-code-container {
+    .qr-code {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .qr-desc {
+      font-size: 0.8rem;
+    }
   }
 }
 </style>

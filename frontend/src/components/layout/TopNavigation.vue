@@ -273,6 +273,17 @@ export default {
       return `${Math.floor(diff / 86400000)}天前`
     }
 
+    // 滚动到功能特色区域
+    const scrollToFeaturesSection = () => {
+      const featuresElement = document.getElementById('features')
+      if (featuresElement) {
+        featuresElement.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    }
+
     // 菜单选择处理
     const handleMenuSelect = (index) => {
       switch (index) {
@@ -307,7 +318,17 @@ export default {
           router.push('/user/dashboard')
           break
         case 'features':
-          router.push('/#features')
+          // 如果当前在首页，直接滚动到特色区域
+          if (route.path === '/') {
+            scrollToFeaturesSection()
+          } else {
+            // 如果不在首页，先跳转到首页，然后滚动
+            router.push('/').then(() => {
+              setTimeout(() => {
+                scrollToFeaturesSection()
+              }, 100)
+            })
+          }
           break
         case 'about':
           router.push('/about')
@@ -410,6 +431,7 @@ export default {
       markAsRead,
       markAllRead,
       formatTime,
+      scrollToFeaturesSection,
       handleMenuSelect,
       handleUserCommand,
       goToLogin,

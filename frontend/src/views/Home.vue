@@ -50,7 +50,7 @@
       </section>
 
       <!-- 快速考试区域 -->
-      <section class="quick-exam-section" id="exams">
+      <!-- <section class="quick-exam-section" id="exams">
         <div class="container">
           <div class="section-header">
             <h3>快速考试</h3>
@@ -117,7 +117,7 @@
             </div>
           </div>
         </div>
-      </section>
+      </section>-->
 
       <!-- 课程展示区域 -->
       <section class="courses-section" id="courses">
@@ -290,7 +290,7 @@
       </section>
 
       <!-- 功能特色区域 -->
-      <section class="features-section" ref="featuresSection">
+      <section id="features" class="features-section" ref="featuresSection">
         <div class="container">
           <div class="section-header">
             <h3>平台特色</h3>
@@ -443,8 +443,8 @@ export default {
     Folder,
     Clock,
     InfoFilled,
-    Play,
-    Reading,
+    // Play,
+    // Reading,
     Plus,
     Check
   },
