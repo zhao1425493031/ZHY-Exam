@@ -97,15 +97,16 @@ class LearningProgressService:
                 start_date = now - timedelta(days=30)
             
             # 构建查询条件
-            query = ExamRecord.query.filter(
+            from app.models.exam import Exam
+            query = ExamRecord.query.join(Exam, ExamRecord.exam_id == Exam.id).filter(
                 ExamRecord.user_id == user_id,
                 ExamRecord.status == 'submitted',
-                ExamRecord.created_at >= start_date
+                Exam.created_at >= start_date
             )
             
-            # 暂时注释掉subject_id过滤，避免join问题
-            # if subject_id:
-            #     query = query.join(Question).filter(Question.subject_id == subject_id)
+            # 如果指定了科目，添加科目过滤
+            if subject_id:
+                query = query.filter(Exam.subject_id == subject_id)
             
             exam_records = query.all()
             
@@ -124,7 +125,7 @@ class LearningProgressService:
                 daily_stats[date_key]['exams_count'] += 1
                 if record.score is not None:
                     daily_stats[date_key]['total_score'] += record.score
-                daily_stats[date_key]['total_points'] += record.total_points or 0
+                daily_stats[date_key]['total_points'] += record.total_count or 0
             
             # 获取错题数据
             wrong_query = WrongAnswer.query.filter(
@@ -132,9 +133,9 @@ class LearningProgressService:
                 WrongAnswer.created_at >= start_date
             )
             
-            # 暂时注释掉subject_id过滤，避免join问题
-            # if subject_id:
-            #     wrong_query = wrong_query.join(Question).filter(Question.subject_id == subject_id)
+            # 如果指定了科目，添加科目过滤
+            if subject_id:
+                wrong_query = wrong_query.join(Question, WrongAnswer.question_id == Question.id).filter(Question.subject_id == subject_id)
             
             wrong_answers = wrong_query.all()
             

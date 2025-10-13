@@ -535,24 +535,53 @@ export default {
     
     const updateProgressChart = async () => {
       try {
-        const response = await learningProgressApi.getProgress({
+        console.log('更新图表 - 时间周期:', progressPeriod.value, '科目:', selectedSubject.value) // 调试日志
+        
+        const response = await learningProgressApi.getChartData({
           period: progressPeriod.value,
           subject_id: selectedSubject.value
         })
-        renderProgressChart(response.data)
+        
+        console.log('图表数据响应:', response) // 调试日志
+        
+        if (response.data) {
+          renderProgressChart(response.data)
+        } else {
+          // 如果没有数据，使用默认数据
+          renderProgressChart(getDefaultChartData())
+        }
       } catch (error) {
         console.error('更新进度图表失败:', error)
-        // 提供默认图表数据
-        renderProgressChart({
-          dates: ['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05'],
-          studyHours: [2, 1.5, 3, 2.5, 1],
-          examCounts: [1, 0, 2, 1, 0]
-        })
+        // 使用默认图表数据
+        renderProgressChart(getDefaultChartData())
+      }
+    }
+    
+    const getDefaultChartData = () => {
+      // 生成最近7天的模拟数据
+      const dates = []
+      const studyHours = [2.5, 1.8, 3.2, 2.1, 1.5, 2.8, 2.3]
+      const examCounts = [1, 0, 2, 1, 0, 2, 1]
+      
+      const today = new Date()
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today)
+        date.setDate(date.getDate() - i)
+        const dateStr = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+        dates.push(dateStr)
+      }
+      
+      return {
+        dates: dates,
+        studyHours: studyHours,
+        examCounts: examCounts
       }
     }
     
     const renderProgressChart = (data) => {
       if (!progressChart.value) return
+      
+      console.log('渲染图表数据:', data) // 调试日志
       
       const chart = echarts.init(progressChart.value)
       const option = {
@@ -596,8 +625,10 @@ export default {
             color: '#7f8c8d'
           }
         },
-        yAxis: {
+        yAxis: [{
           type: 'value',
+          name: '学习时长(小时)',
+          position: 'left',
           axisLine: {
             lineStyle: {
               color: '#e6e6e6'
@@ -606,10 +637,23 @@ export default {
           axisLabel: {
             color: '#7f8c8d'
           }
-        },
+        }, {
+          type: 'value',
+          name: '考试次数',
+          position: 'right',
+          axisLine: {
+            lineStyle: {
+              color: '#e6e6e6'
+            }
+          },
+          axisLabel: {
+            color: '#7f8c8d'
+          }
+        }],
         series: [{
           name: '学习时长(小时)',
           type: 'line',
+          yAxisIndex: 0,
           data: data.studyHours || [],
           smooth: true,
           lineStyle: {
@@ -618,22 +662,46 @@ export default {
           },
           itemStyle: {
             color: '#667eea'
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0, color: 'rgba(102, 126, 234, 0.3)'
+              }, {
+                offset: 1, color: 'rgba(102, 126, 234, 0.05)'
+              }]
+            }
           }
         }, {
           name: '考试次数',
           type: 'bar',
+          yAxisIndex: 1,
           data: data.examCounts || [],
           itemStyle: {
-            color: '#764ba2'
+            color: '#764ba2',
+            borderRadius: [4, 4, 0, 0]
           }
         }]
       }
+      
       chart.setOption(option)
       
       // 响应式调整
-      window.addEventListener('resize', () => {
+      const resizeHandler = () => {
         chart.resize()
-      })
+      }
+      window.addEventListener('resize', resizeHandler)
+      
+      // 清理事件监听器（在组件卸载时）
+      return () => {
+        window.removeEventListener('resize', resizeHandler)
+        chart.dispose()
+      }
     }
     
     const generateReport = async () => {

@@ -12,6 +12,11 @@ export const learningProgressApi = {
     return request.get('/learning-progress/progress', { params })
   },
 
+  // 获取学习进度图表数据
+  getChartData(params = {}) {
+    return request.get('/learning-progress/chart-data', { params })
+  },
+
   // 获取学习统计
   getStatistics(params = {}) {
     return request.get('/learning-progress/statistics', { params })
