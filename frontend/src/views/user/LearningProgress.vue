@@ -1,300 +1,347 @@
 <template>
   <div class="learning-progress">
-    <div class="page-header">
-      <h1>学习进度</h1>
-      <div class="header-info">
-        <el-tag type="info">学习天数: {{ overview.learning_stats?.learning_days || 0 }} 天</el-tag>
-      </div>
-    </div>
-
-    <!-- 学习概览 -->
-    <div class="overview-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-card class="overview-card">
-            <div class="card-content">
-              <div class="card-icon">
-                <el-icon color="#409eff"><Document /></el-icon>
+    <div class="page-container">
+      <!-- 页面头部 -->
+      <div class="modern-header">
+        <div class="header-content">
+          <div class="header-left">
+            <div class="page-title">
+              <div class="title-icon">
+                <el-icon><TrendCharts /></el-icon>
               </div>
-              <div class="card-info">
-                <div class="card-value">{{ overview.learning_stats?.total_exams || 0 }}</div>
-                <div class="card-label">总考试次数</div>
+              <div class="title-text">
+                <h1>学习进度</h1>
+                <p>跟踪学习进度和成就</p>
               </div>
             </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="overview-card">
-            <div class="card-content">
-              <div class="card-icon">
-                <el-icon color="#67c23a"><Trophy /></el-icon>
-              </div>
-              <div class="card-info">
-                <div class="card-value">{{ overview.learning_stats?.average_score || 0 }}</div>
-                <div class="card-label">平均分数</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="overview-card">
-            <div class="card-content">
-              <div class="card-icon">
-                <el-icon color="#e6a23c"><TrendCharts /></el-icon>
-              </div>
-              <div class="card-info">
-                <div class="card-value">{{ overview.learning_stats?.study_intensity || 0 }}%</div>
-                <div class="card-label">学习强度</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="overview-card">
-            <div class="card-content">
-              <div class="card-icon">
-                <el-icon color="#f56c6c"><Warning /></el-icon>
-              </div>
-              <div class="card-info">
-                <div class="card-value">{{ overview.learning_stats?.review_rate || 0 }}%</div>
-                <div class="card-label">复习率</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
-
-    <!-- 学习进度图表 -->
-    <div class="progress-chart">
-      <el-card>
-        <div class="chart-header">
-          <h3>学习进度趋势</h3>
-          <div class="chart-controls">
-            <el-select v-model="progressPeriod" @change="updateProgressChart" style="width: 120px">
-              <el-option label="最近7天" value="7d" />
-              <el-option label="最近30天" value="30d" />
-              <el-option label="最近3个月" value="3m" />
-              <el-option label="最近1年" value="1y" />
-            </el-select>
-            <el-select v-model="selectedSubject" @change="updateProgressChart" style="width: 150px" clearable>
-              <el-option
-                v-for="subject in subjects"
-                :key="subject.id"
-                :label="subject.name"
-                :value="subject.id"
-              />
-            </el-select>
           </div>
-        </div>
-        <div class="chart-content">
-          <div ref="progressChart" class="chart-container"></div>
-        </div>
-      </el-card>
-    </div>
-
-    <!-- 学习成就 -->
-    <div class="achievements-section">
-      <el-card>
-        <div class="achievements-header">
-          <h3>学习成就</h3>
-          <div class="achievements-summary">
-            <span>已获得 {{ unlockedAchievements.length }} / {{ achievements.length }} 个成就</span>
-          </div>
-        </div>
-        <div class="achievements-content">
-          <div class="achievements-grid">
-            <div
-              v-for="achievement in achievements"
-              :key="achievement.id"
-              class="achievement-item"
-              :class="{ 'achievement-unlocked': achievement.unlocked }"
+          <div class="header-right">
+            <el-button 
+              type="primary" 
+              :icon="ArrowLeft" 
+              @click="goBackToPersonalCenter"
+              class="back-btn"
             >
-              <div class="achievement-icon">
-                <el-icon v-if="achievement.icon === 'trophy'" color="#e6a23c"><Trophy /></el-icon>
-                <el-icon v-else-if="achievement.icon === 'medal'" color="#67c23a"><Medal /></el-icon>
-                <el-icon v-else-if="achievement.icon === 'star'" color="#f56c6c"><Star /></el-icon>
-                <el-icon v-else-if="achievement.icon === 'book'" color="#409eff"><Reading /></el-icon>
-                <el-icon v-else-if="achievement.icon === 'fire'" color="#f56c6c"><Fire /></el-icon>
-                <el-icon v-else color="#909399"><Trophy /></el-icon>
-              </div>
-              <div class="achievement-info">
-                <div class="achievement-title">{{ achievement.title }}</div>
-                <div class="achievement-description">{{ achievement.description }}</div>
-                <div v-if="!achievement.unlocked" class="achievement-progress">
-                  <el-progress :percentage="achievement.progress" :show-text="false" />
-                  <span class="progress-text">{{ achievement.progress }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
-    </div>
-
-    <!-- 学习建议 -->
-    <div class="recommendations-section">
-      <el-card>
-        <div class="recommendations-header">
-          <h3>学习建议</h3>
-          <el-button size="small" @click="refreshRecommendations">
-            <el-icon><Refresh /></el-icon>
-            刷新建议
-          </el-button>
-        </div>
-        <div class="recommendations-content">
-          <div v-if="recommendations.length === 0" class="no-recommendations">
-            <el-empty description="暂无学习建议" />
-          </div>
-          <div v-else class="recommendations-list">
-            <div
-              v-for="recommendation in recommendations"
-              :key="recommendation.type"
-              class="recommendation-item"
-              :class="`priority-${recommendation.priority}`"
-            >
-              <div class="recommendation-header">
-                <div class="recommendation-title">{{ recommendation.title }}</div>
-                <el-tag :type="getPriorityTagType(recommendation.priority)" size="small">
-                  {{ getPriorityLabel(recommendation.priority) }}
-                </el-tag>
-              </div>
-              <div class="recommendation-description">{{ recommendation.description }}</div>
-              <div class="recommendation-action">
-                <el-button size="small" type="primary" @click="handleRecommendationAction(recommendation)">
-                  {{ recommendation.action }}
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
-    </div>
-
-    <!-- 学习目标 -->
-    <div class="goals-section">
-      <el-card>
-        <div class="goals-header">
-          <h3>学习目标</h3>
-          <el-button size="small" type="primary" @click="showCreateGoalDialog = true">
-            <el-icon><Plus /></el-icon>
-            新建目标
-          </el-button>
-        </div>
-        <div class="goals-content">
-          <div v-if="goals.length === 0" class="no-goals">
-            <el-empty description="暂无学习目标" />
-          </div>
-          <div v-else class="goals-list">
-            <div
-              v-for="goal in goals"
-              :key="goal.id"
-              class="goal-item"
-            >
-              <div class="goal-header">
-                <div class="goal-title">{{ goal.title }}</div>
-                <div class="goal-actions">
-                  <el-button size="small" @click="editGoal(goal)">编辑</el-button>
-                  <el-button size="small" type="danger" @click="deleteGoal(goal)">删除</el-button>
-                </div>
-              </div>
-              <div class="goal-description">{{ goal.description }}</div>
-              <div class="goal-progress">
-                <div class="progress-info">
-                  <span>{{ goal.current_value }} / {{ goal.target_value }}</span>
-                  <span>{{ goal.progress }}%</span>
-                </div>
-                <el-progress :percentage="goal.progress" />
-              </div>
-              <div class="goal-meta">
-                <span>目标日期: {{ goal.target_date }}</span>
-                <el-tag :type="getGoalStatusType(goal.status)" size="small">
-                  {{ getGoalStatusLabel(goal.status) }}
-                </el-tag>
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
-    </div>
-
-    <!-- 学习报告 -->
-    <div class="report-section">
-      <el-card>
-        <div class="report-header">
-          <h3>学习报告</h3>
-          <div class="report-controls">
-            <el-select v-model="reportPeriod" @change="generateReport" style="width: 120px">
-              <el-option label="最近一周" value="week" />
-              <el-option label="最近一月" value="month" />
-              <el-option label="最近一季" value="quarter" />
-              <el-option label="最近一年" value="year" />
-            </el-select>
-            <el-button size="small" type="primary" @click="generateReport">
-              <el-icon><Document /></el-icon>
-              生成报告
+              返回个人中心
             </el-button>
           </div>
         </div>
-        <div class="report-content">
-          <div v-if="!learningReport" class="no-report">
-            <el-empty description="请生成学习报告" />
-          </div>
-          <div v-else class="report-details">
-            <div class="report-summary">
-              <h4>学习总结</h4>
-              <div class="summary-stats">
-                <div class="stat-item">
-                  <span class="stat-label">考试次数:</span>
-                  <span class="stat-value">{{ learningReport.summary.total_exams }}</span>
+      </div>
+
+      <!-- 学习概览 -->
+      <div class="statistics-overview">
+        <div class="stats-card">
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <div class="stat-content">
+                  <div class="stat-icon">
+                    <el-icon color="#409eff"><Document /></el-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ overview.learning_stats?.total_exams || 0 }}</div>
+                    <div class="stat-label">总考试次数</div>
+                  </div>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">平均分数:</span>
-                  <span class="stat-value">{{ learningReport.summary.average_score }}</span>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <div class="stat-content">
+                  <div class="stat-icon">
+                    <el-icon color="#67c23a"><Trophy /></el-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ overview.learning_stats?.average_score || 0 }}</div>
+                    <div class="stat-label">平均分数</div>
+                  </div>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">错题数量:</span>
-                  <span class="stat-value">{{ learningReport.summary.total_wrong_answers }}</span>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <div class="stat-content">
+                  <div class="stat-icon">
+                    <el-icon color="#e6a23c"><TrendCharts /></el-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ overview.learning_stats?.study_intensity || 0 }}%</div>
+                    <div class="stat-label">学习强度</div>
+                  </div>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">复习数量:</span>
-                  <span class="stat-value">{{ learningReport.summary.reviewed_wrong_answers }}</span>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <div class="stat-content">
+                  <div class="stat-icon">
+                    <el-icon color="#f56c6c"><Warning /></el-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ overview.learning_stats?.review_rate || 0 }}%</div>
+                    <div class="stat-label">复习率</div>
+                  </div>
                 </div>
-              </div>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+
+      <!-- 学习进度图表 -->
+      <div class="table-section">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3>学习进度趋势</h3>
+              <p>跟踪您的学习进度变化</p>
             </div>
-            
-            <div class="report-analysis">
-              <h4>学习分析</h4>
-              <div class="analysis-content">
-                <div v-if="learningReport.analysis.strengths.length > 0" class="strengths">
-                  <h5>优势</h5>
-                  <ul>
-                    <li v-for="strength in learningReport.analysis.strengths" :key="strength">
-                      {{ strength }}
-                    </li>
-                  </ul>
-                </div>
-                <div v-if="learningReport.analysis.weaknesses.length > 0" class="weaknesses">
-                  <h5>不足</h5>
-                  <ul>
-                    <li v-for="weakness in learningReport.analysis.weaknesses" :key="weakness">
-                      {{ weakness }}
-                    </li>
-                  </ul>
-                </div>
-                <div v-if="learningReport.analysis.recommendations.length > 0" class="recommendations">
-                  <h5>建议</h5>
-                  <ul>
-                    <li v-for="recommendation in learningReport.analysis.recommendations" :key="recommendation">
-                      {{ recommendation }}
-                    </li>
-                  </ul>
+            <div class="chart-controls">
+              <el-select v-model="progressPeriod" @change="updateProgressChart" style="width: 120px">
+                <el-option label="最近7天" value="7d" />
+                <el-option label="最近30天" value="30d" />
+                <el-option label="最近3个月" value="3m" />
+                <el-option label="最近1年" value="1y" />
+              </el-select>
+              <el-select v-model="selectedSubject" @change="updateProgressChart" style="width: 150px" clearable>
+                <el-option
+                  v-for="subject in subjects"
+                  :key="subject.id"
+                  :label="subject.name"
+                  :value="subject.id"
+                />
+              </el-select>
+            </div>
+          </div>
+          <div class="table-container">
+            <div ref="progressChart" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习成就 -->
+      <div class="table-section">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3>学习成就</h3>
+              <p>已获得 {{ unlockedAchievements.length }} / {{ achievements.length }} 个成就</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <div class="achievements-content">
+              <div class="achievements-grid">
+                <div
+                  v-for="achievement in achievements"
+                  :key="achievement.id"
+                  class="achievement-item"
+                  :class="{ 'achievement-unlocked': achievement.unlocked }"
+                >
+                  <div class="achievement-icon">
+                    <el-icon v-if="achievement.icon === 'trophy'" color="#e6a23c"><Trophy /></el-icon>
+                    <el-icon v-else-if="achievement.icon === 'medal'" color="#67c23a"><Medal /></el-icon>
+                    <el-icon v-else-if="achievement.icon === 'star'" color="#f56c6c"><Star /></el-icon>
+                    <el-icon v-else-if="achievement.icon === 'book'" color="#409eff"><Reading /></el-icon>
+                    <el-icon v-else-if="achievement.icon === 'fire'" color="#f56c6c"><Fire /></el-icon>
+                    <el-icon v-else color="#909399"><Trophy /></el-icon>
+                  </div>
+                  <div class="achievement-info">
+                    <div class="achievement-title">{{ achievement.title }}</div>
+                    <div class="achievement-description">{{ achievement.description }}</div>
+                    <div v-if="!achievement.unlocked" class="achievement-progress">
+                      <el-progress :percentage="achievement.progress" :show-text="false" />
+                      <span class="progress-text">{{ achievement.progress }}%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </el-card>
+      </div>
+
+      <!-- 学习建议 -->
+      <div class="table-section">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3>学习建议</h3>
+              <p>个性化学习建议和指导</p>
+            </div>
+            <div class="list-actions">
+              <el-button size="small" @click="refreshRecommendations">
+                <el-icon><Refresh /></el-icon>
+                刷新建议
+              </el-button>
+            </div>
+          </div>
+          <div class="table-container">
+            <div class="recommendations-content">
+              <div v-if="recommendations.length === 0" class="no-recommendations">
+                <el-empty description="暂无学习建议" />
+              </div>
+              <div v-else class="recommendations-list">
+                <div
+                  v-for="recommendation in recommendations"
+                  :key="recommendation.type"
+                  class="recommendation-item"
+                  :class="`priority-${recommendation.priority}`"
+                >
+                  <div class="recommendation-header">
+                    <div class="recommendation-title">{{ recommendation.title }}</div>
+                    <el-tag :type="getPriorityTagType(recommendation.priority)" size="small">
+                      {{ getPriorityLabel(recommendation.priority) }}
+                    </el-tag>
+                  </div>
+                  <div class="recommendation-description">{{ recommendation.description }}</div>
+                  <div class="recommendation-action">
+                    <el-button size="small" type="primary" @click="handleRecommendationAction(recommendation)">
+                      {{ recommendation.action }}
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习目标 -->
+      <div class="table-section">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3>学习目标</h3>
+              <p>设置和管理您的学习目标</p>
+            </div>
+            <div class="list-actions">
+              <el-button size="small" type="primary" @click="showCreateGoalDialog = true">
+                <el-icon><Plus /></el-icon>
+                新建目标
+              </el-button>
+            </div>
+          </div>
+          <div class="table-container">
+            <div class="goals-content">
+              <div v-if="goals.length === 0" class="no-goals">
+                <el-empty description="暂无学习目标" />
+              </div>
+              <div v-else class="goals-list">
+                <div
+                  v-for="goal in goals"
+                  :key="goal.id"
+                  class="goal-item"
+                >
+                  <div class="goal-header">
+                    <div class="goal-title">{{ goal.title }}</div>
+                    <div class="goal-actions">
+                      <el-button size="small" @click="editGoal(goal)">编辑</el-button>
+                      <el-button size="small" type="danger" @click="deleteGoal(goal)">删除</el-button>
+                    </div>
+                  </div>
+                  <div class="goal-description">{{ goal.description }}</div>
+                  <div class="goal-progress">
+                    <div class="progress-info">
+                      <span>{{ goal.current_value }} / {{ goal.target_value }}</span>
+                      <span>{{ goal.progress }}%</span>
+                    </div>
+                    <el-progress :percentage="goal.progress" />
+                  </div>
+                  <div class="goal-meta">
+                    <span>目标日期: {{ goal.target_date }}</span>
+                    <el-tag :type="getGoalStatusType(goal.status)" size="small">
+                      {{ getGoalStatusLabel(goal.status) }}
+                    </el-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习报告 -->
+      <div class="table-section">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3>学习报告</h3>
+              <p>生成详细的学习分析报告</p>
+            </div>
+            <div class="list-actions">
+              <el-select v-model="reportPeriod" @change="generateReport" style="width: 120px">
+                <el-option label="最近一周" value="week" />
+                <el-option label="最近一月" value="month" />
+                <el-option label="最近一季" value="quarter" />
+                <el-option label="最近一年" value="year" />
+              </el-select>
+              <el-button size="small" type="primary" @click="generateReport">
+                <el-icon><Document /></el-icon>
+                生成报告
+              </el-button>
+            </div>
+          </div>
+          <div class="table-container">
+            <div class="report-content">
+              <div v-if="!learningReport" class="no-report">
+                <el-empty description="请生成学习报告" />
+              </div>
+              <div v-else class="report-details">
+                <div class="report-summary">
+                  <h4>学习总结</h4>
+                  <div class="summary-stats">
+                    <div class="stat-item">
+                      <span class="stat-label">考试次数:</span>
+                      <span class="stat-value">{{ learningReport.summary.total_exams }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">平均分数:</span>
+                      <span class="stat-value">{{ learningReport.summary.average_score }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">错题数量:</span>
+                      <span class="stat-value">{{ learningReport.summary.wrong_questions }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">学习时长:</span>
+                      <span class="stat-value">{{ learningReport.summary.study_hours }}小时</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="report-analysis">
+                  <h4>学习分析</h4>
+                  <div class="analysis-content">
+                    <div v-if="learningReport.analysis.strengths.length > 0" class="strengths">
+                      <h5>优势</h5>
+                      <ul>
+                        <li v-for="strength in learningReport.analysis.strengths" :key="strength">
+                          {{ strength }}
+                        </li>
+                      </ul>
+                    </div>
+                    <div v-if="learningReport.analysis.weaknesses.length > 0" class="weaknesses">
+                      <h5>不足</h5>
+                      <ul>
+                        <li v-for="weakness in learningReport.analysis.weaknesses" :key="weakness">
+                          {{ weakness }}
+                        </li>
+                      </ul>
+                    </div>
+                    <div v-if="learningReport.analysis.recommendations.length > 0" class="recommendations">
+                      <h5>建议</h5>
+                      <ul>
+                        <li v-for="recommendation in learningReport.analysis.recommendations" :key="recommendation">
+                          {{ recommendation }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 创建目标对话框 -->
@@ -314,13 +361,7 @@
           <el-input-number v-model="goalForm.target_score" :min="0" :max="100" />
         </el-form-item>
         <el-form-item label="目标日期" prop="target_date">
-          <el-date-picker
-            v-model="goalForm.target_date"
-            type="date"
-            placeholder="选择目标日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-          />
+          <el-date-picker v-model="goalForm.target_date" type="date" placeholder="选择目标日期" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -336,19 +377,27 @@ import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Document, Trophy, TrendCharts, Warning, Medal, Star, Reading, Fire,
-  Refresh, Plus
+  TrendCharts,
+  Document,
+  Trophy,
+  Warning,
+  Medal,
+  Star,
+  Reading,
+  Fire,
+  Refresh,
+  Plus,
+  ArrowLeft
 } from '@element-plus/icons-vue'
 import { learningProgressApi } from '@/api/learning_progress'
-import { subjectsApi } from '@/api/subjects'
 import * as echarts from 'echarts'
 
 export default {
   name: 'LearningProgress',
   components: {
+    TrendCharts,
     Document,
     Trophy,
-    TrendCharts,
     Warning,
     Medal,
     Star,
@@ -363,67 +412,56 @@ export default {
     // 响应式数据
     const loading = ref(false)
     const overview = ref({})
-    const progressData = ref({})
+    const subjects = ref([])
     const achievements = ref([])
     const recommendations = ref([])
     const goals = ref([])
     const learningReport = ref(null)
-    const subjects = ref([])
-    const progressChart = ref(null)
-    const progressPeriod = ref('30d')
-    const selectedSubject = ref('')
+    const progressPeriod = ref('7d')
+    const selectedSubject = ref(null)
     const reportPeriod = ref('month')
     const showCreateGoalDialog = ref(false)
+    const progressChart = ref(null)
     
-    // 目标表单
+    // 表单数据
     const goalForm = reactive({
       title: '',
       description: '',
-      target_score: 80,
+      target_score: 0,
       target_date: ''
     })
     
     const goalRules = {
-      title: [
-        { required: true, message: '请输入目标标题', trigger: 'blur' }
-      ],
-      target_score: [
-        { required: true, message: '请输入目标分数', trigger: 'blur' }
-      ],
-      target_date: [
-        { required: true, message: '请选择目标日期', trigger: 'change' }
-      ]
+      title: [{ required: true, message: '请输入目标标题', trigger: 'blur' }],
+      target_score: [{ required: true, message: '请输入目标分数', trigger: 'blur' }],
+      target_date: [{ required: true, message: '请选择目标日期', trigger: 'change' }]
     }
     
     // 计算属性
     const unlockedAchievements = computed(() => {
-      return achievements.value.filter(a => a.unlocked)
+      return achievements.value.filter(achievement => achievement.unlocked)
     })
     
     // 方法
+    const goBackToPersonalCenter = () => {
+      router.push('/user/dashboard')
+    }
+    
     const loadOverview = async () => {
       try {
         const response = await learningProgressApi.getOverview()
         overview.value = response.data
       } catch (error) {
-        ElMessage.error('加载学习概览失败')
-        console.error('Load overview error:', error)
+        console.error('加载概览数据失败:', error)
       }
     }
     
-    const loadProgressData = async () => {
+    const loadSubjects = async () => {
       try {
-        const params = {
-          period: progressPeriod.value,
-          subject_id: selectedSubject.value || undefined
-        }
-        const response = await learningProgressApi.getProgress(params)
-        progressData.value = response.data
-        await nextTick()
-        updateProgressChart()
+        const response = await learningProgressApi.getSubjects()
+        subjects.value = response.data
       } catch (error) {
-        ElMessage.error('加载学习进度失败')
-        console.error('Load progress error:', error)
+        console.error('加载科目数据失败:', error)
       }
     }
     
@@ -432,8 +470,7 @@ export default {
         const response = await learningProgressApi.getAchievements()
         achievements.value = response.data
       } catch (error) {
-        ElMessage.error('加载学习成就失败')
-        console.error('Load achievements error:', error)
+        console.error('加载成就数据失败:', error)
       }
     }
     
@@ -442,8 +479,7 @@ export default {
         const response = await learningProgressApi.getRecommendations()
         recommendations.value = response.data
       } catch (error) {
-        ElMessage.error('加载学习建议失败')
-        console.error('Load recommendations error:', error)
+        console.error('加载建议数据失败:', error)
       }
     }
     
@@ -452,196 +488,123 @@ export default {
         const response = await learningProgressApi.getGoals()
         goals.value = response.data
       } catch (error) {
-        ElMessage.error('加载学习目标失败')
-        console.error('Load goals error:', error)
+        console.error('加载目标数据失败:', error)
       }
     }
     
-    const loadSubjects = async () => {
+    const updateProgressChart = async () => {
       try {
-        const response = await subjectsApi.getSubjects()
-        subjects.value = response.data.items || response.data
-      } catch (error) {
-        console.error('Load subjects error:', error)
-      }
-    }
-    
-    const updateProgressChart = () => {
-      if (!progressChart.value || !progressData.value.progress_data) return
-      
-      try {
-        const chart = echarts.init(progressChart.value)
-        
-        const dates = progressData.value.progress_data.map(item => item.date)
-        const examCounts = progressData.value.progress_data.map(item => item.exams_count)
-        const avgScores = progressData.value.progress_data.map(item => item.average_score)
-        
-        const option = {
-          title: {
-            text: '学习进度趋势',
-            left: 'center',
-            textStyle: {
-              fontSize: 16,
-              color: '#303133'
-            }
-          },
-          tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross'
-            }
-          },
-          legend: {
-            data: ['考试次数', '平均分数'],
-            top: 30
-          },
-          xAxis: {
-            type: 'category',
-            data: dates,
-            axisLabel: {
-              formatter: function(value) {
-                return value.split('-').slice(1).join('-')
-              }
-            }
-          },
-          yAxis: [
-            {
-              type: 'value',
-              name: '考试次数',
-              position: 'left'
-            },
-            {
-              type: 'value',
-              name: '平均分数',
-              position: 'right',
-              min: 0,
-              max: 100
-            }
-          ],
-          series: [
-            {
-              name: '考试次数',
-              type: 'bar',
-              data: examCounts,
-              itemStyle: {
-                color: '#409eff'
-              }
-            },
-            {
-              name: '平均分数',
-              type: 'line',
-              yAxisIndex: 1,
-              data: avgScores,
-              smooth: true,
-              lineStyle: {
-                color: '#67c23a',
-                width: 3
-              },
-              itemStyle: {
-                color: '#67c23a'
-              }
-            }
-          ]
-        }
-        
-        chart.setOption(option)
-        
-        // 响应式调整
-        window.addEventListener('resize', () => {
-          chart.resize()
+        const response = await learningProgressApi.getProgressData({
+          period: progressPeriod.value,
+          subject_id: selectedSubject.value
         })
+        renderProgressChart(response.data)
       } catch (error) {
-        console.error('Update progress chart error:', error)
+        console.error('更新进度图表失败:', error)
       }
+    }
+    
+    const renderProgressChart = (data) => {
+      if (!progressChart.value) return
+      
+      const chart = echarts.init(progressChart.value)
+      const option = {
+        title: {
+          text: '学习进度趋势',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        xAxis: {
+          type: 'category',
+          data: data.dates
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          name: '学习时长',
+          type: 'line',
+          data: data.studyHours,
+          smooth: true
+        }, {
+          name: '考试次数',
+          type: 'bar',
+          data: data.examCounts
+        }]
+      }
+      chart.setOption(option)
     }
     
     const generateReport = async () => {
       try {
-        const params = {
+        const response = await learningProgressApi.generateReport({
           period: reportPeriod.value
-        }
-        const response = await learningProgressApi.generateReport(params)
+        })
         learningReport.value = response.data
+        ElMessage.success('学习报告生成成功')
       } catch (error) {
+        console.error('生成学习报告失败:', error)
         ElMessage.error('生成学习报告失败')
-        console.error('Generate report error:', error)
       }
     }
     
-    const refreshRecommendations = () => {
-      loadRecommendations()
-    }
-    
-    const handleRecommendationAction = (recommendation) => {
-      switch (recommendation.action) {
-        case '参加考试':
-          router.push('/user/exam-list')
-          break
-        case '复习错题':
-          router.push('/user/wrong-answers')
-          break
-        case '安排考试':
-          router.push('/user/exam-list')
-          break
-        case '加强练习':
-          router.push('/user/exam-list')
-          break
-        default:
-          ElMessage.info('功能开发中')
-      }
+    const refreshRecommendations = async () => {
+      await loadRecommendations()
+      ElMessage.success('建议已刷新')
     }
     
     const createGoal = async () => {
       try {
         await learningProgressApi.createGoal(goalForm)
-        ElMessage.success('创建学习目标成功')
+        ElMessage.success('目标创建成功')
         showCreateGoalDialog.value = false
-        Object.keys(goalForm).forEach(key => {
-          goalForm[key] = key === 'target_score' ? 80 : ''
+        Object.assign(goalForm, {
+          title: '',
+          description: '',
+          target_score: 0,
+          target_date: ''
         })
-        loadGoals()
+        await loadGoals()
       } catch (error) {
-        ElMessage.error('创建学习目标失败')
-        console.error('Create goal error:', error)
+        console.error('创建目标失败:', error)
+        ElMessage.error('创建目标失败')
       }
     }
     
     const editGoal = (goal) => {
-      // TODO: 实现编辑目标功能
-      ElMessage.info('编辑功能开发中')
+      Object.assign(goalForm, goal)
+      showCreateGoalDialog.value = true
     }
     
     const deleteGoal = async (goal) => {
       try {
-        await ElMessageBox.confirm(
-          `确定要删除学习目标"${goal.title}"吗？`,
-          '确认删除',
-          {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-        )
-        
+        await ElMessageBox.confirm('确定要删除这个目标吗？', '确认删除', {
+          type: 'warning'
+        })
         await learningProgressApi.deleteGoal(goal.id)
-        ElMessage.success('删除学习目标成功')
-        loadGoals()
+        ElMessage.success('目标删除成功')
+        await loadGoals()
       } catch (error) {
         if (error !== 'cancel') {
-          ElMessage.error('删除学习目标失败')
-          console.error('Delete goal error:', error)
+          console.error('删除目标失败:', error)
+          ElMessage.error('删除目标失败')
         }
       }
     }
     
-    // 工具方法
+    const handleRecommendationAction = (recommendation) => {
+      ElMessage.info(`执行建议: ${recommendation.action}`)
+    }
+    
     const getPriorityTagType = (priority) => {
       const types = {
         high: 'danger',
         medium: 'warning',
-        low: 'info'
+        low: 'success'
       }
-      return types[priority] || 'default'
+      return types[priority] || 'info'
     }
     
     const getPriorityLabel = (priority) => {
@@ -650,68 +613,77 @@ export default {
         medium: '中优先级',
         low: '低优先级'
       }
-      return labels[priority] || priority
+      return labels[priority] || '未知'
     }
     
     const getGoalStatusType = (status) => {
       const types = {
-        active: 'success',
+        active: 'primary',
         completed: 'success',
-        paused: 'warning',
-        cancelled: 'danger'
+        expired: 'danger'
       }
-      return types[status] || 'default'
+      return types[status] || 'info'
     }
     
     const getGoalStatusLabel = (status) => {
       const labels = {
         active: '进行中',
         completed: '已完成',
-        paused: '已暂停',
-        cancelled: '已取消'
+        expired: '已过期'
       }
-      return labels[status] || status
+      return labels[status] || '未知'
     }
     
     // 生命周期
-    onMounted(() => {
-      loadSubjects()
-      loadOverview()
-      loadProgressData()
-      loadAchievements()
-      loadRecommendations()
-      loadGoals()
+    onMounted(async () => {
+      loading.value = true
+      try {
+        await Promise.all([
+          loadOverview(),
+          loadSubjects(),
+          loadAchievements(),
+          loadRecommendations(),
+          loadGoals()
+        ])
+        
+        await nextTick()
+        updateProgressChart()
+      } catch (error) {
+        console.error('初始化数据失败:', error)
+      } finally {
+        loading.value = false
+      }
     })
     
     return {
       loading,
       overview,
-      progressData,
+      subjects,
       achievements,
       recommendations,
       goals,
       learningReport,
-      subjects,
-      progressChart,
       progressPeriod,
       selectedSubject,
       reportPeriod,
       showCreateGoalDialog,
+      progressChart,
       goalForm,
       goalRules,
       unlockedAchievements,
-      loadProgressData,
+      goBackToPersonalCenter,
       updateProgressChart,
       generateReport,
       refreshRecommendations,
-      handleRecommendationAction,
       createGoal,
       editGoal,
       deleteGoal,
+      handleRecommendationAction,
       getPriorityTagType,
       getPriorityLabel,
       getGoalStatusType,
-      getGoalStatusLabel
+      getGoalStatusLabel,
+      ArrowLeft
     }
   }
 }
@@ -719,112 +691,203 @@ export default {
 
 <style scoped>
 .learning-progress {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
 }
 
-.page-header {
+.page-container {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.modern-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-info {
-  display: flex;
-  gap: 10px;
-}
-
-.overview-section {
-  margin-bottom: 20px;
-}
-
-.overview-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.card-content {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.card-icon {
-  font-size: 32px;
-}
-
-.card-info {
+.header-left {
   flex: 1;
 }
 
-.card-value {
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.title-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-size: 24px;
+}
+
+.title-text h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-text p {
+  margin: 8px 0 0 0;
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.back-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
   font-weight: 600;
-  color: #303133;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.statistics-overview {
+  margin-bottom: 30px;
+}
+
+.stats-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
   margin-bottom: 5px;
 }
 
-.card-label {
+.stat-label {
   font-size: 14px;
-  color: #909399;
+  color: #7f8c8d;
+  font-weight: 500;
 }
 
-.progress-chart {
-  margin-bottom: 20px;
+.table-section {
+  margin-bottom: 30px;
 }
 
-.chart-header {
+.table-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.1);
 }
 
-.chart-header h3 {
+.table-title h3 {
   margin: 0;
-  color: #303133;
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.table-title p {
+  margin: 8px 0 0 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.list-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .chart-controls {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
-.chart-content {
-  height: 400px;
+.table-container {
+  min-height: 200px;
 }
 
 .chart-container {
+  height: 400px;
   width: 100%;
-  height: 100%;
 }
 
-.achievements-section {
-  margin-bottom: 20px;
-}
-
-.achievements-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.achievements-header h3 {
-  margin: 0;
-  color: #303133;
-  font-size: 18px;
-}
-
-.achievements-summary {
-  color: #909399;
-  font-size: 14px;
+.achievements-content {
+  padding: 20px 0;
 }
 
 .achievements-grid {
@@ -834,43 +897,40 @@ export default {
 }
 
 .achievement-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
   padding: 20px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  transition: all 0.3s;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
-.achievement-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.achievement-unlocked {
+.achievement-item.achievement-unlocked {
   border-color: #67c23a;
-  background-color: #f0f9ff;
+  background: rgba(103, 194, 58, 0.1);
 }
 
 .achievement-icon {
-  font-size: 32px;
-}
-
-.achievement-info {
-  flex: 1;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  font-size: 24px;
 }
 
 .achievement-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #303133;
-  margin-bottom: 5px;
+  color: #2c3e50;
+  margin-bottom: 8px;
 }
 
 .achievement-description {
+  color: #7f8c8d;
   font-size: 14px;
-  color: #606266;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .achievement-progress {
@@ -881,51 +941,45 @@ export default {
 
 .progress-text {
   font-size: 12px;
-  color: #909399;
+  color: #7f8c8d;
+  font-weight: 600;
 }
 
-.recommendations-section {
-  margin-bottom: 20px;
+.recommendations-content {
+  padding: 20px 0;
 }
 
-.recommendations-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.recommendations-header h3 {
-  margin: 0;
-  color: #303133;
-  font-size: 18px;
+.no-recommendations,
+.no-goals,
+.no-report {
+  text-align: center;
+  padding: 40px 0;
 }
 
 .recommendations-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .recommendation-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
   padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #e4e7ed;
+  border-left: 4px solid #e6a23c;
+  transition: all 0.3s ease;
 }
 
-.priority-high {
+.recommendation-item.priority-high {
   border-left-color: #f56c6c;
-  background-color: #fef0f0;
 }
 
-.priority-medium {
+.recommendation-item.priority-medium {
   border-left-color: #e6a23c;
-  background-color: #fef0e6;
 }
 
-.priority-low {
-  border-left-color: #409eff;
-  background-color: #f0f9ff;
+.recommendation-item.priority-low {
+  border-left-color: #67c23a;
 }
 
 .recommendation-header {
@@ -938,66 +992,61 @@ export default {
 .recommendation-title {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: #2c3e50;
 }
 
 .recommendation-description {
+  color: #7f8c8d;
   font-size: 14px;
-  color: #606266;
   margin-bottom: 15px;
+  line-height: 1.6;
 }
 
-.goals-section {
-  margin-bottom: 20px;
+.recommendation-action {
+  text-align: right;
 }
 
-.goals-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.goals-header h3 {
-  margin: 0;
-  color: #303133;
-  font-size: 18px;
+.goals-content {
+  padding: 20px 0;
 }
 
 .goals-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .goal-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
   padding: 20px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
 }
 
 .goal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .goal-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  color: #2c3e50;
 }
 
 .goal-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .goal-description {
+  color: #7f8c8d;
   font-size: 14px;
-  color: #606266;
   margin-bottom: 15px;
+  line-height: 1.6;
 }
 
 .goal-progress {
@@ -1010,7 +1059,7 @@ export default {
   align-items: center;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #606266;
+  color: #7f8c8d;
 }
 
 .goal-meta {
@@ -1018,29 +1067,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #909399;
+  color: #7f8c8d;
 }
 
-.report-section {
-  margin-bottom: 20px;
-}
-
-.report-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.report-header h3 {
-  margin: 0;
-  color: #303133;
-  font-size: 18px;
-}
-
-.report-controls {
-  display: flex;
-  gap: 10px;
+.report-content {
+  padding: 20px 0;
 }
 
 .report-details {
@@ -1049,36 +1080,56 @@ export default {
   gap: 30px;
 }
 
-.report-summary h4,
-.report-analysis h4 {
-  margin: 0 0 15px 0;
-  color: #303133;
-  font-size: 16px;
+.report-summary {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.report-summary h4 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .summary-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
+  padding: 15px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 12px;
 }
 
-.stat-label {
-  color: #606266;
+.stat-item .stat-label {
+  color: #7f8c8d;
   font-weight: 500;
 }
 
-.stat-value {
-  color: #303133;
+.stat-item .stat-value {
   font-weight: 600;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.report-analysis {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.report-analysis h4 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .analysis-content {
@@ -1087,51 +1138,80 @@ export default {
   gap: 20px;
 }
 
-.analysis-content h5 {
-  margin: 0 0 10px 0;
-  color: #303133;
-  font-size: 14px;
+.strengths,
+.weaknesses,
+.recommendations {
+  padding: 15px;
+  border-radius: 12px;
 }
 
-.analysis-content ul {
+.strengths {
+  background: rgba(103, 194, 58, 0.1);
+  border-left: 4px solid #67c23a;
+}
+
+.weaknesses {
+  background: rgba(245, 108, 108, 0.1);
+  border-left: 4px solid #f56c6c;
+}
+
+.recommendations {
+  background: rgba(230, 162, 60, 0.1);
+  border-left: 4px solid #e6a23c;
+}
+
+.strengths h5,
+.weaknesses h5,
+.recommendations h5 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.strengths ul,
+.weaknesses ul,
+.recommendations ul {
   margin: 0;
   padding-left: 20px;
 }
 
-.analysis-content li {
+.strengths li,
+.weaknesses li,
+.recommendations li {
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.6;
   margin-bottom: 5px;
-  color: #606266;
-}
-
-.strengths h5 {
-  color: #67c23a;
-}
-
-.weaknesses h5 {
-  color: #f56c6c;
-}
-
-.recommendations h5 {
-  color: #409eff;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .learning-progress {
-    padding: 15px;
+  .page-container {
+    padding: 0 10px;
   }
   
-  .overview-section .el-col {
-    margin-bottom: 15px;
+  .modern-header,
+  .stats-card,
+  .table-card {
+    padding: 20px;
   }
   
-  .chart-header {
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .page-title {
     flex-direction: column;
     gap: 15px;
   }
   
-  .chart-content {
-    height: 300px;
+  .table-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
   }
   
   .achievements-grid {

@@ -1,193 +1,231 @@
 <template>
-  <div class="notifications">
-    <div class="page-header">
-      <h1>消息通知</h1>
-      <div class="header-info">
-        <el-tag type="warning" v-if="unreadCount > 0">
-          未读消息: {{ unreadCount }}
-        </el-tag>
-        <el-tag type="success" v-else>
-          暂无未读消息
-        </el-tag>
+  <div class="modern-notifications-management">
+    <!-- 现代化头部 -->
+    <div class="modern-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="page-title">
+            <div class="title-icon">
+              <el-icon><Bell /></el-icon>
+            </div>
+            <div class="title-text">
+              <h1>消息通知</h1>
+              <p>管理和查看您的系统通知消息</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <el-button @click="goBackToPersonalCenter" class="back-btn">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回个人中心</span>
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <!-- 通知设置 -->
-    <div class="notification-settings">
-      <el-card>
-        <div class="settings-header">
+    <!-- 通知设置区域 -->
+    <div class="search-section">
+      <div class="search-card">
+        <div class="search-header">
           <h3>通知设置</h3>
-          <el-button size="small" @click="showSettingsDialog = true">
-            <el-icon><Setting /></el-icon>
-            设置
-          </el-button>
+          <p>管理您的通知偏好设置</p>
         </div>
         <div class="settings-content">
           <el-row :gutter="20">
             <el-col :span="6">
               <div class="setting-item">
-                <el-icon color="#409eff"><Message /></el-icon>
-                <span>系统通知</span>
-                <el-switch v-model="settings.system_notifications" @change="updateSettings" />
+                <div class="setting-icon">
+                  <el-icon color="#409eff"><Message /></el-icon>
+                </div>
+                <div class="setting-text">
+                  <span>系统通知</span>
+                  <el-switch v-model="settings.system_notifications" @change="updateSettings" />
+                </div>
               </div>
             </el-col>
             <el-col :span="6">
               <div class="setting-item">
-                <el-icon color="#67c23a"><Document /></el-icon>
-                <span>考试通知</span>
-                <el-switch v-model="settings.exam_notifications" @change="updateSettings" />
+                <div class="setting-icon">
+                  <el-icon color="#67c23a"><Document /></el-icon>
+                </div>
+                <div class="setting-text">
+                  <span>考试通知</span>
+                  <el-switch v-model="settings.exam_notifications" @change="updateSettings" />
+                </div>
               </div>
             </el-col>
             <el-col :span="6">
               <div class="setting-item">
-                <el-icon color="#e6a23c"><Trophy /></el-icon>
-                <span>成绩通知</span>
-                <el-switch v-model="settings.score_notifications" @change="updateSettings" />
+                <div class="setting-icon">
+                  <el-icon color="#e6a23c"><Trophy /></el-icon>
+                </div>
+                <div class="setting-text">
+                  <span>成绩通知</span>
+                  <el-switch v-model="settings.score_notifications" @change="updateSettings" />
+                </div>
               </div>
             </el-col>
             <el-col :span="6">
               <div class="setting-item">
-                <el-icon color="#f56c6c"><Bell /></el-icon>
-                <span>公告通知</span>
-                <el-switch v-model="settings.announcement_notifications" @change="updateSettings" />
+                <div class="setting-icon">
+                  <el-icon color="#f56c6c"><Bell /></el-icon>
+                </div>
+                <div class="setting-text">
+                  <span>公告通知</span>
+                  <el-switch v-model="settings.announcement_notifications" @change="updateSettings" />
+                </div>
               </div>
             </el-col>
           </el-row>
         </div>
-      </el-card>
+      </div>
     </div>
 
-    <!-- 搜索和筛选 -->
+    <!-- 搜索和筛选区域 -->
     <div class="search-section">
-      <el-card>
-        <el-form :model="searchForm" inline>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="searchForm.keyword"
-              placeholder="搜索通知标题"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
-          <el-form-item label="类型">
-            <el-select
-              v-model="searchForm.type"
-              placeholder="选择类型"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="系统通知" value="system" />
-              <el-option label="考试通知" value="exam" />
-              <el-option label="成绩通知" value="score" />
-              <el-option label="公告通知" value="announcement" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select
-              v-model="searchForm.is_read"
-              placeholder="选择状态"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="未读" :value="false" />
-              <el-option label="已读" :value="true" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
+      <div class="search-card">
+        <div class="search-header">
+          <h3>搜索和筛选</h3>
+          <p>快速查找通知信息</p>
+        </div>
+        <div class="search-form">
+          <el-form :model="searchForm" inline>
+            <el-form-item>
+              <el-input
+                v-model="searchForm.keyword"
+                placeholder="请输入通知标题"
+                prefix-icon="Search"
+                class="search-input"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-select v-model="searchForm.type" placeholder="选择类型" class="filter-select" clearable>
+                <el-option label="全部类型" value="" />
+                <el-option label="系统通知" value="system" />
+                <el-option label="考试通知" value="exam" />
+                <el-option label="成绩通知" value="score" />
+                <el-option label="公告通知" value="announcement" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-select v-model="searchForm.is_read" placeholder="选择状态" class="filter-select" clearable>
+                <el-option label="全部状态" value="" />
+                <el-option label="未读" :value="false" />
+                <el-option label="已读" :value="true" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch" class="search-btn">
+                <el-icon><Search /></el-icon>
+                <span>搜索</span>
+              </el-button>
+              <el-button @click="handleReset" class="reset-btn">
+                <el-icon><Refresh /></el-icon>
+                <span>重置</span>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
     </div>
 
     <!-- 通知列表 -->
-    <div class="notifications-list">
-      <el-card>
-        <div class="list-header">
-          <div class="list-title">
-            <span>通知列表</span>
-            <el-tag v-if="selectedNotifications.length > 0" type="info">
-              已选择 {{ selectedNotifications.length }} 条通知
-            </el-tag>
+    <div class="table-section">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">
+            <h3>通知列表</h3>
+            <p>共 {{ pagination.total }} 条通知</p>
           </div>
-          <div class="list-actions" v-if="selectedNotifications.length > 0">
-            <el-button size="small" type="success" @click="batchMarkAsRead">
+          <div class="table-actions">
+            <el-button 
+              type="primary" 
+              @click="batchMarkAsRead" 
+              :disabled="selectedNotifications.length === 0"
+              class="action-btn"
+            >
               <el-icon><Check /></el-icon>
-              批量标记已读
+              <span>批量已读</span>
             </el-button>
-            <el-button size="small" type="danger" @click="batchDelete">
+            <el-button 
+              type="danger" 
+              @click="batchDelete" 
+              :disabled="selectedNotifications.length === 0"
+              class="action-btn"
+            >
               <el-icon><Delete /></el-icon>
-              批量删除
+              <span>批量删除</span>
             </el-button>
           </div>
         </div>
-
-        <el-table
-          :data="notifications"
-          :loading="loading"
-          @selection-change="handleSelectionChange"
-          row-key="id"
-          stripe
-        >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="title" label="通知标题" min-width="200" show-overflow-tooltip>
-            <template #default="{ row }">
-              <div class="notification-title">
-                <span :class="{ 'unread-title': !row.is_read }">{{ row.title }}</span>
-                <div class="notification-meta">
-                  <el-tag :type="getTypeTagType(row.type)" size="small">
-                    {{ getTypeLabel(row.type) }}
-                  </el-tag>
-                  <el-tag :type="row.is_read ? 'success' : 'warning'" size="small">
-                    {{ row.is_read ? '已读' : '未读' }}
-                  </el-tag>
+        
+        <div class="table-container">
+          <el-table 
+            :data="notifications" 
+            stripe 
+            class="modern-table"
+            :loading="loading"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="55" />
+            <el-table-column prop="id" label="ID" width="80" />
+            <el-table-column prop="title" label="通知标题" min-width="250">
+              <template #default="{ row }">
+                <div class="notification-info">
+                  <div class="notification-title-wrapper">
+                    <span :class="{ 'unread-title': !row.is_read }">{{ row.title }}</span>
+                  </div>
+                  <div class="notification-tags">
+                    <el-tag :type="getTypeTagType(row.type)" size="small" class="type-tag">
+                      {{ getTypeLabel(row.type) }}
+                    </el-tag>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="content" label="通知内容" min-width="250" show-overflow-tooltip />
-          <el-table-column prop="created_at" label="创建时间" width="160">
-            <template #default="{ row }">
-              {{ formatDate(row.created_at) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="read_at" label="阅读时间" width="160">
-            <template #default="{ row }">
-              {{ formatDate(row.read_at) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <el-button size="small" @click="viewNotification(row)">
-                查看
-              </el-button>
-              <el-button size="small" type="primary" @click="markAsRead(row)" v-if="!row.is_read">
-                标记已读
-              </el-button>
-              <el-dropdown @command="(command) => handleAction(command, row)">
-                <el-button size="small">
-                  更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="delete">删除通知</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </template>
-          </el-table-column>
-        </el-table>
-
+              </template>
+            </el-table-column>
+            <el-table-column prop="content" label="通知内容" min-width="300" show-overflow-tooltip />
+            <el-table-column prop="is_read" label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag 
+                  :type="row.is_read ? 'success' : 'warning'"
+                  class="status-tag"
+                >
+                  {{ row.is_read ? '已读' : '未读' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="created_at" label="创建时间" width="160">
+              <template #default="{ row }">
+                <span class="date-text">{{ formatDate(row.created_at) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="240" fixed="right">
+              <template #default="{ row }">
+                <div class="action-buttons">
+                  <el-button size="small" @click="viewNotification(row)" class="view-btn">
+                    <el-icon><View /></el-icon>
+                  </el-button>
+                  <el-button 
+                    size="small" 
+                    type="primary" 
+                    @click="markAsRead(row)" 
+                    v-if="!row.is_read"
+                    class="read-btn"
+                  >
+                    <el-icon><Check /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="danger" @click="deleteNotification(row)" class="delete-btn">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      
         <!-- 分页 -->
-        <div class="pagination">
+        <div class="pagination-container">
           <el-pagination
             :current-page="pagination.page"
             :page-size="pagination.size"
@@ -196,22 +234,28 @@
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
             @current-change="handlePageChange"
+            class="modern-pagination"
           />
         </div>
-      </el-card>
+      </div>
     </div>
 
     <!-- 通知详情对话框 -->
     <el-dialog
       v-model="showNotificationDialog"
       title="通知详情"
-      width="60%"
+      width="720px"
+      :close-on-click-modal="false"
+      class="modern-notification-dialog"
     >
-      <div v-if="viewingNotification" class="notification-detail">
-        <div class="detail-header">
-          <div class="detail-title">
+      <div v-if="viewingNotification" class="dialog-content">
+        <div class="notification-detail-header">
+          <div class="detail-icon">
+            <el-icon><Bell /></el-icon>
+          </div>
+          <div class="detail-title-section">
             <h3>{{ viewingNotification.title }}</h3>
-            <div class="detail-meta">
+            <div class="detail-tags">
               <el-tag :type="getTypeTagType(viewingNotification.type)" size="small">
                 {{ getTypeLabel(viewingNotification.type) }}
               </el-tag>
@@ -220,53 +264,45 @@
               </el-tag>
             </div>
           </div>
-          <div class="detail-time">
-            <span>创建时间: {{ formatDate(viewingNotification.created_at) }}</span>
-            <span v-if="viewingNotification.read_at">
-              阅读时间: {{ formatDate(viewingNotification.read_at) }}
-            </span>
-          </div>
         </div>
-        <div class="detail-content">
-          <div class="content-text">
-            {{ viewingNotification.content }}
+        
+        <div class="notification-detail-content">
+          <div class="detail-time-info">
+            <div class="time-item">
+              <span class="time-label">创建时间：</span>
+              <span class="time-value">{{ formatDate(viewingNotification.created_at) }}</span>
+            </div>
+            <div class="time-item" v-if="viewingNotification.read_at">
+              <span class="time-label">阅读时间：</span>
+              <span class="time-value">{{ formatDate(viewingNotification.read_at) }}</span>
+            </div>
+          </div>
+          
+          <div class="content-section">
+            <h4>通知内容</h4>
+            <div class="content-text">
+              {{ viewingNotification.content }}
+            </div>
           </div>
         </div>
       </div>
+      
       <template #footer>
-        <el-button @click="showNotificationDialog = false">关闭</el-button>
-        <el-button type="primary" @click="markAsRead(viewingNotification)" v-if="viewingNotification && !viewingNotification.is_read">
-          标记已读
-        </el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 通知设置对话框 -->
-    <el-dialog
-      v-model="showSettingsDialog"
-      title="通知设置"
-      width="500px"
-    >
-      <el-form :model="settings" label-width="120px">
-        <el-form-item label="邮件通知">
-          <el-switch v-model="settings.email_notifications" />
-        </el-form-item>
-        <el-form-item label="系统通知">
-          <el-switch v-model="settings.system_notifications" />
-        </el-form-item>
-        <el-form-item label="考试通知">
-          <el-switch v-model="settings.exam_notifications" />
-        </el-form-item>
-        <el-form-item label="成绩通知">
-          <el-switch v-model="settings.score_notifications" />
-        </el-form-item>
-        <el-form-item label="公告通知">
-          <el-switch v-model="settings.announcement_notifications" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showSettingsDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveSettings">保存</el-button>
+        <div class="dialog-footer">
+          <el-button @click="showNotificationDialog = false" size="large">
+            <el-icon><Close /></el-icon>
+            关闭
+          </el-button>
+          <el-button 
+            type="primary" 
+            @click="markAsRead(viewingNotification)" 
+            v-if="viewingNotification && !viewingNotification.is_read"
+            size="large"
+          >
+            <el-icon><Check /></el-icon>
+            标记已读
+          </el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -274,9 +310,10 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Setting, Message, Document, Trophy, Bell, Search, Refresh, Check, Delete, ArrowDown
+  Message, Document, Trophy, Bell, Search, Refresh, Check, Delete, ArrowLeft, View, Close
 } from '@element-plus/icons-vue'
 import { notificationApi } from '@/api/notifications'
 import { formatDate } from '@/utils/format'
@@ -284,7 +321,6 @@ import { formatDate } from '@/utils/format'
 export default {
   name: 'Notifications',
   components: {
-    Setting,
     Message,
     Document,
     Trophy,
@@ -293,16 +329,17 @@ export default {
     Refresh,
     Check,
     Delete,
-    ArrowDown
+    View,
+    Close
   },
   setup() {
+    const router = useRouter()
+    
     // 响应式数据
     const loading = ref(false)
     const notifications = ref([])
     const selectedNotifications = ref([])
-    const unreadCount = ref(0)
     const showNotificationDialog = ref(false)
-    const showSettingsDialog = ref(false)
     const viewingNotification = ref(null)
     
     // 搜索表单
@@ -321,14 +358,18 @@ export default {
     
     // 通知设置
     const settings = reactive({
-      email_notifications: true,
       system_notifications: true,
       exam_notifications: true,
       score_notifications: true,
       announcement_notifications: true
     })
     
-    // 方法
+    // 返回个人中心
+    const goBackToPersonalCenter = () => {
+      router.push('/user/dashboard')
+    }
+    
+    // 加载通知列表
     const loadNotifications = async () => {
       try {
         loading.value = true
@@ -356,15 +397,7 @@ export default {
       }
     }
     
-    const loadUnreadCount = async () => {
-      try {
-        const response = await notificationApi.getUnreadCount()
-        unreadCount.value = response.data.unread_count
-      } catch (error) {
-        console.error('Load unread count error:', error)
-      }
-    }
-    
+    // 加载通知设置
     const loadSettings = async () => {
       try {
         const response = await notificationApi.getNotificationSettings()
@@ -374,11 +407,13 @@ export default {
       }
     }
     
+    // 搜索
     const handleSearch = () => {
       pagination.page = 1
       loadNotifications()
     }
     
+    // 重置
     const handleReset = () => {
       Object.keys(searchForm).forEach(key => {
         searchForm[key] = ''
@@ -387,6 +422,7 @@ export default {
       loadNotifications()
     }
     
+    // 分页变化
     const handlePageChange = (page) => {
       pagination.page = page
       loadNotifications()
@@ -398,43 +434,48 @@ export default {
       loadNotifications()
     }
     
+    // 选择变化
     const handleSelectionChange = (selection) => {
       selectedNotifications.value = selection
     }
     
+    // 查看通知
     const viewNotification = (notification) => {
       viewingNotification.value = notification
       showNotificationDialog.value = true
+      
+      // 如果是未读通知，自动标记为已读
+      if (!notification.is_read) {
+        markAsRead(notification)
+      }
     }
     
+    // 标记已读
     const markAsRead = async (notification) => {
       try {
         await notificationApi.markAsRead(notification.id)
         notification.is_read = true
         notification.read_at = new Date().toISOString()
         ElMessage.success('标记已读成功')
-        loadUnreadCount()
+        
+        // 如果对话框打开，关闭它
+        if (showNotificationDialog.value) {
+          showNotificationDialog.value = false
+        }
       } catch (error) {
         ElMessage.error('标记已读失败')
         console.error('Mark as read error:', error)
       }
     }
     
-    const handleAction = async (command, notification) => {
-      switch (command) {
-        case 'delete':
-          await deleteNotification(notification)
-          break
-      }
-    }
-    
+    // 删除通知
     const deleteNotification = async (notification) => {
       try {
         await ElMessageBox.confirm(
-          `确定要删除通知"${notification.title}"吗？`,
+          `确定要删除通知"${notification.title}"吗？此操作不可恢复！`,
           '确认删除',
           {
-            confirmButtonText: '确定',
+            confirmButtonText: '确定删除',
             cancelButtonText: '取消',
             type: 'warning'
           }
@@ -443,7 +484,6 @@ export default {
         await notificationApi.deleteNotification(notification.id)
         ElMessage.success('删除通知成功')
         loadNotifications()
-        loadUnreadCount()
       } catch (error) {
         if (error !== 'cancel') {
           ElMessage.error('删除通知失败')
@@ -452,6 +492,7 @@ export default {
       }
     }
     
+    // 批量标记已读
     const batchMarkAsRead = async () => {
       try {
         await ElMessageBox.confirm(
@@ -470,7 +511,6 @@ export default {
         ElMessage.success('批量标记已读成功')
         selectedNotifications.value = []
         loadNotifications()
-        loadUnreadCount()
       } catch (error) {
         if (error !== 'cancel') {
           ElMessage.error('批量标记已读失败')
@@ -479,13 +519,14 @@ export default {
       }
     }
     
+    // 批量删除
     const batchDelete = async () => {
       try {
         await ElMessageBox.confirm(
-          `确定要删除选中的 ${selectedNotifications.value.length} 条通知吗？`,
+          `确定要删除选中的 ${selectedNotifications.value.length} 条通知吗？此操作不可恢复！`,
           '确认批量删除',
           {
-            confirmButtonText: '确定',
+            confirmButtonText: '确定删除',
             cancelButtonText: '取消',
             type: 'warning'
           }
@@ -497,7 +538,6 @@ export default {
         ElMessage.success('批量删除成功')
         selectedNotifications.value = []
         loadNotifications()
-        loadUnreadCount()
       } catch (error) {
         if (error !== 'cancel') {
           ElMessage.error('批量删除失败')
@@ -506,6 +546,7 @@ export default {
       }
     }
     
+    // 更新设置
     const updateSettings = async () => {
       try {
         await notificationApi.updateNotificationSettings(settings)
@@ -513,17 +554,6 @@ export default {
       } catch (error) {
         ElMessage.error('设置更新失败')
         console.error('Update settings error:', error)
-      }
-    }
-    
-    const saveSettings = async () => {
-      try {
-        await notificationApi.updateNotificationSettings(settings)
-        ElMessage.success('设置保存成功')
-        showSettingsDialog.value = false
-      } catch (error) {
-        ElMessage.error('设置保存失败')
-        console.error('Save settings error:', error)
       }
     }
     
@@ -551,7 +581,6 @@ export default {
     // 生命周期
     onMounted(() => {
       loadNotifications()
-      loadUnreadCount()
       loadSettings()
     })
     
@@ -559,13 +588,12 @@ export default {
       loading,
       notifications,
       selectedNotifications,
-      unreadCount,
       showNotificationDialog,
-      showSettingsDialog,
       viewingNotification,
       searchForm,
       pagination,
       settings,
+      goBackToPersonalCenter,
       handleSearch,
       handleReset,
       handlePageChange,
@@ -573,205 +601,674 @@ export default {
       handleSelectionChange,
       viewNotification,
       markAsRead,
-      handleAction,
+      deleteNotification,
       batchMarkAsRead,
       batchDelete,
       updateSettings,
-      saveSettings,
       getTypeLabel,
       getTypeTagType,
-      formatDate
+      formatDate,
+      ArrowLeft
     }
   }
 }
 </script>
 
-<style scoped>
-.notifications {
-  padding: 20px;
+<style lang="scss" scoped>
+.modern-notifications-management {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-info {
-  display: flex;
-  gap: 10px;
-}
-
-.notification-settings {
-  margin-bottom: 20px;
-}
-
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.settings-header h3 {
-  margin: 0;
-  color: #303133;
-  font-size: 18px;
-}
-
-.settings-content {
-  padding: 20px 0;
-}
-
-.setting-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 15px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  transition: all 0.3s;
-}
-
-.setting-item:hover {
-  border-color: #409eff;
-  background-color: #f0f9ff;
-}
-
-.setting-item .el-icon {
-  font-size: 20px;
-}
-
-.setting-item span {
-  flex: 1;
-  font-weight: 500;
+.modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  .header-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-left {
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
+        .title-icon {
+          width: 56px;
+          height: 56px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: white;
+          backdrop-filter: blur(10px);
+        }
+        
+        .title-text {
+          h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+          }
+          
+          p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .header-right {
+      display: flex;
+      gap: 12px;
+      
+      .back-btn {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
 }
 
 .search-section {
-  margin-bottom: 20px;
+  padding: 32px;
+  
+  .search-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .search-header {
+      margin-bottom: 24px;
+      
+      h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+      
+      p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+    
+    .settings-content {
+      .setting-item {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: #e9ecef;
+          transform: translateY(-2px);
+        }
+        
+        .setting-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: white;
+          font-size: 20px;
+        }
+        
+        .setting-text {
+          flex: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          
+          span {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+    
+    .search-form {
+      .el-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+        
+        .el-form-item {
+          margin-bottom: 0;
+          
+          .search-input {
+            width: 240px;
+            
+            :deep(.el-input__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .filter-select {
+            width: 160px;
+            
+            :deep(.el-select__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .search-btn, .reset-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            &.el-button--primary {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+              }
+            }
+            
+            &:not(.el-button--primary) {
+              background: #f8f9fa;
+              border-color: #e9ecef;
+              color: #6c757d;
+              
+              &:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
-.notifications-list {
-  margin-bottom: 20px;
+.table-section {
+  padding: 0 32px 32px;
+  
+  .table-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      
+      .table-title {
+        h3 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px 0;
+        }
+        
+        p {
+          color: #666;
+          font-size: 14px;
+          margin: 0;
+        }
+      }
+      
+      .table-actions {
+        display: flex;
+        gap: 12px;
+        
+        .action-btn {
+          padding: 10px 20px;
+          border-radius: 12px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          
+          &.el-button--primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            
+            &:hover:not(:disabled) {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            }
+          }
+          
+          &.el-button--danger {
+            background: #fee;
+            border-color: #fcc;
+            color: #d32f2f;
+            
+            &:hover:not(:disabled) {
+              background: #fcc;
+              transform: translateY(-2px);
+            }
+          }
+        }
+      }
+    }
+    
+    .table-container {
+      .modern-table {
+        :deep(.el-table__header) {
+          th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+          }
+        }
+        
+        :deep(.el-table__body) {
+          tr {
+            &:hover {
+              background: rgba(102, 126, 234, 0.05);
+            }
+          }
+        }
+        
+        .notification-info {
+          .notification-title-wrapper {
+            margin-bottom: 8px;
+            
+            .unread-title {
+              font-weight: 700;
+              color: #1a1a1a;
+            }
+          }
+          
+          .notification-tags {
+            display: flex;
+            gap: 8px;
+            
+            .type-tag {
+              border-radius: 8px;
+              font-weight: 600;
+              padding: 4px 12px;
+            }
+          }
+        }
+        
+        .status-tag {
+          border-radius: 8px;
+          font-weight: 600;
+          padding: 4px 12px;
+        }
+        
+        .date-text {
+          color: #6c757d;
+          font-size: 13px;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 8px;
+          
+          .el-button {
+            border-radius: 8px;
+            padding: 6px 12px;
+            
+            &.view-btn {
+              background: #e3f2fd;
+              border-color: #bbdefb;
+              color: #1976d2;
+              
+              &:hover {
+                background: #bbdefb;
+                transform: translateY(-1px);
+              }
+            }
+            
+            &.read-btn {
+              background: #e8f5e9;
+              border-color: #c8e6c9;
+              color: #4caf50;
+              
+              &:hover {
+                background: #c8e6c9;
+                transform: translateY(-1px);
+              }
+            }
+            
+            &.delete-btn {
+              background: #ffebee;
+              border-color: #ffcdd2;
+              color: #d32f2f;
+              
+              &:hover {
+                background: #ffcdd2;
+                transform: translateY(-1px);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .pagination-container {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      
+      .modern-pagination {
+        :deep(.el-pagination) {
+          .el-pager li {
+            border-radius: 8px;
+            margin: 0 4px;
+            
+            &.is-active {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+            }
+          }
+          
+          .btn-prev, .btn-next {
+            border-radius: 8px;
+            margin: 0 4px;
+          }
+        }
+      }
+    }
+  }
 }
 
-.list-header {
+/* 通知详情对话框 */
+.modern-notification-dialog :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: visible;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modern-notification-dialog :deep(.el-dialog__header) {
+  background: transparent;
+  color: #1f2937;
+  padding: 32px 40px 0 40px;
+  margin: 0;
+  border-bottom: none;
+}
+
+.modern-notification-dialog :deep(.el-dialog__title) {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modern-notification-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.dialog-content {
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.notification-detail-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  
+  .detail-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  }
+  
+  .detail-title-section {
+    flex: 1;
+    
+    h3 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    
+    .detail-tags {
+      display: flex;
+      gap: 10px;
+    }
+  }
 }
 
-.list-title {
+.notification-detail-content {
+  .detail-time-info {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    
+    .time-item {
+      display: flex;
+      gap: 8px;
+      
+      .time-label {
+        color: #6b7280;
+        font-weight: 600;
+      }
+      
+      .time-value {
+        color: #1f2937;
+      }
+    }
+  }
+  
+  .content-section {
+    h4 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .content-text {
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      line-height: 1.8;
+      color: #374151;
+      font-size: 15px;
+    }
+  }
+}
+
+.modern-notification-dialog :deep(.el-dialog__footer) {
+  background: rgba(248, 250, 252, 0.8);
+  padding: 32px 40px;
+  border-top: 1px solid rgba(229, 231, 235, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.dialog-footer {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.list-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.notification-title {
-  line-height: 1.5;
-}
-
-.unread-title {
-  font-weight: 600;
-  color: #303133;
-}
-
-.notification-meta {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.notification-detail {
-  padding: 20px 0;
-}
-
-.detail-header {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.detail-title h3 {
-  margin: 0 0 15px 0;
-  color: #303133;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.detail-meta {
-  display: flex;
-  gap: 10px;
-}
-
-.detail-time {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 14px;
-  color: #909399;
-}
-
-.detail-content {
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #409eff;
-}
-
-.content-text {
-  color: #606266;
-  line-height: 1.6;
-  font-size: 16px;
-}
-
-:deep(.el-table .el-table__row) {
-  cursor: pointer;
-}
-
-:deep(.el-table .el-table__row:hover) {
-  background-color: #f5f7fa;
+  justify-content: flex-end;
+  gap: 16px;
+  
+  .el-button {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 14px 28px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    
+    &:not(.el-button--primary) {
+      background: rgba(255, 255, 255, 0.8);
+      color: #6b7280;
+      border: 1px solid rgba(209, 213, 219, 0.6);
+      backdrop-filter: blur(10px);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: #374151;
+        border-color: rgba(156, 163, 175, 0.8);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 
+        0 4px 16px rgba(102, 126, 234, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      
+      &:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+        box-shadow: 
+          0 8px 25px rgba(102, 126, 234, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .notifications {
-    padding: 15px;
-  }
-  
-  .settings-content .el-col {
-    margin-bottom: 15px;
-  }
-  
-  .list-header {
+  .modern-header .header-content {
     flex-direction: column;
-    gap: 15px;
+    gap: 24px;
+    text-align: center;
+    
+    .header-right {
+      width: 100%;
+      justify-content: center;
+    }
   }
   
-  .detail-time {
-    flex-direction: row;
-    gap: 15px;
+  .search-section {
+    padding: 16px;
+    
+    .search-card {
+      padding: 20px;
+      
+      .search-form .el-form {
+        flex-direction: column;
+        align-items: stretch;
+        
+        .el-form-item {
+          width: 100%;
+          
+          .search-input, .filter-select {
+            width: 100%;
+          }
+        }
+      }
+      
+      .settings-content {
+        .el-col {
+          margin-bottom: 16px;
+        }
+      }
+    }
+  }
+  
+  .table-section {
+    padding: 0 16px 16px;
+    
+    .table-card {
+      padding: 20px;
+      
+      .table-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+      }
+    }
+  }
+  
+  .notification-detail-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .detail-time-info {
+    flex-direction: column;
+    gap: 16px !important;
   }
 }
 </style>

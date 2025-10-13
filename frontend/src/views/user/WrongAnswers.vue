@@ -1,27 +1,35 @@
 <template>
   <div class="wrong-answers">
-    <div class="page-header">
-      <div class="header-left">
-        <el-button 
-          type="primary" 
-          :icon="ArrowLeft" 
-          @click="goBackToPersonalCenter"
-          class="back-button"
-        >
-          返回个人中心
-        </el-button>
-      </div>
-      <div class="header-right">
-        <h1>错题管理</h1>
-        <div class="header-info">
-          <el-tag type="info">共 {{ wrongAnswers.length }} 道错题</el-tag>
+    <div class="modern-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="page-title">
+            <div class="title-icon">
+              <el-icon><Warning /></el-icon>
+            </div>
+            <div class="title-text">
+              <h1>错题管理</h1>
+              <p>复习错题，提升学习效果</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <el-button 
+            type="primary" 
+            :icon="ArrowLeft" 
+            @click="goBackToPersonalCenter"
+            class="back-btn"
+          >
+            返回个人中心
+          </el-button>
         </div>
       </div>
     </div>
 
     <!-- 统计概览 -->
     <div class="statistics-overview">
-      <el-row :gutter="20">
+      <div class="stats-card">
+        <el-row :gutter="20">
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
@@ -74,13 +82,19 @@
             </div>
           </el-card>
         </el-col>
-      </el-row>
+        </el-row>
+      </div>
     </div>
 
     <!-- 搜索和筛选 -->
     <div class="search-section">
-      <el-card>
-        <el-form :model="searchForm" inline>
+      <div class="search-card">
+        <div class="search-header">
+          <h3>搜索筛选</h3>
+          <p>根据条件筛选错题记录</p>
+        </div>
+        <div class="search-form">
+          <el-form :model="searchForm" inline>
           <el-form-item label="关键词">
             <el-input
               v-model="searchForm.keyword"
@@ -140,7 +154,8 @@
             </el-button>
           </el-form-item>
         </el-form>
-      </el-card>
+        </div>
+      </div>
     </div>
 
     <!-- 错题列表 -->
@@ -699,102 +714,402 @@ export default {
 
 <style scoped>
 .wrong-answers {
-  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.back-button {
-  margin-right: 20px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-info {
-  display: flex;
-  gap: 10px;
-}
-
-.statistics-overview {
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.stat-icon {
-  font-size: 32px;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #909399;
+.modern-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  .header-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-left {
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
+        .title-icon {
+          width: 56px;
+          height: 56px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: white;
+          backdrop-filter: blur(10px);
+        }
+        
+        .title-text {
+          h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+          }
+          
+          p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .header-right {
+      display: flex;
+      gap: 12px;
+      
+      .back-btn {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
 }
 
 .search-section {
-  margin-bottom: 20px;
+  padding: 32px;
+  
+  .search-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .search-header {
+      margin-bottom: 24px;
+      
+      h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+      
+      p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+    
+    .search-form {
+      .el-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+        
+        .el-form-item {
+          margin-bottom: 0;
+          
+          .search-input {
+            width: 240px;
+            
+            :deep(.el-input__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .filter-select {
+            width: 160px;
+            
+            :deep(.el-select__wrapper) {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+          }
+          
+          .search-btn, .reset-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            &.el-button--primary {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+              }
+            }
+            
+            &:not(.el-button--primary) {
+              background: #f8f9fa;
+              border-color: #e9ecef;
+              color: #6c757d;
+              
+              &:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
-.wrong-answers-list {
-  margin-bottom: 20px;
+.table-section {
+  padding: 0 32px 32px;
+  
+  .table-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      
+      .table-title {
+        h3 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px 0;
+        }
+        
+        p {
+          color: #666;
+          font-size: 14px;
+          margin: 0;
+        }
+      }
+    }
+    
+    .table-container {
+      .modern-table {
+        :deep(.el-table__header) {
+          th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+          }
+        }
+        
+        :deep(.el-table__body) {
+          tr {
+            &:hover {
+              background: rgba(102, 126, 234, 0.05);
+            }
+          }
+        }
+      }
+    }
+    
+    .pagination-container {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      
+      .modern-pagination {
+        :deep(.el-pagination) {
+          .el-pager li {
+            border-radius: 8px;
+            margin: 0 4px;
+            
+            &.is-active {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+            }
+          }
+          
+          .btn-prev, .btn-next {
+            border-radius: 8px;
+            margin: 0 4px;
+          }
+        }
+      }
+    }
+  }
 }
 
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+.statistics-overview {
+  padding: 32px;
+  
+  .stats-card {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      border: 1px solid #e9ecef;
+      
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      }
+      
+      :deep(.el-card__body) {
+        padding: 24px;
+      }
+      
+      .stat-content {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+      }
+      
+      .stat-icon {
+        margin-right: 16px;
+        font-size: 32px;
+      }
+      
+      .stat-info {
+        flex: 1;
+      }
+      
+      .stat-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+      }
+      
+      .stat-label {
+        font-size: 14px;
+        color: #6c757d;
+      }
+    }
+  }
 }
 
-.list-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 500;
+.modern-dialog {
+  :deep(.el-dialog) {
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+  }
+  
+  :deep(.el-dialog__header) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 24px;
+    
+    .el-dialog__title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 24px;
+  }
+  
+  :deep(.el-dialog__footer) {
+    padding: 16px 24px 24px;
+    
+    .el-button {
+      border-radius: 12px;
+      font-weight: 600;
+      padding: 10px 24px;
+      
+      &.el-button--primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+      }
+    }
+  }
 }
 
-.list-actions {
-  display: flex;
-  gap: 10px;
+@media (max-width: 768px) {
+  .modern-header .header-content {
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+    
+    .header-right {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  .search-section {
+    padding: 16px;
+    
+    .search-card {
+      padding: 20px;
+      
+      .search-form .el-form {
+        flex-direction: column;
+        align-items: stretch;
+        
+        .el-form-item {
+          width: 100%;
+          
+          .search-input, .filter-select {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+  
+  .table-section {
+    padding: 0 16px 16px;
+    
+    .table-card {
+      padding: 20px;
+    }
+  }
 }
 
 .question-title {
