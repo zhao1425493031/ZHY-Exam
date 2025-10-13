@@ -737,28 +737,57 @@ export default {
     
     .settings-content {
       .setting-item {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        padding: 24px;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 20px;
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
         
         &:hover {
-          background: #e9ecef;
-          transform: translateY(-2px);
+          border-color: #667eea;
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(102, 126, 234, 0.15);
+          
+          &::before {
+            opacity: 1;
+          }
+          
+          .setting-icon {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+          }
         }
         
         .setting-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: white;
-          font-size: 20px;
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          font-size: 22px;
+          position: relative;
+          z-index: 1;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
         
         .setting-text {
@@ -766,11 +795,34 @@ export default {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          position: relative;
+          z-index: 1;
           
           span {
-            font-weight: 600;
+            font-weight: 700;
             color: #1a1a1a;
-            font-size: 14px;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+          }
+          
+          :deep(.el-switch) {
+            --el-switch-on-color: #667eea;
+            --el-switch-off-color: #e9ecef;
+            
+            .el-switch__core {
+              border-radius: 20px;
+              height: 24px;
+              min-width: 48px;
+              border: 2px solid transparent;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .el-switch__action {
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            }
           }
         }
       }
