@@ -677,6 +677,33 @@ INSERT INTO `log_configs` (`config_key`, `config_value`, `description`) VALUES
 ('LOG_ENABLE_ROTATION', 'true', '是否启用日志轮转 (true/false)');
 
 -- 恢复外键检查
+-- 用户设置表 (user_settings)
+DROP TABLE IF EXISTS `user_settings`;
+CREATE TABLE `user_settings` (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL UNIQUE,
+    email_notifications BOOLEAN DEFAULT TRUE NOT NULL,
+    system_notifications BOOLEAN DEFAULT TRUE NOT NULL,
+    exam_notifications BOOLEAN DEFAULT TRUE NOT NULL,
+    score_notifications BOOLEAN DEFAULT TRUE NOT NULL,
+    announcement_notifications BOOLEAN DEFAULT TRUE NOT NULL,
+    theme VARCHAR(20) DEFAULT 'light' NOT NULL,
+    language VARCHAR(10) DEFAULT 'zh' NOT NULL,
+    timezone VARCHAR(50) DEFAULT 'Asia/Shanghai' NOT NULL,
+    extra_settings JSON DEFAULT ('{}'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 添加索引
+CREATE INDEX idx_user_settings_user_id ON user_settings(user_id);
+
+-- 为现有用户创建默认设置
+INSERT INTO user_settings (user_id, email_notifications, system_notifications, exam_notifications, score_notifications, announcement_notifications)
+SELECT id, TRUE, TRUE, TRUE, TRUE, TRUE
+FROM users
+WHERE id NOT IN (SELECT user_id FROM user_settings);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 显示创建结果

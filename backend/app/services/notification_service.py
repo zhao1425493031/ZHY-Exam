@@ -243,15 +243,10 @@ class NotificationService:
     def get_notification_settings(user_id: int) -> Dict[str, Any]:
         """获取用户通知设置"""
         try:
-            # 这里应该从用户设置表获取
-            # 目前返回默认设置
-            settings = {
-                'email_notifications': True,
-                'exam_notifications': True,
-                'score_notifications': True,
-                'system_notifications': True,
-                'announcement_notifications': True
-            }
+            from app.models.user_setting import UserSetting
+            
+            # 从用户设置表获取设置
+            settings = UserSetting.get_notification_settings(user_id)
             
             return settings
             
@@ -263,17 +258,12 @@ class NotificationService:
     def update_notification_settings(user_id: int, settings_data: Dict[str, Any]) -> Dict[str, Any]:
         """更新用户通知设置"""
         try:
-            # 这里应该保存到用户设置表
-            # 目前返回更新后的设置
-            settings = {
-                'email_notifications': settings_data.get('email_notifications', True),
-                'exam_notifications': settings_data.get('exam_notifications', True),
-                'score_notifications': settings_data.get('score_notifications', True),
-                'system_notifications': settings_data.get('system_notifications', True),
-                'announcement_notifications': settings_data.get('announcement_notifications', True)
-            }
+            from app.models.user_setting import UserSetting
             
-            return settings
+            # 保存到用户设置表
+            settings = UserSetting.update_notification_settings(user_id, settings_data)
+            
+            return settings.to_dict()
             
         except Exception as e:
             logger.error(f'Update notification settings error: {str(e)}')
