@@ -117,6 +117,14 @@
         </div>
       </div>
     </div>
+    
+    <!-- 支付弹窗 -->
+    <PaymentDialog
+      v-model="showPaymentDialog"
+      :course-info="courseInfo"
+      @payment-success="handlePaymentSuccess"
+      @payment-cancel="handlePaymentCancel"
+    />
   </div>
 </template>
 
@@ -137,12 +145,14 @@ import { useAuthStore } from '@/stores/auth'
 import { subjectsApi } from '@/api/subjects'
 import { examApi } from '@/api/exams'
 import { userSubjectsApi } from '@/api/user_subjects'
+import PaymentDialog from '@/components/payment/PaymentDialog.vue'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
 export default {
   name: 'CourseDetail',
   components: {
     TopNavigation,
+    PaymentDialog,
     Star,
     User,
     Clock,
@@ -161,6 +171,7 @@ export default {
     const course = ref(null)
     const relatedExams = ref([])
     const examsLoading = ref(false)
+    const showPaymentDialog = ref(false)
     
     // 模拟课程大纲数据
     const chapters = ref([
@@ -299,10 +310,9 @@ export default {
           return
         }
         
-        // 如果是付费课程且未购买，显示购买提示
+        // 如果是付费课程且未购买，显示支付弹窗
         if (!course.value.is_free && !course.value.is_subscribed) {
-          ElMessage.info('付费课程需要购买后才能使用')
-          // 这里可以跳转到支付页面或显示支付弹窗
+          showPaymentDialog.value = true
           return
         }
         
@@ -372,6 +382,46 @@ export default {
       router.push(`/exam/detail/${exam.id}`)
     }
     
+    // 支付成功处理
+    const handlePaymentSuccess = async (paymentData) => {
+      console.log('支付成功:', paymentData)
+      
+      // 支付成功后，自动添加到我的课程
+      try {
+        subscribing.value = true
+        const response = await userSubjectsApi.subscribeSubject({
+          subject_id: course.value.id
+        })
+        
+        if (response.code === 200) {
+          ElMessage.success('支付成功！课程已添加到我的课程')
+          course.value.is_subscribed = true
+        } else {
+          ElMessage.error(response.message || '添加课程失败')
+        }
+      } catch (error) {
+        console.error('添加课程失败:', error)
+        ElMessage.error('添加课程失败')
+      } finally {
+        subscribing.value = false
+      }
+    }
+    
+    // 支付取消处理
+    const handlePaymentCancel = () => {
+      console.log('支付已取消')
+    }
+    
+    // 课程信息计算属性（用于支付弹窗）
+    const courseInfo = computed(() => {
+      if (!course.value) return {}
+      return {
+        id: course.value.id,
+        name: course.value.name,
+        price: course.value.price || 0
+      }
+    })
+    
     onMounted(() => {
       fetchCourseDetail()
     })
@@ -387,7 +437,11 @@ export default {
       canTakeExam,
       addToMyCourses,
       startExam,
-      getExamButtonText
+      getExamButtonText,
+      showPaymentDialog,
+      courseInfo,
+      handlePaymentSuccess,
+      handlePaymentCancel
     }
   }
 }

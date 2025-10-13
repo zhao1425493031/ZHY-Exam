@@ -80,6 +80,7 @@ def create_app(config_name=None):
     from app.api.user_subjects import user_subjects_bp
     from app.api.exam_scoring import exam_scoring_bp
     from app.api.exam_monitoring import exam_monitoring_bp
+    from app.api.payment import payment_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -97,6 +98,7 @@ def create_app(config_name=None):
     app.register_blueprint(user_subjects_bp)
     app.register_blueprint(exam_scoring_bp)
     app.register_blueprint(exam_monitoring_bp)
+    app.register_blueprint(payment_bp)
     
     # JWT错误处理
     @jwt.expired_token_loader
