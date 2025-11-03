@@ -855,3 +855,7 @@ CREATE TABLE `wrong_answers` (
 
 INSERT INTO `users` (`username`, `email`, `password_hash`, `real_name`, `role`, `status`) VALUES
 ('admin', 'admin@examsphere.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/8Qz8K2', '系统管理员', 'admin', 'active');
+
+ALTER TABLE `user_subjects` 
+MODIFY COLUMN `status` ENUM('active', 'expired', 'cancelled', 'pending', 'approved', 'rejected') DEFAULT 'pending' 
+COMMENT '订阅状态：active-正常，expired-已过期，cancelled-已取消，pending-待承认，approved-已承认，rejected-拒绝';

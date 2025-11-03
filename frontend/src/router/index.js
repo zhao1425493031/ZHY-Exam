@@ -126,6 +126,16 @@ const routes = [
     }
   },
   {
+    path: '/admin/user-subjects',
+    name: 'UserSubjectManagement',
+    component: () => import('@/views/admin/UserSubjectManagement.vue'),
+    meta: { 
+      title: '用户课程关联',
+      requiresAuth: true,
+      requiresRole: ['admin']
+    }
+  },
+  {
     path: '/admin/exams',
     name: 'ExamManagement',
     component: () => import('@/views/admin/ExamManagement.vue'),

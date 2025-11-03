@@ -614,7 +614,7 @@ CREATE TABLE IF NOT EXISTS `user_subjects` (
     `is_free` BOOLEAN DEFAULT TRUE COMMENT '是否免费订阅',
     `purchased_at` TIMESTAMP NULL COMMENT '购买时间（付费课程）',
     `expires_at` TIMESTAMP NULL COMMENT '到期时间（付费课程）',
-    `status` ENUM('active', 'expired', 'cancelled') DEFAULT 'active' COMMENT '订阅状态',
+    `status` ENUM('active', 'expired', 'cancelled', 'pending', 'approved', 'rejected') DEFAULT 'pending' COMMENT '订阅状态：active-正常，expired-已过期，cancelled-已取消，pending-待承认，approved-已承认，rejected-拒绝',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     

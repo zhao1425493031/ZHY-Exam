@@ -24,6 +24,7 @@
           </template>
           <el-menu-item index="/admin/users">用户管理</el-menu-item>
           <el-menu-item index="/admin/subjects">科目管理</el-menu-item>
+          <el-menu-item index="/admin/user-subjects">用户课程关联</el-menu-item>
           <el-menu-item index="/admin/questions">试题管理</el-menu-item>
           <el-menu-item index="/admin/exams">考试管理</el-menu-item>
           <el-menu-item index="/admin/question-bank">题库管理</el-menu-item>

@@ -122,7 +122,7 @@ import {
   Setting, HomeFilled, SwitchButton, User, Reading, Document, 
   QuestionFilled, Collection, EditPen, TrendCharts, Lock, 
   Upload, DataAnalysis, ArrowRight, Plus, Search, Download,
-  TrendCharts as TrendUp, TrendCharts as TrendDown
+  TrendCharts as TrendUp, TrendCharts as TrendDown, Link
 } from '@element-plus/icons-vue'
 
 export default {
@@ -146,7 +146,8 @@ export default {
     Search,
     Download,
     TrendUp,
-    TrendDown
+    TrendDown,
+    Link
   },
   setup() {
     const router = useRouter()
@@ -210,6 +211,13 @@ export default {
         title: '科目管理',
         description: '管理考试科目和分类',
         path: '/admin/subjects'
+      },
+      {
+        icon: 'Link',
+        iconClass: 'user-subjects',
+        title: '用户课程关联',
+        description: '管理用户和课程之间的关联',
+        path: '/admin/user-subjects'
       },
       {
         icon: 'QuestionFilled',

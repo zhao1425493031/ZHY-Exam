@@ -12,8 +12,8 @@ class UserSubject(BaseModel):
     is_free = Column(Boolean, default=True, comment='是否免费订阅')
     purchased_at = Column(DateTime, comment='购买时间（付费课程）')
     expires_at = Column(DateTime, comment='到期时间（付费课程）')
-    status = Column(Enum('active', 'expired', 'cancelled', name='user_subject_status'), 
-                   default='active', comment='订阅状态')
+    status = Column(Enum('active', 'expired', 'cancelled', 'pending', 'approved', 'rejected', name='user_subject_status'), 
+                   default='pending', comment='订阅状态：active-正常，expired-已过期，cancelled-已取消，pending-待承认，approved-已承认，rejected-拒绝')
 
     # 关系
     user = relationship('User', backref='user_subjects')
