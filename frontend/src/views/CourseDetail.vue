@@ -60,7 +60,16 @@
                   :loading="subscribing"
                 >
                   <el-icon><Plus /></el-icon>
-                  {{ course.is_free ? '添加到我的课程' : `购买课程 (¥${course.price})` }}
+                  {{ course.is_free ? '添加到我的课程' : `申请课程 (¥${course.price})` }}
+                </el-button>
+                <el-button 
+                  v-else-if="course.is_subscribed && course.subscription_status === 'pending'"
+                  type="warning" 
+                  size="large"
+                  disabled
+                >
+                  <el-icon><Clock /></el-icon>
+                  申请审核中
                 </el-button>
                 <el-button 
                   v-else 
@@ -118,13 +127,6 @@
       </div>
     </div>
     
-    <!-- 支付弹窗 -->
-    <PaymentDialog
-      v-model="showPaymentDialog"
-      :course-info="courseInfo"
-      @payment-success="handlePaymentSuccess"
-      @payment-cancel="handlePaymentCancel"
-    />
   </div>
 </template>
 
@@ -145,14 +147,12 @@ import { useAuthStore } from '@/stores/auth'
 import { subjectsApi } from '@/api/subjects'
 import { examApi } from '@/api/exams'
 import { userSubjectsApi } from '@/api/user_subjects'
-import PaymentDialog from '@/components/payment/PaymentDialog.vue'
 import TopNavigation from '@/components/layout/TopNavigation.vue'
 
 export default {
   name: 'CourseDetail',
   components: {
     TopNavigation,
-    PaymentDialog,
     Star,
     User,
     Clock,
@@ -171,7 +171,6 @@ export default {
     const course = ref(null)
     const relatedExams = ref([])
     const examsLoading = ref(false)
-    const showPaymentDialog = ref(false)
     
     // 模拟课程大纲数据
     const chapters = ref([
@@ -254,6 +253,7 @@ export default {
               const subscribeResponse = await userSubjectsApi.checkSubscription(courseId)
               if (subscribeResponse.code === 200) {
                 course.value.is_subscribed = subscribeResponse.data.is_subscribed
+                course.value.subscription_status = subscribeResponse.data.status || 'active'
               }
             } catch (error) {
               console.error('检查订阅状态失败:', error)
@@ -301,18 +301,12 @@ export default {
       return course.value.is_subscribed
     })
     
-    // 添加到我的课程或购买课程
+    // 添加到我的课程或申请课程
     const addToMyCourses = async () => {
       try {
         if (!authStore.isLoggedIn) {
           ElMessage.warning('请先登录')
           authStore.showLoginDialog = true
-          return
-        }
-        
-        // 如果是付费课程且未购买，显示支付弹窗
-        if (!course.value.is_free && !course.value.is_subscribed) {
-          showPaymentDialog.value = true
           return
         }
         
@@ -323,14 +317,30 @@ export default {
         })
         
         if (response.code === 200) {
-          ElMessage.success('课程已添加到我的课程')
-          course.value.is_subscribed = true
+          if (course.value.is_free) {
+            ElMessage.success('课程已添加到我的课程')
+            course.value.is_subscribed = true
+          } else {
+            const status = response.data?.status
+            if (status === 'pending') {
+              ElMessage.success('课程申请已提交，等待审核')
+              course.value.is_subscribed = true
+              course.value.subscription_status = 'pending'
+            } else if (status === 'already_subscribed' || status === 'approved') {
+              ElMessage.success('申请已通过')
+              course.value.is_subscribed = true
+              course.value.subscription_status = 'approved'
+            } else {
+              ElMessage.success(response.message || '申请已提交')
+              course.value.is_subscribed = true
+            }
+          }
         } else {
-          ElMessage.error(response.message || '添加课程失败')
+          ElMessage.error(response.message || '操作失败')
         }
       } catch (error) {
-        console.error('添加课程失败:', error)
-        ElMessage.error('添加课程失败')
+        console.error('操作失败:', error)
+        ElMessage.error('操作失败')
       } finally {
         subscribing.value = false
       }
@@ -356,7 +366,7 @@ export default {
       if (course.value.is_free) {
         return '请先添加课程'
       } else {
-        return '请先购买课程'
+        return '请先申请课程'
       }
     }
     
@@ -374,7 +384,7 @@ export default {
         if (course.value.is_free) {
           ElMessage.warning('请先将课程添加到我的课程后再参加考试')
         } else {
-          ElMessage.warning('请先购买并添加课程后再参加考试')
+          ElMessage.warning('请先申请并添加课程后再参加考试')
         }
         return
       }
@@ -382,45 +392,6 @@ export default {
       router.push(`/exam/detail/${exam.id}`)
     }
     
-    // 支付成功处理
-    const handlePaymentSuccess = async (paymentData) => {
-      console.log('支付成功:', paymentData)
-      
-      // 支付成功后，自动添加到我的课程
-      try {
-        subscribing.value = true
-        const response = await userSubjectsApi.subscribeSubject({
-          subject_id: course.value.id
-        })
-        
-        if (response.code === 200) {
-          ElMessage.success('支付成功！课程已添加到我的课程')
-          course.value.is_subscribed = true
-        } else {
-          ElMessage.error(response.message || '添加课程失败')
-        }
-      } catch (error) {
-        console.error('添加课程失败:', error)
-        ElMessage.error('添加课程失败')
-      } finally {
-        subscribing.value = false
-      }
-    }
-    
-    // 支付取消处理
-    const handlePaymentCancel = () => {
-      console.log('支付已取消')
-    }
-    
-    // 课程信息计算属性（用于支付弹窗）
-    const courseInfo = computed(() => {
-      if (!course.value) return {}
-      return {
-        id: course.value.id,
-        name: course.value.name,
-        price: course.value.price || 0
-      }
-    })
     
     onMounted(() => {
       fetchCourseDetail()
@@ -437,11 +408,7 @@ export default {
       canTakeExam,
       addToMyCourses,
       startExam,
-      getExamButtonText,
-      showPaymentDialog,
-      courseInfo,
-      handlePaymentSuccess,
-      handlePaymentCancel
+      getExamButtonText
     }
   }
 }

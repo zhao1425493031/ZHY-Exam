@@ -5,6 +5,7 @@ from app.models.subject import Subject
 from app.models.user import User
 from app.utils.helpers import build_response, build_error_response, paginate_query, get_client_ip, log_operation
 from app.utils.decorators import require_roles
+from app.services.email_service import EmailService
 from app import db
 import logging
 
@@ -66,7 +67,7 @@ def get_user_subjects():
 @user_subjects_bp.route('/subscribe', methods=['POST'])
 @jwt_required()
 def subscribe_subject():
-    """用户订阅科目"""
+    """用户申请/订阅科目"""
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
@@ -76,7 +77,12 @@ def subscribe_subject():
             logger.warning(f'[用户科目] 用户ID: {current_user_id} 订阅科目缺少subject_id参数')
             return jsonify(build_error_response(400, '缺少科目ID')), 400
         
-        logger.info(f'[用户科目] 用户ID: {current_user_id} 开始订阅科目 {subject_id}')
+        logger.info(f'[用户科目] 用户ID: {current_user_id} 开始申请/订阅科目 {subject_id}')
+        
+        # 获取用户信息
+        user = User.query.get(current_user_id)
+        if not user:
+            return jsonify(build_error_response(404, '用户不存在')), 404
         
         # 检查科目是否存在
         subject = Subject.query.get(subject_id)
@@ -89,32 +95,133 @@ def subscribe_subject():
             logger.warning(f'[用户科目] 用户ID: {current_user_id} 科目 {subject.name} 状态不可用')
             return jsonify(build_error_response(400, '科目不可用')), 400
         
-        # 订阅科目
-        user_subject, result = UserSubject.subscribe_subject(
-            current_user_id, 
-            subject_id, 
-            is_free=subject.is_free
-        )
+        # 检查是否已存在关联
+        existing = UserSubject.query.filter_by(
+            user_id=current_user_id,
+            subject_id=subject_id
+        ).first()
         
-        if result == 'new_subscription':
-            db.session.add(user_subject)
-            logger.info(f'[用户科目] 用户ID: {current_user_id} 新订阅科目 {subject.name}')
-        elif result == 'reactivated':
-            logger.info(f'[用户科目] 用户ID: {current_user_id} 重新激活科目订阅 {subject.name}')
+        # 如果是免费课程，直接订阅（保持原逻辑）
+        if subject.is_free:
+            if existing:
+                if existing.status == 'active':
+                    logger.info(f'[用户科目] 用户ID: {current_user_id} 科目 {subject.name} 已订阅')
+                    return jsonify(build_response(
+                        message='科目已订阅',
+                        data={
+                            'subject_id': subject_id,
+                            'subject_name': subject.name,
+                            'is_free': True,
+                            'status': 'already_subscribed'
+                        }
+                    ))
+                elif existing.status == 'expired' or existing.status == 'cancelled':
+                    # 重新激活
+                    existing.status = 'active'
+                    existing.is_free = True
+                    db.session.commit()
+                    logger.info(f'[用户科目] 用户ID: {current_user_id} 重新激活科目订阅 {subject.name}')
+                    return jsonify(build_response(
+                        message='订阅成功',
+                        data={
+                            'subject_id': subject_id,
+                            'subject_name': subject.name,
+                            'is_free': True,
+                            'status': 'reactivated'
+                        }
+                    ))
+            else:
+                # 创建新订阅
+                user_subject = UserSubject(
+                    user_id=current_user_id,
+                    subject_id=subject_id,
+                    is_free=True,
+                    status='active'
+                )
+                db.session.add(user_subject)
+                db.session.commit()
+                logger.info(f'[用户科目] 用户ID: {current_user_id} 新订阅科目 {subject.name}')
+                return jsonify(build_response(
+                    message='订阅成功',
+                    data={
+                        'subject_id': subject_id,
+                        'subject_name': subject.name,
+                        'is_free': True,
+                        'status': 'new_subscription'
+                    }
+                ))
+        
+        # 如果是付费课程，创建pending状态的申请并发送邮件
         else:
-            logger.info(f'[用户科目] 用户ID: {current_user_id} 科目 {subject.name} 已订阅')
-        
-        db.session.commit()
-        
-        return jsonify(build_response(
-            message='订阅成功' if result != 'already_subscribed' else '科目已订阅',
-            data={
-                'subject_id': subject_id,
-                'subject_name': subject.name,
-                'is_free': subject.is_free,
-                'status': result
-            }
-        ))
+            if existing:
+                if existing.status == 'pending':
+                    logger.info(f'[用户科目] 用户ID: {current_user_id} 科目 {subject.name} 申请已提交，等待审核')
+                    return jsonify(build_response(
+                        message='申请已提交，等待审核',
+                        data={
+                            'subject_id': subject_id,
+                            'subject_name': subject.name,
+                            'is_free': False,
+                            'status': 'pending'
+                        }
+                    ))
+                elif existing.status == 'active':
+                    logger.info(f'[用户科目] 用户ID: {current_user_id} 科目 {subject.name} 已申请通过')
+                    return jsonify(build_response(
+                        message='申请已通过',
+                        data={
+                            'subject_id': subject_id,
+                            'subject_name': subject.name,
+                            'is_free': False,
+                            'status': 'approved'
+                        }
+                    ))
+            
+            # 创建新申请（pending状态）
+            user_subject = UserSubject(
+                user_id=current_user_id,
+                subject_id=subject_id,
+                is_free=False,
+                status='pending'
+            )
+            db.session.add(user_subject)
+            db.session.commit()
+            
+            logger.info(f'[用户科目] 用户ID: {current_user_id} 创建课程申请 {subject.name}')
+            
+            # 发送邮件通知
+            try:
+                user_info = {
+                    'username': user.username,
+                    'email': user.email,
+                    'real_name': user.real_name,
+                    'phone': user.phone
+                }
+                course_info = {
+                    'code': subject.code,
+                    'price': float(subject.price) if subject.price else 0,
+                    'description': subject.description
+                }
+                
+                EmailService.send_course_application_email(
+                    user_info=user_info,
+                    course_name=subject.name,
+                    course_info=course_info
+                )
+                logger.info(f'[用户科目] 用户ID: {current_user_id} 课程申请邮件发送成功')
+            except Exception as email_error:
+                logger.error(f'[用户科目] 发送课程申请邮件失败: {str(email_error)}', exc_info=True)
+                # 邮件发送失败不影响申请创建，继续执行
+            
+            return jsonify(build_response(
+                message='申请已提交，等待审核',
+                data={
+                    'subject_id': subject_id,
+                    'subject_name': subject.name,
+                    'is_free': False,
+                    'status': 'pending'
+                }
+            ))
         
     except Exception as e:
         logger.error(f'[用户科目] 用户ID: {current_user_id if "current_user_id" in locals() else "unknown"} 订阅科目失败: {str(e)}', exc_info=True)
@@ -161,11 +268,23 @@ def check_subscription(subject_id):
         current_user_id = get_jwt_identity()
         logger.info(f'[用户科目] 用户ID: {current_user_id} 检查科目 {subject_id} 订阅状态')
         
-        is_subscribed = UserSubject.is_user_subscribed(current_user_id, subject_id)
+        # 查找用户科目关联
+        user_subject = UserSubject.query.filter_by(
+            user_id=current_user_id,
+            subject_id=subject_id
+        ).first()
+        
+        if user_subject:
+            is_subscribed = user_subject.status in ['active', 'approved', 'pending']
+            status = user_subject.status
+        else:
+            is_subscribed = False
+            status = None
         
         return jsonify(build_response(data={
             'subject_id': subject_id,
-            'is_subscribed': is_subscribed
+            'is_subscribed': is_subscribed,
+            'status': status
         }))
         
     except Exception as e:
