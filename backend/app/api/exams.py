@@ -423,10 +423,18 @@ def submit_exam(exam_id):
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        answers = data.get('answers', {})
+        answers_raw = data.get('answers', {})
         start_time_str = data.get('start_time')  # 前端传来的开始时间
         
-        logger.info(f'提交考试: exam_id={exam_id}, user_id={current_user_id}, start_time={start_time_str}')
+        # 处理答案格式：前端可能是数组，后端需要字典
+        if isinstance(answers_raw, list):
+            # 将数组转换为字典 {0: answer0, 1: answer1, ...}
+            answers = {str(i): answer for i, answer in enumerate(answers_raw)}
+            logger.info(f'前端提交的答案格式为数组，已转换为字典格式')
+        else:
+            answers = answers_raw
+        
+        logger.info(f'提交考试: exam_id={exam_id}, user_id={current_user_id}, answers格式={type(answers)}, answers内容={answers}, start_time={start_time_str}')
         
         # 检查考试设置是否允许重复考试
         settings = exam.settings or {}
@@ -647,14 +655,16 @@ def get_exam_result(exam_id):
         
         current_user_id = get_jwt_identity()
         
-        # 获取考试记录
+        # 获取考试记录 - 获取最新的记录
         exam_record = ExamRecord.query.filter_by(
             exam_id=exam_id,
             user_id=current_user_id
-        ).first()
+        ).order_by(ExamRecord.created_at.desc()).first()
         
         if not exam_record:
             return jsonify(build_error_response(404, '考试记录不存在')), 404
+        
+        logger.info(f"[获取结果] 考试记录ID={exam_record.id}, 答案数据={exam_record.answers}, 创建时间={exam_record.created_at}")
         
         # 获取考试信息
         exam = Exam.query.get(exam_id)
@@ -714,6 +724,8 @@ def get_exam_result(exam_id):
                 from app.api.exam_scoring import format_answer_for_display
                 formatted_user_answer = format_answer_for_display(user_answer, question, is_user_answer=True)
                 formatted_correct_answer = format_answer_for_display(question.answer, question, is_user_answer=False)
+                
+                logger.info(f"[获取结果] 题目索引={i}, 题目ID={question.id}, 原始用户答案={user_answer}, 格式化后={formatted_user_answer}, 选项={question.options}")
                 
                 question_details.append({
                     'question_title': question.title,

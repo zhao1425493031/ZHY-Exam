@@ -31,32 +31,37 @@ def format_answer_for_display(answer, question, is_user_answer=True):
         
         if question_type == 'single':
             # 单选题：单个选项
-            if is_user_answer:
-                # 用户答案：将选项字母转换为内容
-                formatted = option_map.get(answer, answer)
+            # 无论用户答案还是正确答案，都尝试转换
+            # 因为答案可能是字母（A、B、C、D）或内容
+            
+            # 如果是单个字符且在选项映射中，说明是字母
+            if len(answer) == 1 and answer in option_map:
+                formatted = option_map[answer]
+                logger.info(f"[格式化答案] 单选题: 题目ID={question.id}, 选项字母={answer} -> 选项内容={formatted}")
             else:
-                # 正确答案：已经是内容格式，直接返回
+                # 已经是内容格式，直接返回
                 formatted = answer
-            print(f"[格式化答案] 单选题: 题目ID={question.id}, 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
+                logger.info(f"[格式化答案] 单选题: 题目ID={question.id}, 已是内容格式={answer}")
             return formatted
         else:
             # 多选题：多个选项
-            if is_user_answer:
-                # 用户答案：将选项字母转换为内容
-                selected_options = []
+            selected_options = []
+            
+            # 检查答案格式
+            if '|' in answer:
+                # 已经是内容用|分隔的格式
+                selected_options = [opt.strip() for opt in answer.split('|') if opt.strip()]
+                logger.info(f"[格式化答案] 多选题: 题目ID={question.id}, 内容格式答案={selected_options}")
+            else:
+                # 可能是字母拼接的格式，逐个转换
                 for char in answer:
                     if char in option_map:
                         selected_options.append(option_map[char])
-                    else:
+                    elif char.strip():  # 忽略空白字符
                         selected_options.append(char)
-                formatted = ' | '.join(selected_options)
-            else:
-                # 正确答案：将|分隔的内容转换为更友好的格式
-                if '|' in answer:
-                    formatted = ' | '.join(answer.split('|'))
-                else:
-                    formatted = answer
-            print(f"[格式化答案] 多选题: 原始答案={answer}, 格式化后={formatted}, 是用户答案={is_user_answer}")
+                logger.info(f"[格式化答案] 多选题: 题目ID={question.id}, 字母格式答案={answer} -> 内容格式={selected_options}")
+            
+            formatted = ' | '.join(selected_options)
             return formatted
     
     elif question_type == 'judge':
@@ -69,7 +74,7 @@ def format_answer_for_display(answer, question, is_user_answer=True):
     
     else:
         # 填空题和简答题：直接返回
-        print(f"[格式化答案] {question_type}题: 题目ID={question.id}, 原始答案={answer}, 格式化后={answer}, 是用户答案={is_user_answer}")
+        logger.info(f"[格式化答案] {question_type}题: 题目ID={question.id}, 答案={answer}")
         return answer
 
 # 创建蓝图

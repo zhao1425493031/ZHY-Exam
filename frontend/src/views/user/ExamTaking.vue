@@ -326,8 +326,8 @@ export default {
         const response = await examApi.getExam(examId)
         exam.value = response.data
         
-        // 加载题目
-        await loadQuestions()
+        // getExam已经返回了questions数组，直接使用
+        questions.value = response.data.questions || []
         
         // 初始化答案数组
         answers.value = new Array(questions.value.length).fill('')
@@ -341,21 +341,6 @@ export default {
         ElMessage.error('加载考试失败')
         console.error('Load exam error:', error)
         router.push('/user/exams')
-      }
-    }
-    
-    const loadQuestions = async () => {
-      try {
-        if (exam.value.question_ids && exam.value.question_ids.length > 0) {
-          const response = await examApi.getExamQuestions(exam.value.id)
-          questions.value = response.data
-        } else {
-          ElMessage.error('考试题目不存在')
-          router.push('/user/exams')
-        }
-      } catch (error) {
-        ElMessage.error('加载题目失败')
-        console.error('Load questions error:', error)
       }
     }
     

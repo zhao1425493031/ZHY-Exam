@@ -319,47 +319,6 @@ export const formatAnswerTime = (seconds) => {
   }
 }
 
-/**
- * 格式化答案内容（将选项字母转换为选项内容）
- * @param {string} answer 答案（如 "AB" 或 "list|dict|set"）
- * @param {Array} options 选项数组
- * @param {string} questionType 题型
- * @returns {string} 格式化后的答案内容
- */
-export const formatAnswerContent = (answer, options = [], questionType = 'single') => {
-  if (!answer) return '未作答'
-  
-  // 如果是选择题（单选或多选）
-  if (['single', 'multiple'].includes(questionType) && options && options.length > 0) {
-    // 处理选项字母（如 "AB"）
-    const optionLetters = answer.split('').filter(char => /[A-Z]/.test(char))
-    if (optionLetters.length > 0) {
-      const optionContents = optionLetters.map(letter => {
-        const index = letter.charCodeAt(0) - 65 // A=0, B=1, C=2...
-        return options[index] || letter
-      })
-      return optionContents.join('、')
-    }
-    
-    // 处理用|分隔的答案（如 "list|dict|set"）
-    if (answer.includes('|')) {
-      const answerParts = answer.split('|')
-      const optionContents = answerParts.map(part => {
-        // 查找匹配的选项
-        const matchedOption = options.find(option => 
-          option.toLowerCase().includes(part.toLowerCase()) || 
-          part.toLowerCase().includes(option.toLowerCase())
-        )
-        return matchedOption || part
-      })
-      return optionContents.join('、')
-    }
-  }
-  
-  // 其他题型直接返回原答案
-  return answer
-}
-
 export default {
   formatDate,
   formatRelativeTime,
@@ -380,6 +339,5 @@ export default {
   formatTimeRange,
   formatRemainingTime,
   formatProgress,
-  formatAnswerTime,
-  formatAnswerContent
+  formatAnswerTime
 }
