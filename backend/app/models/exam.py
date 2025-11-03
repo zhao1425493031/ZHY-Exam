@@ -11,6 +11,7 @@ class Exam(BaseModel):
     description = Column(Text)
     duration = Column(Integer, nullable=False)  # 考试时长(分钟)
     total_points = Column(Integer, nullable=False)
+    passing_score = Column(Integer)  # 合格分数
     question_count = Column(Integer, nullable=False)
     question_ids = Column(JSON, nullable=False)  # 试题ID列表
     start_time = Column(DateTime)
@@ -29,6 +30,7 @@ class Exam(BaseModel):
             'description': self.description,
             'duration': self.duration,
             'total_points': self.total_points,
+            'passing_score': self.passing_score,
             'question_count': self.question_count,
             'question_ids': self.question_ids,
             'start_time': self.start_time.isoformat() if self.start_time else None,

@@ -117,6 +117,7 @@ def create_exam():
             description=data.get('description', ''),
             duration=data['duration'],
             total_points=total_points,
+            passing_score=data.get('passing_score'),
             question_count=len(question_ids),
             question_ids=question_ids,
             start_time=data.get('start_time'),
@@ -735,6 +736,9 @@ def get_exam_result(exam_id):
                     'points': question.points
                 })
         
+        # 获取考试合格分数（从数据库中获取，默认为总分的60%）
+        passing_score = exam.passing_score if exam.passing_score is not None else int(exam.total_points * 0.6)
+        
         # 构建结果数据
         result_data = {
             'exam': {
@@ -750,6 +754,8 @@ def get_exam_result(exam_id):
             'accuracy': round((exam_record.correct_count / exam_record.total_count) * 100) if exam_record.total_count > 0 else 0,
             'duration': duration,
             'submit_time': exam_record.submit_time.isoformat() if exam_record.submit_time else None,
+            'passing_score': passing_score,
+            'is_passed': (exam_record.score or 0) >= passing_score,
             'question_details': question_details
         }
         
@@ -859,6 +865,7 @@ def create_exam_from_config():
             description=description,
             duration=duration,
             total_points=random_result['total_points'],
+            passing_score=data.get('passing_score'),
             question_count=random_result['question_count'],
             question_ids=random_result['question_ids'],
             start_time=start_time_obj,

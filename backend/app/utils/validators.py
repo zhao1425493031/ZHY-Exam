@@ -122,6 +122,7 @@ class ExamSchema(Schema):
     description = fields.Str(validate=validate.Length(max=1000))
     duration = fields.Int(required=True, validate=validate.Range(min=5, max=300))
     total_points = fields.Int(required=True, validate=validate.Range(min=1, max=1000))
+    passing_score = fields.Int(validate=validate.Range(min=0, max=1000), allow_none=True)
     question_count = fields.Int(required=True, validate=validate.Range(min=1, max=200))
     question_ids = fields.List(fields.Int(), required=True)
     start_time = fields.DateTime()

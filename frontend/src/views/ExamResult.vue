@@ -9,7 +9,7 @@
         <!-- 结果头部 -->
         <div class="result-header">
           <div class="result-icon">
-            <el-icon v-if="examResult.score >= 60" size="80" class="success-icon">
+            <el-icon v-if="examResult.is_passed" size="80" class="success-icon">
               <SuccessFilled />
             </el-icon>
             <el-icon v-else size="80" class="fail-icon">
@@ -17,7 +17,7 @@
             </el-icon>
           </div>
           <div class="result-info">
-            <h1>{{ examResult.score >= 60 ? '恭喜通过考试！' : '考试未通过' }}</h1>
+            <h1>{{ examResult.is_passed ? '恭喜通过考试！' : '考试未通过' }}</h1>
             <p>{{ exam.title }} - {{ exam.subject_name }}</p>
           </div>
         </div>
@@ -60,9 +60,13 @@
             </div>
             <div class="detail-item">
               <span class="label">考试状态：</span>
-              <el-tag :type="examResult.score >= 60 ? 'success' : 'danger'">
-                {{ examResult.score >= 60 ? '通过' : '未通过' }}
+              <el-tag :type="examResult.is_passed ? 'success' : 'danger'">
+                {{ examResult.is_passed ? '通过' : '未通过' }}
               </el-tag>
+            </div>
+            <div class="detail-item" v-if="examResult.passing_score">
+              <span class="label">合格分数：</span>
+              <span class="value">{{ examResult.passing_score }}分</span>
             </div>
           </div>
         </div>

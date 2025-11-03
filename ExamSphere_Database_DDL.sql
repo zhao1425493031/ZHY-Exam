@@ -100,6 +100,7 @@ CREATE TABLE `exams` (
     `description` TEXT COMMENT '考试描述',
     `duration` INT NOT NULL COMMENT '考试时长(分钟)',
     `total_points` INT NOT NULL COMMENT '总分',
+    `passing_score` INT COMMENT '合格分数',
     `question_count` INT NOT NULL COMMENT '题目数量',
     `question_ids` JSON NOT NULL COMMENT '试题ID列表（JSON格式）',
     `start_time` TIMESTAMP COMMENT '开始时间',

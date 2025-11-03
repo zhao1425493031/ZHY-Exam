@@ -317,6 +317,9 @@ class ExamScoringService:
             else:
                 logger.warning(f'考试时间不完整: start_time={exam_record.start_time}, submit_time={exam_record.submit_time}')
             
+            # 获取考试合格分数（从数据库中获取，默认为总分的60%）
+            passing_score = exam.passing_score if exam.passing_score is not None else int(exam.total_points * 0.6)
+            
             return {
                 'exam_record_id': exam_record_id,
                 'exam_id': exam.id,
@@ -329,6 +332,8 @@ class ExamScoringService:
                 'start_time': exam_record.start_time.isoformat() if exam_record.start_time else None,
                 'submit_time': exam_record.submit_time.isoformat() if exam_record.submit_time else None,
                 'duration': duration,
+                'passing_score': passing_score,
+                'is_passed': (exam_record.score or 0) >= passing_score,
                 'result_details': result_details
             }
             

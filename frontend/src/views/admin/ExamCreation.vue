@@ -215,6 +215,15 @@
             <el-form-item label="允许重考">
               <el-switch v-model="settingsForm.allow_retake" />
             </el-form-item>
+            <el-form-item label="合格分数" prop="passing_score">
+              <el-input-number 
+                v-model="examForm.passing_score" 
+                :min="0" 
+                :max="totalPoints" 
+                placeholder="请输入合格分数"
+              />
+              <span class="form-tip">（默认{{ Math.floor(totalPoints * 0.6) }}分，即60%）</span>
+            </el-form-item>
             <el-form-item label="考试状态">
               <el-radio-group v-model="examForm.status">
                 <el-radio value="draft">保存为草稿</el-radio>
@@ -234,6 +243,7 @@
               <el-descriptions-item label="考试时长">{{ examForm.duration }} 分钟</el-descriptions-item>
               <el-descriptions-item label="题目数量">{{ selectedQuestions.length }} 题</el-descriptions-item>
               <el-descriptions-item label="总分">{{ totalPoints }} 分</el-descriptions-item>
+              <el-descriptions-item label="合格分数">{{ examForm.passing_score || Math.floor(totalPoints * 0.6) }} 分</el-descriptions-item>
               <el-descriptions-item label="开始时间">{{ formatDate(examForm.start_time) || '未设置' }}</el-descriptions-item>
               <el-descriptions-item label="结束时间">{{ formatDate(examForm.end_time) || '未设置' }}</el-descriptions-item>
               <el-descriptions-item label="考试状态">
@@ -321,6 +331,7 @@ export default {
       description: '',
       subject_id: '',
       duration: 60,
+      passing_score: null, // 合格分数
       start_time: null,
       end_time: null,
       status: 'draft'
@@ -486,11 +497,17 @@ export default {
       try {
         submitting.value = true
         
+        // 计算合格分数：如果未设置则使用默认60%
+        const passingScore = examForm.passing_score !== null && examForm.passing_score !== undefined
+          ? examForm.passing_score
+          : Math.floor(totalPoints.value * 0.6)
+        
         const submitData = {
           title: examForm.title,
           description: examForm.description,
           subject_id: examForm.subject_id,
           duration: examForm.duration,
+          passing_score: passingScore,
           start_time: examForm.start_time,
           end_time: examForm.end_time,
           status: examForm.status,
@@ -571,6 +588,7 @@ export default {
           description: exam.description || '',
           subject_id: exam.subject_id,
           duration: exam.duration,
+          passing_score: exam.passing_score || null,
           start_time: exam.start_time ? new Date(exam.start_time) : null,
           end_time: exam.end_time ? new Date(exam.end_time) : null,
           status: exam.status
